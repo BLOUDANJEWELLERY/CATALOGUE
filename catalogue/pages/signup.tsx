@@ -23,7 +23,7 @@ export default function SignupPage() {
     }
 
     if (!validateEmail(email)) {
-      return setError("Enter a valid email address");
+      return setError("Enter a vhalid email address");
     }
 
     if (password !== confirmPassword) {
