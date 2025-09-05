@@ -38,36 +38,41 @@ export default function Catalogue({ items }: CatalogueProps) {
     { _id: "blank", modelNumber: 0, image: null },
   ];
 
-  const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
-    setUploading(true);
+const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (!e.target.files?.length) return;
+  setUploading(true);
 
-    const file = e.target.files[0];
+  const file = e.target.files[0];
 
-    // Convert file to Base64 to send as JSON
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = async () => {
-      try {
-        const base64Image = reader.result as string;
+  try {
+    // 1. Upload to Sanity
+    const data = new FormData();
+    data.append("file", file);
+    data.append("content-type", file.type);
 
-        const res = await fetch("/api/addItem", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageUrl: base64Image }),
-        });
+    const uploadRes = await fetch("https://lfss7ezq.api.sanity.io/v2023-03-01/assets/images/production", {
+      method: "POST",
+      body: data,
+      headers: {
+        Authorization: `Bearer ${process.env.SANITY_WRITE_TOKEN}`,
+      },
+    });
+    const asset = await uploadRes.json();
 
-        if (!res.ok) throw new Error("Failed to add item");
+    // 2. Send asset ID to catalogue API
+    await fetch("/api/catalogue/addItem", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageAssetId: asset._id }),
+    });
 
-        const data = await res.json();
-        setAllItems((prev) => [...prev, data.doc]); // Optimistically add new item
-        setUploading(false);
-      } catch (err) {
-        console.error(err);
-        setUploading(false);
-      }
-    };
-  };
+    window.location.reload();
+  } catch (err) {
+    console.error("Failed to add item", err);
+    setUploading(false);
+  }
+};
+
 
   return (
     <div style={{ padding: "30px", background: "#fdf6f0", minHeight: "100vh" }}>
