@@ -1,35 +1,29 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import multer, { FileFilterCallback } from "multer";
+import multer from "multer";
 import { client } from "../../lib/sanity.client";
 
-// Configure Multer to store files in memory
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// Extend NextApiRequest to include Multer file
+// Extend Next.js request to include Multer file
 interface NextApiRequestWithFile extends NextApiRequest {
   file?: Express.Multer.File;
 }
 
-// Disable Next.js body parser (Multer will handle file)
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Disable Next.js built-in body parser
+export const config = { api: { bodyParser: false } };
 
-// Type-safe middleware runner for Next.js
-function runMiddleware(
+// Multer in-memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// Helper to run Multer manually (typed properly)
+function multerSingle(
   req: NextApiRequestWithFile,
   res: NextApiResponse,
-  fn: (
-    req: NextApiRequestWithFile,
-    res: NextApiResponse,
-    next: (err?: unknown) => void
-  ) => void
+  fieldName: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    fn(req, res, (err?: unknown) => {
+    const handler = upload.single(fieldName);
+    // @ts-expect-error: Multer expects Express Request, safe here
+    handler(req, res, (err?: unknown) => {
       if (err) reject(err);
       else resolve();
     });
@@ -40,12 +34,14 @@ export default async function handler(
   req: NextApiRequestWithFile,
   res: NextApiResponse
 ) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  // Run Multer middleware (type-safe)
-  await runMiddleware(req, res, upload.single("file"));
+  // Run Multer middleware safely
+  try {
+    await multerSingle(req, res, "file");
+  } catch (err) {
+    return res.status(500).json({ error: "Multer failed" });
+  }
 
   if (!req.file) return res.status(400).json({ error: "File missing" });
 
