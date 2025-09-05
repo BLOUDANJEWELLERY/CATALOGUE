@@ -18,43 +18,55 @@ interface CatalogueProps {
   items: CatalogueItem[];
 }
 
-export const getServerSideProps: GetServerSideProps<CatalogueProps> =
-  async () => {
-    const items: CatalogueItem[] = await client.fetch(
-      `*[_type == "catalogueItem"] | order(modelNumber asc) {
-        _id, modelNumber, image
-      }`
-    );
+export const getServerSideProps: GetServerSideProps<CatalogueProps> = async () => {
+  const items: CatalogueItem[] = await client.fetch(
+    `*[_type == "catalogueItem"] | order(modelNumber asc) {
+      _id, modelNumber, image
+    }`
+  );
 
-    return { props: { items } };
-  };
+  return { props: { items } };
+};
 
 export default function Catalogue({ items }: CatalogueProps) {
   const [uploading, setUploading] = useState(false);
+  const [allItems, setAllItems] = useState<CatalogueItem[]>(items);
 
   // Add a blank card at the end
   const itemsWithBlank: CatalogueItem[] = [
-    ...items,
+    ...allItems,
     { _id: "blank", modelNumber: 0, image: null },
   ];
 
-  const handleAddNewItem = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     setUploading(true);
 
     const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
 
-    try {
-      await fetch("/api/addItem", { method: "POST", body: formData });
-      window.location.reload();
-    } catch (err) {
-      console.error(err);
-      setUploading(false);
-    }
+    // Convert file to Base64 to send as JSON
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = async () => {
+      try {
+        const base64Image = reader.result as string;
+
+        const res = await fetch("/api/addItem", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageUrl: base64Image }),
+        });
+
+        if (!res.ok) throw new Error("Failed to add item");
+
+        const data = await res.json();
+        setAllItems((prev) => [...prev, data.doc]); // Optimistically add new item
+        setUploading(false);
+      } catch (err) {
+        console.error(err);
+        setUploading(false);
+      }
+    };
   };
 
   return (
@@ -79,7 +91,7 @@ export default function Catalogue({ items }: CatalogueProps) {
       >
         {itemsWithBlank.map((item) =>
           item._id === "blank" ? (
-            <label htmlFor="file-upload" key="blank">
+            <label htmlFor="file-upload" key="item-blank">
               <div
                 style={{
                   background: "#fffaf5",
@@ -116,7 +128,7 @@ export default function Catalogue({ items }: CatalogueProps) {
               <div
                 style={{
                   width: "100%",
-                  paddingTop: "100%", // Square container
+                  paddingTop: "100%", // square container
                   position: "relative",
                   borderRadius: "12px",
                   overflow: "hidden",
