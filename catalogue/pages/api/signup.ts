@@ -1,8 +1,16 @@
+// pages/api/signup.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import { PrismaClient, Prisma, User } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+type SignupRequest = {
+  firstName: string;
+  lastName?: string;
+  email: string;
+  password: string;
+};
 
 type SignupResponse = {
   message: string;
@@ -14,61 +22,48 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<SignupResponse>
 ) {
-  console.log("Signup API Hit. Method:", req.method);
-  console.log("Body:", req.body);
-
   if (req.method !== "POST") {
-    return res.status(405).json({
-      message: `Method ${req.method} not allowed`,
-      error: `Method ${req.method} not allowed`
-    });
+    return res
+      .status(405)
+      .json({ message: `Method ${req.method} not allowed` });
   }
 
-  const { name, email, password } = req.body;
+  const { firstName, lastName, email, password }: SignupRequest = req.body;
 
-  if (!email?.trim() || !password) {
-    return res.status(400).json({
-      message: "Name, email, and password are required",
-      error: "Name, email, and password are required"
-    });
+  // ---------------- Validation ----------------
+  if (!firstName?.trim() || !email?.trim() || !password) {
+    return res
+      .status(400)
+      .json({ message: "First name, email, and password are required" });
   }
-
-  const trimmedName = name?.trim() || null;
 
   try {
+    // Check if email already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({
-        message: "Email already exists",
-        error: "Email already exists"
-      });
+      return res.status(400).json({ message: "Email already exists" });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user: User = await prisma.user.create({
+    // Create user with only the fields in the schema
+    const user = await prisma.user.create({
       data: {
-        name: trimmedName,
+        firstName: firstName.trim(),
+        lastName: lastName?.trim() || null,
         email: email.trim(),
         password: hashedPassword,
       },
     });
 
-    return res.status(201).json({
-      message: "Signup successful",
-      userId: user.id
-    });
+    return res
+      .status(201)
+      .json({ message: "Signup successful", userId: user.id });
   } catch (err: unknown) {
     console.error("Signup error:", err);
-
-    let errorMessage = "Internal server error";
-    if ((err as Prisma.PrismaClientKnownRequestError).code === "P2002") {
-      errorMessage = "Email already exists";
-    }
-
-    return res.status(500).json({
-      message: errorMessage,
-      error: errorMessage
-    });
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: "Internal server error" });
   }
 }
