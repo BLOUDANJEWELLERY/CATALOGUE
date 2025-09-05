@@ -72,34 +72,50 @@ export default function Catalogue({ items }: CatalogueProps) {
     }
   };
 
-  const handleDownloadPDF = async () => {
-    if (!containerRef.current) return;
-    const doc = new jsPDF("p", "mm", "a4");
-    const itemsPerPage = 4;
-    const pages = Math.ceil(items.length / itemsPerPage);
+ const handleDownloadPDF = async () => {
+  if (!containerRef.current) return;
 
-    for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
-      const pageItems = items.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
+  const doc = new jsPDF("p", "mm", "a4");
+  const itemsPerPage = 4;
+  const pages = Math.ceil(items.length / itemsPerPage);
 
-      for (let i = 0; i < pageItems.length; i++) {
-        const item = pageItems[i];
-        const itemDiv = document.getElementById(`catalogue-item-${item._id}`);
-        if (!itemDiv) continue;
-        const canvas = await html2canvas(itemDiv);
-        const imgData = canvas.toDataURL("image/png");
+  for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
+    const pageItems = items.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
 
-        const col = i % 2;
-        const row = Math.floor(i / 2);
-        const x = 20 + col * 90; // 2 columns
-        const y = 20 + row * 120; // 2 rows
-        doc.addImage(imgData, "PNG", x, y, 70, 100);
-      }
+    for (let i = 0; i < pageItems.length; i++) {
+      const item = pageItems[i];
+      const itemDiv = document.getElementById(`catalogue-item-${item._id}`);
+      if (!itemDiv) continue;
 
-      if (pageIndex < pages - 1) doc.addPage();
+      // Wait for all images in this itemDiv to load
+      const imgElements = itemDiv.querySelectorAll("img");
+      await Promise.all(
+        Array.from(imgElements).map(
+          (img) =>
+            new Promise<void>((resolve) => {
+              if (img.complete) resolve();
+              else img.onload = () => resolve();
+            })
+        )
+      );
+
+      // Capture item with html2canvas
+      const canvas = await html2canvas(itemDiv, { useCORS: true, backgroundColor: "#fdf6f0" });
+      const imgData = canvas.toDataURL("image/png");
+
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = 20 + col * 90; // 2 columns
+      const y = 20 + row * 120; // 2 rows
+      doc.addImage(imgData, "PNG", x, y, 70, 100);
     }
 
-    doc.save("catalogue.pdf");
-  };
+    if (pageIndex < pages - 1) doc.addPage();
+  }
+
+  doc.save("catalogue.pdf");
+};
+
 
   return (
     <div style={{ padding: "30px", background: "#fdf6f0", minHeight: "100vh" }}>
