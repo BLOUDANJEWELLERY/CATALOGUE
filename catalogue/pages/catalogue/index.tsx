@@ -77,8 +77,30 @@ const handleDownloadPDF = async () => {
   const itemsPerPage = 4;
   const pages = Math.ceil(items.length / itemsPerPage);
 
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 15;
+
+  // Define colors
+  const bgColor = "#fdf6f0";
+  const accentColor = "#8b5e3c";
+  const textColor = "#7a4c2e";
+
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = items.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
+
+    // Add header for each page
+    doc.setFillColor(...hexToRgb(accentColor));
+    doc.rect(0, 0, pageWidth, 25, "F"); // Header background
+
+    doc.setFontSize(20);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 12, { align: "center" });
+
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "normal");
+    doc.text("BANGLES CATALOGUE", pageWidth / 2, 20, { align: "center" });
 
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
@@ -86,7 +108,6 @@ const handleDownloadPDF = async () => {
 
       if (item.image) {
         try {
-          // Use your proxy API to bypass CORS
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
             urlFor(item.image).width(400).auto("format").url()
           )}`;
@@ -102,21 +123,22 @@ const handleDownloadPDF = async () => {
         }
       }
 
-      // Create a temporary offscreen div
+      // Offscreen temp div
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "200px";
       tempDiv.style.height = "250px";
-      tempDiv.style.background = "#fdf6f0";
+      tempDiv.style.background = bgColor;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
       tempDiv.style.alignItems = "center";
       tempDiv.style.justifyContent = "center";
-      tempDiv.style.border = "1px solid #ccc";
-      tempDiv.style.borderRadius = "12px";
-      tempDiv.style.position = "absolute"; // offscreen
+      tempDiv.style.border = `2px solid ${accentColor}`;
+      tempDiv.style.borderRadius = "16px";
+      tempDiv.style.padding = "10px";
+      tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.style.top = "-9999px";
-      document.body.appendChild(tempDiv); // append to DOM
+      document.body.appendChild(tempDiv);
 
       if (imgDataUrl) {
         const tempImg = document.createElement("img");
@@ -124,35 +146,42 @@ const handleDownloadPDF = async () => {
         tempImg.style.width = "100%";
         tempImg.style.height = "auto";
         tempImg.style.objectFit = "contain";
+        tempImg.style.borderRadius = "12px";
         tempDiv.appendChild(tempImg);
       }
 
       const tempText = document.createElement("p");
       tempText.innerText = `Model #${item.modelNumber}`;
-      tempText.style.fontWeight = "600";
-      tempText.style.color = "#7a4c2e";
-      tempText.style.marginTop = "5px";
+      tempText.style.fontWeight = "700";
+      tempText.style.color = textColor;
+      tempText.style.marginTop = "8px";
+      tempText.style.fontSize = "14px";
       tempDiv.appendChild(tempText);
 
-      // Capture with html2canvas
-      const canvas = await html2canvas(tempDiv, { backgroundColor: "#fdf6f0", scale: 2 });
+      const canvas = await html2canvas(tempDiv, { backgroundColor: bgColor, scale: 2 });
       const finalImgData = canvas.toDataURL("image/png");
-
-      // Clean up
       document.body.removeChild(tempDiv);
 
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const x = 20 + col * 90;
-      const y = 20 + row * 120;
-      doc.addImage(finalImgData, "PNG", x, y, 70, 100);
+      const x = margin + col * 95;
+      const y = 35 + row * 120;
+      doc.addImage(finalImgData, "PNG", x, y, 75, 110);
     }
 
     if (pageIndex < pages - 1) doc.addPage();
   }
 
-  doc.save("catalogue.pdf");
+  doc.save("BLOUDAN_BANGLES_CATALOGUE.pdf");
 };
+
+// Helper to convert hex to rgb array for jsPDF
+function hexToRgb(hex: string): [number, number, number] {
+  const match = hex.replace("#", "").match(/.{1,2}/g);
+  if (!match) return [0, 0, 0];
+  return match.map((x) => parseInt(x, 16)) as [number, number, number];
+}
+
   return (
     <div style={{ padding: "30px", background: "#fdf6f0", minHeight: "100vh" }}>
       <h1
