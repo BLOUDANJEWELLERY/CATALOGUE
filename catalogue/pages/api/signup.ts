@@ -30,7 +30,6 @@ export default async function handler(
 
   const { firstName, lastName, email, password }: SignupRequest = req.body;
 
-  // ---------------- Validation ----------------
   if (!firstName?.trim() || !email?.trim() || !password) {
     return res
       .status(400)
@@ -38,20 +37,15 @@ export default async function handler(
   }
 
   try {
-    // Check if email already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user with only the fields in the schema
     const user = await prisma.user.create({
       data: {
-        firstName: firstName.trim(),
-        lastName: lastName?.trim() || null,
         email: email.trim(),
         password: hashedPassword,
       },
