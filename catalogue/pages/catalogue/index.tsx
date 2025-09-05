@@ -18,61 +18,57 @@ interface CatalogueProps {
   items: CatalogueItem[];
 }
 
-export const getServerSideProps: GetServerSideProps<CatalogueProps> = async () => {
-  const items: CatalogueItem[] = await client.fetch(
-    `*[_type == "catalogueItem"] | order(modelNumber asc) {
-      _id, modelNumber, image
-    }`
-  );
+export const getServerSideProps: GetServerSideProps<CatalogueProps> =
+  async () => {
+    const items: CatalogueItem[] = await client.fetch(
+      `*[_type == "catalogueItem"] | order(modelNumber asc) {
+        _id, modelNumber, image
+      }`
+    );
 
-  return { props: { items } };
-};
+    return { props: { items } };
+  };
 
 export default function Catalogue({ items }: CatalogueProps) {
   const [uploading, setUploading] = useState(false);
-  const [allItems, setAllItems] = useState<CatalogueItem[]>(items);
 
-  // Add a blank card at the end
   const itemsWithBlank: CatalogueItem[] = [
-    ...allItems,
+    ...items,
     { _id: "blank", modelNumber: 0, image: null },
   ];
 
-const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (!e.target.files?.length) return;
-  setUploading(true);
+  const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    setUploading(true);
 
-  const file = e.target.files[0];
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
 
-  try {
-    // 1. Upload to Sanity
-    const data = new FormData();
-    data.append("file", file);
-    data.append("content-type", file.type);
+    try {
+      // Upload image server-side
+      const uploadRes = await fetch("/api/catalogue/uploadImage", {
+        method: "POST",
+        body: formData,
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
 
-    const uploadRes = await fetch("https://lfss7ezq.api.sanity.io/v2023-03-01/assets/images/production", {
-      method: "POST",
-      body: data,
-      headers: {
-        Authorization: `Bearer ${process.env.SANITY_WRITE_TOKEN}`,
-      },
-    });
-    const asset = await uploadRes.json();
+      // Create catalogue item with the uploaded asset
+      const createRes = await fetch("/api/catalogue/addItem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assetId: uploadData.assetId }),
+      });
+      const createData = await createRes.json();
+      if (!createRes.ok) throw new Error(createData.error || "Failed to create item");
 
-    // 2. Send asset ID to catalogue API
-    await fetch("/api/catalogue/addItem", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageAssetId: asset._id }),
-    });
-
-    window.location.reload();
-  } catch (err) {
-    console.error("Failed to add item", err);
-    setUploading(false);
-  }
-};
-
+      window.location.reload();
+    } catch (err: any) {
+      console.error("Failed to add item:", err);
+      setUploading(false);
+    }
+  };
 
   return (
     <div style={{ padding: "30px", background: "#fdf6f0", minHeight: "100vh" }}>
@@ -96,7 +92,7 @@ const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
       >
         {itemsWithBlank.map((item) =>
           item._id === "blank" ? (
-            <label htmlFor="file-upload" key="item-blank">
+            <label htmlFor="file-upload" key="blank">
               <div
                 style={{
                   background: "#fffaf5",
@@ -133,7 +129,7 @@ const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
               <div
                 style={{
                   width: "100%",
-                  paddingTop: "100%", // square container
+                  paddingTop: "100%",
                   position: "relative",
                   borderRadius: "12px",
                   overflow: "hidden",
