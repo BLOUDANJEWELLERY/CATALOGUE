@@ -1,5 +1,11 @@
+// /pages/api/catalogue/create.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { client } from "../../lib/sanity.client";
+import { v4 as uuidv4 } from "uuid";
+
+interface CatalogueItemBody {
+  imageAssetId: string; // Sanity asset ID of the uploaded image
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,40 +16,40 @@ export default async function handler(
   }
 
   try {
-    // Since we can't receive File directly via JSON, use multer or a FormData parser
-    // Here we'll assume req.body.file is a Buffer from multer
-    const file = (req as any).file as Express.Multer.File;
-    if (!file) return res.status(400).json({ error: "File missing" });
+    const { imageAssetId } = req.body as CatalogueItemBody;
 
-    // Upload image to Sanity
-    const uploadedImage = await client.assets.upload("image", file.buffer, {
-      filename: file.originalname,
-    });
+    if (!imageAssetId)
+      return res.status(400).json({ error: "Missing imageAssetId" });
 
-    // Get next modelNumber
+    // Find the current max modelNumber
     const maxModel: number | null = await client.fetch(
       `*[_type=="catalogueItem"] | order(modelNumber desc)[0].modelNumber`
     );
-    const nextModel = (maxModel || 0) + 1;
+    const nextModel = (maxModel ?? 0) + 1;
 
-    // Create new catalogue item
-    const newItem = {
+    // Build catalogue item document
+    const catalogueItem = {
       _type: "catalogueItem",
+      _id: uuidv4(),
       modelNumber: nextModel,
       image: {
         _type: "image",
         asset: {
           _type: "reference",
-          _ref: uploadedImage._id,
+          _ref: imageAssetId,
         },
       },
+      createdAt: new Date().toISOString(),
     };
 
-    const createdDoc = await client.create(newItem);
+    // Save to Sanity
+    const createdDoc = await client.create(catalogueItem);
 
     res.status(201).json({ success: true, doc: createdDoc });
-  } catch (err: any) {
-    console.error(err);
-    res.status(500).json({ error: err.message || "Failed to create catalogue item" });
+  } catch (error: unknown) {
+    console.error("Error creating catalogue item:", error);
+    const message =
+      error instanceof Error ? error.message : "Failed to create catalogue item";
+    res.status(500).json({ error: message });
   }
 }
