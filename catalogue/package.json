@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@sanity/image-url": "^1.2.0",
+    "multer": "^2.0.2",
     "next": "15.5.2",
     "next-sanity": "^10.0.16",
     "react": "19.1.0",

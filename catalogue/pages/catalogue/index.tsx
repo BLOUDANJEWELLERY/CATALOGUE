@@ -32,31 +32,23 @@ export default function Catalogue({ items }: CatalogueProps) {
   // Add one blank card at the end
   const itemsWithBlank: CatalogueItem[] = [...items, { _id: "blank", modelNumber: 0, image: null }];
 
-  const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
-    setUploading(true);
+ const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (!e.target.files?.length) return;
+  setUploading(true);
 
-    const file = e.target.files[0];
+  const file = e.target.files[0];
+  const formData = new FormData();
+  formData.append("file", file);
 
-    try {
-      // Upload to Sanity
-      const data = await client.assets.upload("image", file, { filename: file.name });
-      const assetId = data._id; // Sanity asset ID
+  try {
+    await fetch("/api/addItem", { method: "POST", body: formData });
+    window.location.reload();
+  } catch (err) {
+    console.error(err);
+    setUploading(false);
+  }
+};
 
-      // Create new catalogue document
-      await fetch("/api/addItem", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: assetId }),
-      });
-
-      // Reload page to show new item
-      window.location.reload();
-    } catch (err) {
-      console.error(err);
-      setUploading(false);
-    }
-  };
 
   return (
     <div style={{ padding: "30px", background: "#fdf6f0", minHeight: "100vh" }}>
