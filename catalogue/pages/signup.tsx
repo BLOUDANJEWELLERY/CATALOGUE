@@ -15,7 +15,7 @@ export default function SignupPage() {
   const validateEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
 
- const handleSubmit = async () => {
+const handleSubmit = async () => {
   setError("");
 
   if (!email.trim() || !password || !confirmPassword) {
@@ -36,7 +36,10 @@ export default function SignupPage() {
     const res = await fetch("/api/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim(), password }),
+      body: JSON.stringify({
+        email: email.trim(),
+        password,
+      }),
     });
 
     const data: { message?: string; userId?: string; error?: string } = await res.json();
@@ -54,6 +57,7 @@ export default function SignupPage() {
     setLoading(false);
   }
 };
+
 
 
   return (
