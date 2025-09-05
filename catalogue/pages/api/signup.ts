@@ -1,4 +1,3 @@
-// pages/api/signup.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -15,6 +14,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
+  // CORS headers
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end(); // Preflight response
+  }
+
   console.log("=== Signup API Hit ===");
   console.log("Request method:", req.method);
   console.log("DATABASE_URL:", process.env.DATABASE_URL);
