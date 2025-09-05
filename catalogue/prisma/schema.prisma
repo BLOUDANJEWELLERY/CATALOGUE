@@ -2,8 +2,6 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 
 generator client {
   provider = "prisma-client-js"
@@ -15,9 +13,153 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String?
-  email     String   @unique
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  email     String    @unique
   password  String
+  role      String
+
+  firstName String
+  lastName  String?
+  dob       DateTime?
+  gender    String?
+
+	phoneNumber String?   // added phone number field
+
+  address1   String?
+  address2   String?
+  state      String?
+  country    String?
+  postalCode String?
+
+  products  Product[]
+	userItems  UserItem[] @relation("UserToUserItem")
+	orders     Order[]              // added
+  soldItems  OrderItem[] @relation("UserAsSeller") // added
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  price       Float
+  images      String[]
+  colors      String[]   @default([])
+  sizes       String[]   @default([])
+  condition   String     @default("")
+  era         String     @default("")
+  quantity    Int
+
+  ownerId     String     @db.ObjectId
+  owner       User       @relation(fields: [ownerId], references: [id])
+
+  categories  ProductCategory[]  // explicit join relation
+	userItems   UserItem[] @relation("ProductToUserItem")
+	orderItems  OrderItem[]         // added
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Category {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  order     Int        @default(0)
+  parentId  String?    @db.ObjectId
+  parent    Category?  @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  Category[] @relation("CategoryChildren")
+
+  products  ProductCategory[] // explicit join relation
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// Explicit join table for Product ↔ Category many-to-many
+model ProductCategory {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId  String   @db.ObjectId
+  categoryId String   @db.ObjectId
+
+  product    Product  @relation(fields: [productId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([productId, categoryId])
+}
+
+model UserItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], name: "UserToUserItem")
+
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], name: "ProductToUserItem")
+
+  color     String?
+  size      String?
+  quantity  Int      @default(1)
+  status    String   // "cart" or "wishlist"
+  price     Float
+  image     String?
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([productId])
+}
+
+model Order {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String      @db.ObjectId
+  status    OrderStatus @default(PENDING)
+  payment   PaymentType @default(COD)
+  total     Float
+  address   String
+  phoneNumber    String
+  note      String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String   @db.ObjectId
+  seller    User     @relation("UserAsSeller", fields: [sellerId], references: [id])
+  sellerId  String   @db.ObjectId
+
+  quantity  Int
+  price     Float
+  color     String?
+  size      String?
+  status    ItemStatus @default(PENDING)
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum ItemStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentType {
+  COD
+  CARD
 }
