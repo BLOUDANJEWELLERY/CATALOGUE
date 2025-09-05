@@ -33,7 +33,6 @@ export default async function handler(
         _type: "image",
         asset: { _type: "reference", _ref: assetId },
       },
-      createdAt: new Date().toISOString(),
     };
 
     const doc = await client.create(newItem);
