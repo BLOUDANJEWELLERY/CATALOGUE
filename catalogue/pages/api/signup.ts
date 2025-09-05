@@ -1,24 +1,42 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
+type ResponseData = { message: string; userId?: string };
 
-  const { name, email, password } = req.body;
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ResponseData>
+) {
+  console.log("Method:", req.method); // Debug
 
-  if (!email || !password) return res.status(400).json({ message: "Missing fields" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
+  }
 
-  const existingUser = await prisma.user.findUnique({ where: { email } });
-  if (existingUser) return res.status(400).json({ message: "User already exists" });
+  try {
+    const { name, email, password } = req.body;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
-  const user = await prisma.user.create({
-    data: { name, email, password: hashedPassword },
-  });
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-  res.status(201).json({ message: "User created", userId: user.id });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: { name: name || null, email, password: hashedPassword },
+    });
+
+    return res.status(201).json({ message: "User created", userId: user.id });
+  } catch (err) {
+    console.error("Signup error:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }
