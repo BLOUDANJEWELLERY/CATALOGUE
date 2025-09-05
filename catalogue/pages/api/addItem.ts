@@ -1,41 +1,42 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import type { File } from "multer"; // for file typing
 import multer from "multer";
 import { client } from "../../lib/sanity.client";
 
-// Multer config (in memory)
+// Multer in-memory storage
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Wrap Next.js API to use multer
-const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: any) =>
-  new Promise((resolve, reject) => {
+// Helper for middleware
+const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: Function) =>
+  new Promise<void>((resolve, reject) => {
     fn(req, res, (result: any) => {
       if (result instanceof Error) reject(result);
-      else resolve(result);
+      else resolve();
     });
   });
 
-export const config = {
-  api: {
-    bodyParser: false, // required for multer
-  },
-};
+// Extend request type
+interface NextApiRequestWithFile extends NextApiRequest {
+  file?: Express.Multer.File;
+}
 
-export default async function handler(req: NextApiRequest & { file?: any }, res: NextApiResponse) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+export const config = { api: { bodyParser: false } };
+
+export default async function handler(
+  req: NextApiRequestWithFile,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   await runMiddleware(req, res, upload.single("file"));
 
   if (!req.file) return res.status(400).json({ error: "File missing" });
 
   try {
-    // Upload image to Sanity
     const data = await client.assets.upload("image", req.file.buffer, {
       filename: req.file.originalname,
     });
 
-    // Get max modelNumber
     const maxNumber: number = await client.fetch(`max(*[_type == "catalogueItem"].modelNumber)`);
 
     const newItem = {
@@ -43,10 +44,7 @@ export default async function handler(req: NextApiRequest & { file?: any }, res:
       modelNumber: (maxNumber || 0) + 1,
       image: {
         _type: "image",
-        asset: {
-          _type: "reference",
-          _ref: data._id,
-        },
+        asset: { _type: "reference", _ref: data._id },
       },
     };
 
