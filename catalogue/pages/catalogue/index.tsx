@@ -170,7 +170,7 @@ export default function Catalogue({ items }: CatalogueProps) {
                       marginTop: "10px",
                     }}
                   >
-                    Model #{item.modelNumber}
+                    B{item.modelNumber}
                   </p>
                 </>
               )}
