@@ -72,7 +72,7 @@ export default function Catalogue({ items }: CatalogueProps) {
     }
   };
 
- const handleDownloadPDF = async () => {
+const handleDownloadPDF = async () => {
   if (!containerRef.current) return;
 
   const doc = new jsPDF("p", "mm", "a4");
@@ -87,7 +87,7 @@ export default function Catalogue({ items }: CatalogueProps) {
       const itemDiv = document.getElementById(`catalogue-item-${item._id}`);
       if (!itemDiv) continue;
 
-      // Wait for all images in this itemDiv to load
+      // Make sure all images inside this div are loaded
       const imgElements = itemDiv.querySelectorAll("img");
       await Promise.all(
         Array.from(imgElements).map(
@@ -95,12 +95,18 @@ export default function Catalogue({ items }: CatalogueProps) {
             new Promise<void>((resolve) => {
               if (img.complete) resolve();
               else img.onload = () => resolve();
+              img.crossOrigin = "anonymous"; // Important for html2canvas
             })
         )
       );
 
-      // Capture item with html2canvas
-      const canvas = await html2canvas(itemDiv, { useCORS: true, backgroundColor: "#fdf6f0" });
+      // Capture the div
+      const canvas = await html2canvas(itemDiv, {
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: "#fdf6f0",
+        scale: 2, // optional: improve image quality
+      });
       const imgData = canvas.toDataURL("image/png");
 
       const col = i % 2;
@@ -115,6 +121,7 @@ export default function Catalogue({ items }: CatalogueProps) {
 
   doc.save("catalogue.pdf");
 };
+
 
 
   return (
