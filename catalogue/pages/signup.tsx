@@ -39,6 +39,7 @@ export default function SignupPage() {
         return;
       }
 
+      // Successful signup → navigate to login
       router.push("/login");
     } catch (err) {
       console.error("Network error:", err);
