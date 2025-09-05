@@ -4,16 +4,24 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-type ResponseData = { message: string; userId?: string };
+type ResponseData = {
+  message: string;
+  userId?: string;
+};
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
-  console.log("Method:", req.method); // Debug
+  // Log incoming request for debugging
+  console.log("Signup API Hit");
+  console.log("Method:", req.method);
+  console.log("Body:", req.body);
 
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return res
+      .status(405)
+      .json({ message: `Method ${req.method} Not Allowed` });
   }
 
   try {
@@ -31,7 +39,11 @@ export default async function handler(
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
-      data: { name: name || null, email, password: hashedPassword },
+      data: {
+        name: name || null,
+        email,
+        password: hashedPassword,
+      },
     });
 
     return res.status(201).json({ message: "User created", userId: user.id });

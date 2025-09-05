@@ -1,4 +1,4 @@
-"use client"; // Add if using Next 13 app directory
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/router";
@@ -27,17 +27,21 @@ export default function SignupPage() {
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = { message: "Invalid response from server" };
+      }
 
       if (!res.ok) {
         setError(data.message || "Something went wrong");
-        setLoading(false);
         return;
       }
 
       router.push("/login");
     } catch (err) {
-      console.error(err);
+      console.error("Network error:", err);
       setError("Network error");
     } finally {
       setLoading(false);
