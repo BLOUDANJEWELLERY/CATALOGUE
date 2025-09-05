@@ -78,12 +78,14 @@ const handleDownloadPDF = async () => {
   const pages = Math.ceil(items.length / itemsPerPage);
 
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 15;
 
   // Colors
   const bgColor = "#fdf6f0";
   const accentColor = "#8b5e3c";
   const textColor = "#7a4c2e";
+  const footerColor = "#8b5e3c";
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = items.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
@@ -130,7 +132,7 @@ const handleDownloadPDF = async () => {
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
       tempDiv.style.alignItems = "center";
-      tempDiv.style.justifyContent = "flex-start"; // Start from top
+      tempDiv.style.justifyContent = "flex-start";
       tempDiv.style.border = `2px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
       tempDiv.style.padding = "10px";
@@ -143,7 +145,7 @@ const handleDownloadPDF = async () => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.width = "100%";
-        tempImg.style.maxHeight = "180px"; // Ensure image fits container
+        tempImg.style.maxHeight = "180px";
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
         tempDiv.appendChild(tempImg);
@@ -167,6 +169,37 @@ const handleDownloadPDF = async () => {
       const y = 35 + row * 120;
       doc.addImage(finalImgData, "PNG", x, y, 75, 110);
     }
+
+    // Footer with page number inside diamond
+    const footerSize = 10; // diamond width/height
+    const cx = pageWidth / 2;
+    const cy = pageHeight - 15;
+
+    doc.setFillColor(...hexToRgb(footerColor));
+    doc.setDrawColor(...hexToRgb(footerColor));
+
+    // Draw diamond
+    doc.lines(
+      [
+        [0, -footerSize / 2],
+        [footerSize / 2, 0],
+        [0, footerSize / 2],
+        [-footerSize / 2, 0],
+        [0, -footerSize / 2],
+      ],
+      cx,
+      cy
+    );
+    doc.setFillColor(...hexToRgb(footerColor));
+    doc.setDrawColor(...hexToRgb(footerColor));
+    doc.setLineWidth(0.5);
+    doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD"); // Fill & stroke
+
+    // Page number
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${pageIndex + 1}`, cx, cy + 3, { align: "center" });
 
     if (pageIndex < pages - 1) doc.addPage();
   }
