@@ -73,8 +73,6 @@ export default function Catalogue({ items }: CatalogueProps) {
   };
 
 const handleDownloadPDF = async () => {
-  if (!containerRef.current) return;
-
   const doc = new jsPDF("p", "mm", "a4");
   const itemsPerPage = 4;
   const pages = Math.ceil(items.length / itemsPerPage);
@@ -84,36 +82,65 @@ const handleDownloadPDF = async () => {
 
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
-      const itemDiv = document.getElementById(`catalogue-item-${item._id}`);
-      if (!itemDiv) continue;
 
-      // Make sure all images inside this div are loaded
-      const imgElements = itemDiv.querySelectorAll("img");
-      await Promise.all(
-        Array.from(imgElements).map(
-          (img) =>
-            new Promise<void>((resolve) => {
-              if (img.complete) resolve();
-              else img.onload = () => resolve();
-              img.crossOrigin = "anonymous"; // Important for html2canvas
-            })
-        )
-      );
+      // Load image as Image object to ensure html2canvas can capture it
+      let imgDataUrl = "";
+      if (item.image) {
+        const img = new Image();
+        img.crossOrigin = "anonymous"; // important
+        img.src = urlFor(item.image).width(400).auto("format").url();
 
-      // Capture the div
-      const canvas = await html2canvas(itemDiv, {
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: "#fdf6f0",
-        scale: 2, // optional: improve image quality
-      });
-      const imgData = canvas.toDataURL("image/png");
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(`Failed to load image for Model #${item.modelNumber}`);
+        });
+
+        // Draw image to temporary canvas to get data URL
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) ctx.drawImage(img, 0, 0);
+        imgDataUrl = canvas.toDataURL("image/png");
+      }
+
+      // Prepare a small container with image + text
+      const tempDiv = document.createElement("div");
+      tempDiv.style.width = "200px";
+      tempDiv.style.height = "250px";
+      tempDiv.style.background = "#fdf6f0";
+      tempDiv.style.display = "flex";
+      tempDiv.style.flexDirection = "column";
+      tempDiv.style.alignItems = "center";
+      tempDiv.style.justifyContent = "center";
+      tempDiv.style.border = "1px solid #ccc";
+      tempDiv.style.borderRadius = "12px";
+
+      if (imgDataUrl) {
+        const tempImg = document.createElement("img");
+        tempImg.src = imgDataUrl;
+        tempImg.style.width = "100%";
+        tempImg.style.height = "auto";
+        tempImg.style.objectFit = "contain";
+        tempDiv.appendChild(tempImg);
+      }
+
+      const tempText = document.createElement("p");
+      tempText.innerText = `Model #${item.modelNumber}`;
+      tempText.style.fontWeight = "600";
+      tempText.style.color = "#7a4c2e";
+      tempText.style.marginTop = "5px";
+      tempDiv.appendChild(tempText);
+
+      // Use html2canvas on this temporary div
+      const canvas = await html2canvas(tempDiv, { backgroundColor: "#fdf6f0", scale: 2 });
+      const finalImgData = canvas.toDataURL("image/png");
 
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const x = 20 + col * 90; // 2 columns
-      const y = 20 + row * 120; // 2 rows
-      doc.addImage(imgData, "PNG", x, y, 70, 100);
+      const x = 20 + col * 90;
+      const y = 20 + row * 120;
+      doc.addImage(finalImgData, "PNG", x, y, 70, 100);
     }
 
     if (pageIndex < pages - 1) doc.addPage();
@@ -121,6 +148,7 @@ const handleDownloadPDF = async () => {
 
   doc.save("catalogue.pdf");
 };
+
 
 
 
