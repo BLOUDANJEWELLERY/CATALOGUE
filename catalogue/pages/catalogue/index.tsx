@@ -1,7 +1,9 @@
 import { GetServerSideProps } from "next";
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useRef } from "react";
 import { client } from "../../lib/sanity.client";
 import { urlFor } from "../../lib/sanity.image";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 interface CatalogueItem {
   _id: string;
@@ -22,6 +24,7 @@ export const getServerSideProps: GetServerSideProps<CatalogueProps> = async () =
 
 export default function Catalogue({ items }: CatalogueProps) {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const itemsWithBlank: CatalogueItem[] = [
     ...items,
@@ -34,20 +37,15 @@ export default function Catalogue({ items }: CatalogueProps) {
     setUploadingId(itemId);
 
     try {
-      // 1️⃣ Upload the image
       const formData = new FormData();
       formData.append("file", file);
 
-      const uploadRes = await fetch("/api/uploadImage", {
-        method: "POST",
-        body: formData,
-      });
+      const uploadRes = await fetch("/api/uploadImage", { method: "POST", body: formData });
       const uploadData: { assetId: string; assetUrl?: string; error?: string } =
         await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
 
       if (itemId === "blank") {
-        // 2️⃣ Create new catalogue item
         const createRes = await fetch("/api/addItem", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -57,7 +55,6 @@ export default function Catalogue({ items }: CatalogueProps) {
           await createRes.json();
         if (!createRes.ok) throw new Error(createData.error || "Failed to create item");
       } else {
-        // 2️⃣ Update existing catalogue item image
         const updateRes = await fetch(`/api/updateItem/${itemId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -75,20 +72,67 @@ export default function Catalogue({ items }: CatalogueProps) {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (!containerRef.current) return;
+    const doc = new jsPDF("p", "mm", "a4");
+    const itemsPerPage = 4;
+    const pages = Math.ceil(items.length / itemsPerPage);
+
+    for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
+      const pageItems = items.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
+
+      for (let i = 0; i < pageItems.length; i++) {
+        const item = pageItems[i];
+        const itemDiv = document.getElementById(`catalogue-item-${item._id}`);
+        if (!itemDiv) continue;
+        const canvas = await html2canvas(itemDiv);
+        const imgData = canvas.toDataURL("image/png");
+
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const x = 20 + col * 90; // 2 columns
+        const y = 20 + row * 120; // 2 rows
+        doc.addImage(imgData, "PNG", x, y, 70, 100);
+      }
+
+      if (pageIndex < pages - 1) doc.addPage();
+    }
+
+    doc.save("catalogue.pdf");
+  };
+
   return (
     <div style={{ padding: "30px", background: "#fdf6f0", minHeight: "100vh" }}>
       <h1
         style={{
           textAlign: "center",
           fontSize: "2.5rem",
-          marginBottom: "40px",
+          marginBottom: "20px",
           color: "#8b5e3c",
         }}
       >
         Our Catalogue
       </h1>
 
+      <button
+        onClick={handleDownloadPDF}
+        style={{
+          display: "block",
+          margin: "0 auto 30px",
+          padding: "10px 20px",
+          fontSize: "1rem",
+          background: "#8b5e3c",
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+        }}
+      >
+        Download PDF
+      </button>
+
       <div
+        ref={containerRef}
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
@@ -98,6 +142,7 @@ export default function Catalogue({ items }: CatalogueProps) {
         {itemsWithBlank.map((item) => (
           <label htmlFor={`file-upload-${item._id}`} key={item._id} style={{ cursor: "pointer" }}>
             <div
+              id={`catalogue-item-${item._id}`}
               style={{
                 background: "#fffaf5",
                 borderRadius: "16px",
@@ -170,7 +215,7 @@ export default function Catalogue({ items }: CatalogueProps) {
                       marginTop: "10px",
                     }}
                   >
-                    B{item.modelNumber}
+                    Model #{item.modelNumber}
                   </p>
                 </>
               )}
