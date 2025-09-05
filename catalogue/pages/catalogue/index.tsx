@@ -1,17 +1,12 @@
 import { GetServerSideProps } from "next";
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import { client } from "../../lib/sanity.client";
 import { urlFor } from "../../lib/sanity.image";
 
 interface CatalogueItem {
   _id: string;
   modelNumber: number;
-  image:
-    | {
-        _type: "image";
-        asset: { _ref: string; _type: "reference" };
-      }
-    | null;
+  image: { _type: "image"; asset: { _ref: string; _type: "reference" } } | null;
 }
 
 interface CatalogueProps {
@@ -21,11 +16,8 @@ interface CatalogueProps {
 export const getServerSideProps: GetServerSideProps<CatalogueProps> =
   async () => {
     const items: CatalogueItem[] = await client.fetch(
-      `*[_type == "catalogueItem"] | order(modelNumber asc) {
-        _id, modelNumber, image
-      }`
+      `*[_type == "catalogueItem"] | order(modelNumber asc) { _id, modelNumber, image }`
     );
-
     return { props: { items } };
   };
 
@@ -37,7 +29,7 @@ export default function Catalogue({ items }: CatalogueProps) {
     { _id: "blank", modelNumber: 0, image: null },
   ];
 
-  const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAddNewItem = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     setUploading(true);
 
@@ -46,26 +38,28 @@ export default function Catalogue({ items }: CatalogueProps) {
     formData.append("file", file);
 
     try {
-      // Upload image server-side
+      // Upload image
       const uploadRes = await fetch("/api/catalogue/uploadImage", {
         method: "POST",
         body: formData,
       });
-      const uploadData = await uploadRes.json();
+      const uploadData: { assetId: string; assetUrl?: string; error?: string } =
+        await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
 
-      // Create catalogue item with the uploaded asset
+      // Create catalogue item
       const createRes = await fetch("/api/catalogue/addItem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assetId: uploadData.assetId }),
       });
-      const createData = await createRes.json();
+      const createData: { success?: true; doc?: CatalogueItem; error?: string } =
+        await createRes.json();
       if (!createRes.ok) throw new Error(createData.error || "Failed to create item");
 
       window.location.reload();
-    } catch (err: any) {
-      console.error("Failed to add item:", err);
+    } catch (error) {
+      console.error("Failed to add item:", error);
       setUploading(false);
     }
   };
@@ -92,7 +86,7 @@ export default function Catalogue({ items }: CatalogueProps) {
       >
         {itemsWithBlank.map((item) =>
           item._id === "blank" ? (
-            <label htmlFor="file-upload" key="blank">
+            <label htmlFor="file-upload" key="item._id">
               <div
                 style={{
                   background: "#fffaf5",
@@ -136,18 +130,20 @@ export default function Catalogue({ items }: CatalogueProps) {
                   background: "#f5f0eb",
                 }}
               >
-                <img
-                  src={urlFor(item.image!).width(400).url()}
-                  alt={`Model ${item.modelNumber}`}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
-                  }}
-                />
+                {item.image && (
+                  <img
+                    src={urlFor(item.image).width(400).url()}
+                    alt={`Model ${item.modelNumber}`}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
+                  />
+                )}
               </div>
               <p
                 style={{

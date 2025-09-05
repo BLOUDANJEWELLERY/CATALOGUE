@@ -1,32 +1,39 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { client } from "../../lib/sanity.client";
+import formidable, { File } from "formidable";
+import fs from "fs";
 
-interface AddItemBody {
-  assetId: string;
-}
+export const config = { api: { bodyParser: false } };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+type UploadResponse = { assetId: string; assetUrl: string } | { error: string };
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<UploadResponse>
+) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  try {
-    const { assetId } = req.body as AddItemBody;
-    if (!assetId) return res.status(400).json({ error: "Missing assetId" });
+  const form = formidable({ multiples: false });
 
-    const maxModel: number | null = await client.fetch(
-      `*[_type=="catalogueItem"] | order(modelNumber desc)[0].modelNumber`
-    );
-    const nextModel = (maxModel || 0) + 1;
+  form.parse(req, async (err, fields, files) => {
+    if (err) return res.status(500).json({ error: "Error parsing file upload" });
 
-    const newItem = {
-      _type: "catalogueItem",
-      modelNumber: nextModel,
-      image: { _type: "image", asset: { _type: "reference", _ref: assetId } },
-    };
+    const uploadedFile = Array.isArray(files.file)
+      ? (files.file[0] as File)
+      : (files.file as File | undefined);
 
-    const createdDoc = await client.create(newItem);
-    res.status(201).json({ success: true, doc: createdDoc });
-  } catch (err: any) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create catalogue item" });
-  }
+    if (!uploadedFile || !uploadedFile.filepath)
+      return res.status(400).json({ error: "No file provided" });
+
+    const fileStream = fs.createReadStream(uploadedFile.filepath);
+
+    try {
+      const asset = await client.assets.upload("image", fileStream, {
+        filename: uploadedFile.originalFilename || "uploaded.png",
+      });
+      res.status(200).json({ assetId: asset._id, assetUrl: asset.url });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
 }
