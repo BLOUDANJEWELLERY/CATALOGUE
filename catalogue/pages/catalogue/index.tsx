@@ -82,29 +82,20 @@ const handleDownloadPDF = async () => {
 
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
-
-      // Load image as Image object to ensure html2canvas can capture it
       let imgDataUrl = "";
+
       if (item.image) {
-        const img = new Image();
-        img.crossOrigin = "anonymous"; // important
-        img.src = urlFor(item.image).width(400).auto("format").url();
-
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(`Failed to load image for Model #${item.modelNumber}`);
+        const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(urlFor(item.image).width(400).url())}`;
+        const res = await fetch(proxyUrl);
+        const blob = await res.blob();
+        imgDataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
         });
-
-        // Draw image to temporary canvas to get data URL
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        if (ctx) ctx.drawImage(img, 0, 0);
-        imgDataUrl = canvas.toDataURL("image/png");
       }
 
-      // Prepare a small container with image + text
+      // Prepare a small div for rendering
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "200px";
       tempDiv.style.height = "250px";
@@ -132,7 +123,6 @@ const handleDownloadPDF = async () => {
       tempText.style.marginTop = "5px";
       tempDiv.appendChild(tempText);
 
-      // Use html2canvas on this temporary div
       const canvas = await html2canvas(tempDiv, { backgroundColor: "#fdf6f0", scale: 2 });
       const finalImgData = canvas.toDataURL("image/png");
 
@@ -148,6 +138,7 @@ const handleDownloadPDF = async () => {
 
   doc.save("catalogue.pdf");
 };
+
 
 
 
