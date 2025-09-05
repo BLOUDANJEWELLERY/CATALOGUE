@@ -34,11 +34,12 @@ export default function Catalogue({ items }: CatalogueProps) {
     setUploading(true);
 
     const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
 
     try {
-      // Upload image
+      // 1️⃣ Upload the image
+      const formData = new FormData();
+      formData.append("file", file);
+
       const uploadRes = await fetch("/api/uploadImage", {
         method: "POST",
         body: formData,
@@ -47,7 +48,7 @@ export default function Catalogue({ items }: CatalogueProps) {
         await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
 
-      // Create catalogue item
+      // 2️⃣ Create catalogue item with uploaded asset ID
       const createRes = await fetch("/api/addItem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,7 +87,7 @@ export default function Catalogue({ items }: CatalogueProps) {
       >
         {itemsWithBlank.map((item) =>
           item._id === "blank" ? (
-            <label htmlFor="file-upload" key="item._id">
+            <label htmlFor="file-upload" key={item._id}>
               <div
                 style={{
                   background: "#fffaf5",
