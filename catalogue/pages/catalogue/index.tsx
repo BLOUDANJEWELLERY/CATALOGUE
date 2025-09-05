@@ -78,10 +78,9 @@ const handleDownloadPDF = async () => {
   const pages = Math.ceil(items.length / itemsPerPage);
 
   const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 15;
 
-  // Define colors
+  // Colors
   const bgColor = "#fdf6f0";
   const accentColor = "#8b5e3c";
   const textColor = "#7a4c2e";
@@ -89,9 +88,9 @@ const handleDownloadPDF = async () => {
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = items.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
 
-    // Add header for each page
+    // Header
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, 0, pageWidth, 25, "F"); // Header background
+    doc.rect(0, 0, pageWidth, 25, "F");
 
     doc.setFontSize(20);
     doc.setTextColor(255, 255, 255);
@@ -123,7 +122,7 @@ const handleDownloadPDF = async () => {
         }
       }
 
-      // Offscreen temp div
+      // Offscreen div
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "200px";
       tempDiv.style.height = "250px";
@@ -131,7 +130,7 @@ const handleDownloadPDF = async () => {
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
       tempDiv.style.alignItems = "center";
-      tempDiv.style.justifyContent = "center";
+      tempDiv.style.justifyContent = "flex-start"; // Start from top
       tempDiv.style.border = `2px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
       tempDiv.style.padding = "10px";
@@ -144,7 +143,7 @@ const handleDownloadPDF = async () => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.width = "100%";
-        tempImg.style.height = "auto";
+        tempImg.style.maxHeight = "180px"; // Ensure image fits container
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
         tempDiv.appendChild(tempImg);
@@ -175,7 +174,7 @@ const handleDownloadPDF = async () => {
   doc.save("BLOUDAN_BANGLES_CATALOGUE.pdf");
 };
 
-// Helper to convert hex to rgb array for jsPDF
+// Helper function
 function hexToRgb(hex: string): [number, number, number] {
   const match = hex.replace("#", "").match(/.{1,2}/g);
   if (!match) return [0, 0, 0];
