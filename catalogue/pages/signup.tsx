@@ -15,46 +15,46 @@ export default function SignupPage() {
   const validateEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
 
-  const handleSubmit = async () => {
-    setError("");
+ const handleSubmit = async () => {
+  setError("");
 
-    if (!email.trim() || !password || !confirmPassword) {
-      return setError("All fields are required");
-    }
-
-    if (!validateEmail(email)) {
-      return setError("Enter a valid email address");
-    }
-
-    if (password !== confirmPassword) {
-      return setError("Passwords do not match");
-    }
-
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) throw data;
-
-      router.push("/login");
-  } catch (err: unknown) {
-  if (typeof err === "object" && err !== null && "error" in err) {
-    setError((err as { error?: string }).error || "Signup failed, try again");
-  } else {
-    setError("Signup failed, try again");
+  if (!email.trim() || !password || !confirmPassword) {
+    return setError("All fields are required");
   }
-} finally {
-  setLoading(false);
-}
 
-  };
+  if (!validateEmail(email)) {
+    return setError("Enter a valid email address");
+  }
+
+  if (password !== confirmPassword) {
+    return setError("Passwords do not match");
+  }
+
+  setLoading(true);
+
+  try {
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim(), password }),
+    });
+
+    const data: { message?: string; userId?: string; error?: string } = await res.json();
+
+    if (!res.ok) throw data;
+
+    router.push("/login");
+  } catch (err: unknown) {
+    if (typeof err === "object" && err !== null && "error" in err) {
+      setError((err as { error?: string }).error || "Signup failed, try again");
+    } else {
+      setError("Signup failed, try again");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
