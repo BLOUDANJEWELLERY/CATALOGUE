@@ -2,6 +2,12 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
+type SignupResponse = {
+  message?: string;
+  userId?: string;
+  error?: string;
+};
+
 export default function SignupPage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
@@ -33,12 +39,18 @@ export default function SignupPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ firstName, lastName, email, password }),
       });
-      const data = await res.json();
-      if (!res.ok) throw data;
+
+      const data: SignupResponse = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Signup failed, try again");
+        return;
+      }
 
       router.push("/login");
-    } catch (err: any) {
-      setError(err?.error || "Signup failed, try again");
+    } catch (err) {
+      console.error("Signup error:", err);
+      setError("Signup failed, try again");
     } finally {
       setLoading(false);
     }
