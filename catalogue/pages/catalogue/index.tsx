@@ -13,27 +13,25 @@ interface CatalogueProps {
   items: CatalogueItem[];
 }
 
-export const getServerSideProps: GetServerSideProps<CatalogueProps> =
-  async () => {
-    const items: CatalogueItem[] = await client.fetch(
-      `*[_type == "catalogueItem"] | order(modelNumber asc) { _id, modelNumber, image }`
-    );
-    return { props: { items } };
-  };
+export const getServerSideProps: GetServerSideProps<CatalogueProps> = async () => {
+  const items: CatalogueItem[] = await client.fetch(
+    `*[_type == "catalogueItem"] | order(modelNumber asc) { _id, modelNumber, image }`
+  );
+  return { props: { items } };
+};
 
 export default function Catalogue({ items }: CatalogueProps) {
-  const [uploading, setUploading] = useState(false);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   const itemsWithBlank: CatalogueItem[] = [
     ...items,
     { _id: "blank", modelNumber: 0, image: null },
   ];
 
-  const handleAddNewItem = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, itemId: string) => {
     if (!e.target.files?.length) return;
-    setUploading(true);
-
     const file = e.target.files[0];
+    setUploadingId(itemId);
 
     try {
       // 1️⃣ Upload the image
@@ -48,20 +46,32 @@ export default function Catalogue({ items }: CatalogueProps) {
         await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
 
-      // 2️⃣ Create catalogue item with uploaded asset ID
-      const createRes = await fetch("/api/addItem", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assetId: uploadData.assetId }),
-      });
-      const createData: { success?: true; doc?: CatalogueItem; error?: string } =
-        await createRes.json();
-      if (!createRes.ok) throw new Error(createData.error || "Failed to create item");
+      if (itemId === "blank") {
+        // 2️⃣ Create new catalogue item
+        const createRes = await fetch("/api/addItem", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assetId: uploadData.assetId }),
+        });
+        const createData: { success?: true; doc?: CatalogueItem; error?: string } =
+          await createRes.json();
+        if (!createRes.ok) throw new Error(createData.error || "Failed to create item");
+      } else {
+        // 2️⃣ Update existing catalogue item image
+        const updateRes = await fetch(`/api/updateItem/${itemId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assetId: uploadData.assetId }),
+        });
+        const updateData: { success?: true; doc?: CatalogueItem; error?: string } =
+          await updateRes.json();
+        if (!updateRes.ok) throw new Error(updateData.error || "Failed to update item");
+      }
 
       window.location.reload();
     } catch (error) {
-      console.error("Failed to add item:", error);
-      setUploading(false);
+      console.error("Failed to add/update item:", error);
+      setUploadingId(null);
     }
   };
 
@@ -85,33 +95,9 @@ export default function Catalogue({ items }: CatalogueProps) {
           gap: "20px",
         }}
       >
-        {itemsWithBlank.map((item) =>
-          item._id === "blank" ? (
-            <label htmlFor="file-upload" key={item._id}>
-              <div
-                style={{
-                  background: "#fffaf5",
-                  borderRadius: "16px",
-                  padding: "40px 20px",
-                  boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-                  textAlign: "center",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  fontSize: "1.2rem",
-                  color: "#7a4c2e",
-                  fontWeight: 600,
-                  minHeight: "250px",
-                }}
-              >
-                {uploading ? "Uploading..." : "+ Add New Item"}
-              </div>
-            </label>
-          ) : (
+        {itemsWithBlank.map((item) => (
+          <label htmlFor={`file-upload-${item._id}`} key={item._id} style={{ cursor: "pointer" }}>
             <div
-              key={item._id}
               style={{
                 background: "#fffaf5",
                 borderRadius: "16px",
@@ -119,54 +105,85 @@ export default function Catalogue({ items }: CatalogueProps) {
                 boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
                 textAlign: "center",
                 transition: "transform 0.3s",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "250px",
               }}
             >
-              <div
-                style={{
-                  width: "100%",
-                  paddingTop: "100%",
-                  position: "relative",
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  background: "#f5f0eb",
-                }}
-              >
-                {item.image && (
-                  <img
-                    src={urlFor(item.image).width(400).url()}
-                    alt={`Model ${item.modelNumber}`}
+              {item._id === "blank" ? (
+                <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e" }}>
+                  {uploadingId === "blank" ? "Uploading..." : "+ Add New Item"}
+                </span>
+              ) : (
+                <>
+                  <div
                     style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
                       width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
+                      paddingTop: "100%",
+                      position: "relative",
+                      borderRadius: "12px",
+                      overflow: "hidden",
+                      background: "#f5f0eb",
                     }}
-                  />
-                )}
-              </div>
-              <p
-                style={{
-                  fontSize: "1.2rem",
-                  fontWeight: 600,
-                  color: "#7a4c2e",
-                  marginTop: "10px",
-                }}
-              >
-                Model #{item.modelNumber}
-              </p>
+                  >
+                    {item.image && (
+                      <img
+                        src={urlFor(item.image).width(400).url()}
+                        alt={`Model ${item.modelNumber}`}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                        }}
+                      />
+                    )}
+                    {uploadingId === item._id && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          background: "rgba(255,255,255,0.6)",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          fontWeight: 600,
+                          color: "#7a4c2e",
+                        }}
+                      >
+                        Uploading...
+                      </div>
+                    )}
+                  </div>
+                  <p
+                    style={{
+                      fontSize: "1.2rem",
+                      fontWeight: 600,
+                      color: "#7a4c2e",
+                      marginTop: "10px",
+                    }}
+                  >
+                    Model #{item.modelNumber}
+                  </p>
+                </>
+              )}
             </div>
-          )
-        )}
+            <input
+              id={`file-upload-${item._id}`}
+              type="file"
+              style={{ display: "none" }}
+              onChange={(e) => handleFileChange(e, item._id)}
+            />
+          </label>
+        ))}
       </div>
-
-      <input
-        id="file-upload"
-        type="file"
-        style={{ display: "none" }}
-        onChange={handleAddNewItem}
-      />
     </div>
   );
 }
