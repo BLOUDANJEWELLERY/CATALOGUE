@@ -1,21 +1,24 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import type { File } from "multer"; // for file typing
 import multer from "multer";
 import { client } from "../../lib/sanity.client";
 
 // Multer in-memory storage
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Helper for middleware
-const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: Function) =>
+// Helper to run middleware with proper types
+const runMiddleware = (
+  req: NextApiRequest,
+  res: NextApiResponse,
+  fn: (req: NextApiRequest, res: NextApiResponse, next: (err?: unknown) => void) => void
+) =>
   new Promise<void>((resolve, reject) => {
-    fn(req, res, (result: any) => {
-      if (result instanceof Error) reject(result);
+    fn(req, res, (err?: unknown) => {
+      if (err) reject(err);
       else resolve();
     });
   });
 
-// Extend request type
+// Extend request type to include file
 interface NextApiRequestWithFile extends NextApiRequest {
   file?: Express.Multer.File;
 }
@@ -28,16 +31,21 @@ export default async function handler(
 ) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
+  // Run multer middleware
   await runMiddleware(req, res, upload.single("file"));
 
   if (!req.file) return res.status(400).json({ error: "File missing" });
 
   try {
+    // Upload to Sanity
     const data = await client.assets.upload("image", req.file.buffer, {
       filename: req.file.originalname,
     });
 
-    const maxNumber: number = await client.fetch(`max(*[_type == "catalogueItem"].modelNumber)`);
+    // Get max modelNumber
+    const maxNumber: number = await client.fetch(
+      `max(*[_type == "catalogueItem"].modelNumber)`
+    );
 
     const newItem = {
       _type: "catalogueItem",
