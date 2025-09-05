@@ -72,6 +72,23 @@ export default function Catalogue({ items }: CatalogueProps) {
     }
   };
 
+
+
+// Inside your component
+const [isLoading, setIsLoading] = useState(false);
+
+const handleDownloadPDFWithLoading = async () => {
+  setIsLoading(true);
+  try {
+    await handleDownloadPDF(); // your existing PDF function
+  } catch (err) {
+    console.error("Error generating PDF:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
 const handleDownloadPDF = async () => {
   const doc = new jsPDF("p", "mm", "a4");
   const itemsPerPage = 4;
@@ -226,23 +243,25 @@ function hexToRgb(hex: string): [number, number, number] {
       >
         Our Catalogue
       </h1>
+<button
+  onClick={handleDownloadPDFWithLoading}
+  disabled={isLoading}
+  style={{
+    display: "block",
+    margin: "0 auto 30px",
+    padding: "10px 20px",
+    fontSize: "1rem",
+    background: isLoading ? "#a67c5c" : "#8b5e3c", // slightly lighter while loading
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    cursor: isLoading ? "not-allowed" : "pointer",
+    transition: "background 0.3s",
+  }}
+>
+  {isLoading ? "Generating PDF..." : "Download PDF"}
+</button>
 
-      <button
-        onClick={handleDownloadPDF}
-        style={{
-          display: "block",
-          margin: "0 auto 30px",
-          padding: "10px 20px",
-          fontSize: "1rem",
-          background: "#8b5e3c",
-          color: "#fff",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-        }}
-      >
-        Download PDF
-      </button>
 
       <div
         ref={containerRef}
