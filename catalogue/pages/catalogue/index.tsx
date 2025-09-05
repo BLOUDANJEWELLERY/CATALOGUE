@@ -6,49 +6,56 @@ import { urlFor } from "../../lib/sanity.image";
 interface CatalogueItem {
   _id: string;
   modelNumber: number;
-  image: {
-    _type: "image";
-    asset: { _ref: string; _type: "reference" };
-  } | null; // null for blank item
+  image:
+    | {
+        _type: "image";
+        asset: { _ref: string; _type: "reference" };
+      }
+    | null;
 }
 
 interface CatalogueProps {
   items: CatalogueItem[];
 }
 
-export const getServerSideProps: GetServerSideProps<CatalogueProps> = async () => {
-  const items: CatalogueItem[] = await client.fetch(
-    `*[_type == "catalogueItem"] | order(modelNumber asc) {
-      _id, modelNumber, image
-    }`
-  );
+export const getServerSideProps: GetServerSideProps<CatalogueProps> =
+  async () => {
+    const items: CatalogueItem[] = await client.fetch(
+      `*[_type == "catalogueItem"] | order(modelNumber asc) {
+        _id, modelNumber, image
+      }`
+    );
 
-  return { props: { items } };
-};
+    return { props: { items } };
+  };
 
 export default function Catalogue({ items }: CatalogueProps) {
   const [uploading, setUploading] = useState(false);
 
-  // Add one blank card at the end
-  const itemsWithBlank: CatalogueItem[] = [...items, { _id: "blank", modelNumber: 0, image: null }];
+  // Add a blank card at the end
+  const itemsWithBlank: CatalogueItem[] = [
+    ...items,
+    { _id: "blank", modelNumber: 0, image: null },
+  ];
 
- const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (!e.target.files?.length) return;
-  setUploading(true);
+  const handleAddNewItem = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!e.target.files?.length) return;
+    setUploading(true);
 
-  const file = e.target.files[0];
-  const formData = new FormData();
-  formData.append("file", file);
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
 
-  try {
-    await fetch("/api/addItem", { method: "POST", body: formData });
-    window.location.reload();
-  } catch (err) {
-    console.error(err);
-    setUploading(false);
-  }
-};
-
+    try {
+      await fetch("/api/addItem", { method: "POST", body: formData });
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      setUploading(false);
+    }
+  };
 
   return (
     <div style={{ padding: "30px", background: "#fdf6f0", minHeight: "100vh" }}>
@@ -66,9 +73,8 @@ export default function Catalogue({ items }: CatalogueProps) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)", // 2 items per row
+          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
           gap: "20px",
-          justifyItems: "center",
         }}
       >
         {itemsWithBlank.map((item) =>
@@ -89,6 +95,7 @@ export default function Catalogue({ items }: CatalogueProps) {
                   fontSize: "1.2rem",
                   color: "#7a4c2e",
                   fontWeight: 600,
+                  minHeight: "250px",
                 }}
               >
                 {uploading ? "Uploading..." : "+ Add New Item"}
@@ -100,24 +107,19 @@ export default function Catalogue({ items }: CatalogueProps) {
               style={{
                 background: "#fffaf5",
                 borderRadius: "16px",
-                padding: "15px",
+                padding: "10px",
                 boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
                 textAlign: "center",
-                width: "100%",
-                maxWidth: "350px",
                 transition: "transform 0.3s",
               }}
             >
               <div
                 style={{
                   width: "100%",
-                  height: "250px",
-                  overflow: "hidden",
+                  paddingTop: "100%", // Square container
+                  position: "relative",
                   borderRadius: "12px",
-                  marginBottom: "15px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
+                  overflow: "hidden",
                   background: "#f5f0eb",
                 }}
               >
@@ -125,6 +127,9 @@ export default function Catalogue({ items }: CatalogueProps) {
                   src={urlFor(item.image!).width(400).url()}
                   alt={`Model ${item.modelNumber}`}
                   style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
                     width: "100%",
                     height: "100%",
                     objectFit: "contain",
@@ -134,8 +139,9 @@ export default function Catalogue({ items }: CatalogueProps) {
               <p
                 style={{
                   fontSize: "1.2rem",
-                  fontWeight: "600",
+                  fontWeight: 600,
                   color: "#7a4c2e",
+                  marginTop: "10px",
                 }}
               >
                 Model #{item.modelNumber}
@@ -145,7 +151,6 @@ export default function Catalogue({ items }: CatalogueProps) {
         )}
       </div>
 
-      {/* Hidden file input */}
       <input
         id="file-upload"
         type="file"
