@@ -1,50 +1,63 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-type ResponseData = {
+type SignupResponse = {
   message: string;
   userId?: string;
+  error?: string;
 };
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData>
+  res: NextApiResponse<SignupResponse>
 ) {
   console.log("Signup API Hit. Method:", req.method);
   console.log("Body:", req.body);
 
   if (req.method !== "POST") {
-    return res.status(405).json({ message: `Method ${req.method} Not Allowed` });
+    return res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
 
+  const { name, email, password } = req.body;
+
+  // ---------------- Validation ----------------
+  if (!email?.trim() || !password) {
+    return res.status(400).json({ error: "Name, email, and password are required" });
+  }
+
+  const trimmedName = name?.trim() || null;
+
   try {
-    const { name, email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
-
+    // Check if email already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ error: "Email already exists" });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
+    // Create user
+    const user: User = await prisma.user.create({
       data: {
-        name: name || null,
-        email,
+        name: trimmedName,
+        email: email.trim(),
         password: hashedPassword,
       },
     });
 
-    return res.status(201).json({ message: "User created", userId: user.id });
-  } catch (err) {
+    return res.status(201).json({ message: "Signup successful", userId: user.id });
+  } catch (err: unknown) {
     console.error("Signup error:", err);
-    return res.status(500).json({ message: "Internal server error" });
+
+    let errorMessage = "Internal server error";
+    if ((err as Prisma.PrismaClientKnownRequestError).code === "P2002") {
+      errorMessage = "Email already exists";
+    }
+
+    return res.status(500).json({ error: errorMessage });
   }
 }

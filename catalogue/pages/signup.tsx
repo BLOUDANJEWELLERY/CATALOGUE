@@ -31,11 +31,11 @@ export default function SignupPage() {
       try {
         data = await res.json();
       } catch {
-        data = { message: "Invalid response from server" };
+        data = { error: "Invalid response from server" };
       }
 
       if (!res.ok) {
-        setError(data.message || "Something went wrong");
+        setError(data.error || "Something went wrong");
         return;
       }
 
