@@ -5,11 +5,11 @@ import { client } from "../../lib/sanity.client";
 // Multer in-memory storage
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Helper to run middleware with proper types
+// Middleware runner
 const runMiddleware = (
   req: NextApiRequest,
   res: NextApiResponse,
-  fn: (req: NextApiRequest, res: NextApiResponse, next: (err?: unknown) => void) => void
+  fn: any // CAST TO any to bypass TS mismatch
 ) =>
   new Promise<void>((resolve, reject) => {
     fn(req, res, (err?: unknown) => {
@@ -18,7 +18,7 @@ const runMiddleware = (
     });
   });
 
-// Extend request type to include file
+// Extend request to include Multer file
 interface NextApiRequestWithFile extends NextApiRequest {
   file?: Express.Multer.File;
 }
@@ -29,15 +29,17 @@ export default async function handler(
   req: NextApiRequestWithFile,
   res: NextApiResponse
 ) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-  // Run multer middleware
-  await runMiddleware(req, res, upload.single("file"));
+  // Run Multer middleware (cast to any)
+  await runMiddleware(req, res, upload.single("file") as any);
 
   if (!req.file) return res.status(400).json({ error: "File missing" });
 
   try {
-    // Upload to Sanity
+    // Upload image to Sanity
     const data = await client.assets.upload("image", req.file.buffer, {
       filename: req.file.originalname,
     });
