@@ -1,4 +1,5 @@
 import { GetServerSideProps } from "next";
+import { useState } from "react";
 import { client } from "../../lib/sanity.client";
 import { urlFor } from "../../lib/sanity.image";
 
@@ -8,7 +9,7 @@ interface CatalogueItem {
   image: {
     _type: "image";
     asset: { _ref: string; _type: "reference" };
-  };
+  } | null; // null for blank item
 }
 
 interface CatalogueProps {
@@ -26,8 +27,36 @@ export const getServerSideProps: GetServerSideProps<CatalogueProps> = async () =
 };
 
 export default function Catalogue({ items }: CatalogueProps) {
+  const [uploading, setUploading] = useState(false);
+
   // Add one blank card at the end
-  const itemsWithBlank = [...items, { _id: "blank", modelNumber: 0, image: null }];
+  const itemsWithBlank: CatalogueItem[] = [...items, { _id: "blank", modelNumber: 0, image: null }];
+
+  const handleAddNewItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    setUploading(true);
+
+    const file = e.target.files[0];
+
+    try {
+      // Upload to Sanity
+      const data = await client.assets.upload("image", file, { filename: file.name });
+      const assetId = data._id; // Sanity asset ID
+
+      // Create new catalogue document
+      await fetch("/api/addItem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: assetId }),
+      });
+
+      // Reload page to show new item
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      setUploading(false);
+    }
+  };
 
   return (
     <div style={{ padding: "30px", background: "#fdf6f0", minHeight: "100vh" }}>
@@ -45,33 +74,34 @@ export default function Catalogue({ items }: CatalogueProps) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)", // exactly 2 per row
+          gridTemplateColumns: "repeat(2, 1fr)", // 2 items per row
           gap: "20px",
           justifyItems: "center",
         }}
       >
         {itemsWithBlank.map((item) =>
           item._id === "blank" ? (
-            <div
-              key="blank"
-              style={{
-                background: "#fffaf5",
-                borderRadius: "16px",
-                padding: "40px 20px",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-                textAlign: "center",
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                fontSize: "1.2rem",
-                color: "#7a4c2e",
-                fontWeight: 600,
-              }}
-            >
-              + Add New Item
-            </div>
+            <label htmlFor="file-upload" key="blank">
+              <div
+                style={{
+                  background: "#fffaf5",
+                  borderRadius: "16px",
+                  padding: "40px 20px",
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  fontSize: "1.2rem",
+                  color: "#7a4c2e",
+                  fontWeight: 600,
+                }}
+              >
+                {uploading ? "Uploading..." : "+ Add New Item"}
+              </div>
+            </label>
           ) : (
             <div
               key={item._id}
@@ -89,7 +119,7 @@ export default function Catalogue({ items }: CatalogueProps) {
               <div
                 style={{
                   width: "100%",
-                  height: "250px", // fixed container
+                  height: "250px",
                   overflow: "hidden",
                   borderRadius: "12px",
                   marginBottom: "15px",
@@ -100,12 +130,12 @@ export default function Catalogue({ items }: CatalogueProps) {
                 }}
               >
                 <img
-                  src={urlFor(item.image).width(400).url()}
+                  src={urlFor(item.image!).width(400).url()}
                   alt={`Model ${item.modelNumber}`}
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "contain", // fit without cropping
+                    objectFit: "contain",
                   }}
                 />
               </div>
@@ -122,6 +152,14 @@ export default function Catalogue({ items }: CatalogueProps) {
           )
         )}
       </div>
+
+      {/* Hidden file input */}
+      <input
+        id="file-upload"
+        type="file"
+        style={{ display: "none" }}
+        onChange={handleAddNewItem}
+      />
     </div>
   );
 }
