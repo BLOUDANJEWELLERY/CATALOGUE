@@ -39,7 +39,7 @@ export default function Catalogue({ items }: CatalogueProps) {
 
     try {
       // Upload image
-      const uploadRes = await fetch("/api/catalogue/uploadImage", {
+      const uploadRes = await fetch("/api/uploadImage", {
         method: "POST",
         body: formData,
       });
@@ -48,7 +48,7 @@ export default function Catalogue({ items }: CatalogueProps) {
       if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
 
       // Create catalogue item
-      const createRes = await fetch("/api/catalogue/addItem", {
+      const createRes = await fetch("/api/addItem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assetId: uploadData.assetId }),
