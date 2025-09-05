@@ -44,11 +44,16 @@ export default function SignupPage() {
       if (!res.ok) throw data;
 
       router.push("/login");
-    } catch (err: any) {
-      setError(err?.error || "Signup failed, try again");
-    } finally {
-      setLoading(false);
-    }
+  } catch (err: unknown) {
+  if (typeof err === "object" && err !== null && "error" in err) {
+    setError((err as { error?: string }).error || "Signup failed, try again");
+  } else {
+    setError("Signup failed, try again");
+  }
+} finally {
+  setLoading(false);
+}
+
   };
 
   return (
