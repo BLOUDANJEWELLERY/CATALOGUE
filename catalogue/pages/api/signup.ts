@@ -18,29 +18,34 @@ export default async function handler(
   console.log("Body:", req.body);
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: `Method ${req.method} not allowed` });
+    return res.status(405).json({
+      message: `Method ${req.method} not allowed`,
+      error: `Method ${req.method} not allowed`
+    });
   }
 
   const { name, email, password } = req.body;
 
-  // ---------------- Validation ----------------
   if (!email?.trim() || !password) {
-    return res.status(400).json({ error: "Name, email, and password are required" });
+    return res.status(400).json({
+      message: "Name, email, and password are required",
+      error: "Name, email, and password are required"
+    });
   }
 
   const trimmedName = name?.trim() || null;
 
   try {
-    // Check if email already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ error: "Email already exists" });
+      return res.status(400).json({
+        message: "Email already exists",
+        error: "Email already exists"
+      });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
     const user: User = await prisma.user.create({
       data: {
         name: trimmedName,
@@ -49,7 +54,10 @@ export default async function handler(
       },
     });
 
-    return res.status(201).json({ message: "Signup successful", userId: user.id });
+    return res.status(201).json({
+      message: "Signup successful",
+      userId: user.id
+    });
   } catch (err: unknown) {
     console.error("Signup error:", err);
 
@@ -58,6 +66,9 @@ export default async function handler(
       errorMessage = "Email already exists";
     }
 
-    return res.status(500).json({ error: errorMessage });
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorMessage
+    });
   }
 }
