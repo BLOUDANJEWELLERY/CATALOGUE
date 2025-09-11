@@ -70,6 +70,7 @@ const containerRef = useRef<HTMLDivElement>(null);
 // Auto Model Number for Add New Item
 const nextModelNumber = items.length > 0 ? Math.max(...items.map(i => i.modelNumber)) + 1 : 1;
 
+const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Both");
 // Handle checkbox selection
 const handleSizeChange = (size: "Adult" | "Kids") => {
   setNewItemSizes((prev) =>
