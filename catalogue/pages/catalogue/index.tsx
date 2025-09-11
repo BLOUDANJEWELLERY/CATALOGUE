@@ -275,7 +275,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
-            urlFor(item.image).width(1000).auto("format").url()
+            urlFor(item.image).width(3000).auto("format").url()
           )}`;
           const res = await fetch(proxyUrl);
           const blob = await res.blob();
@@ -292,7 +292,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Build offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
-      tempDiv.style.height = "340px"; // slightly reduced
+      tempDiv.style.height = "335px"; // slightly reduced
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -334,7 +334,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       weightsContainer.style.width = "100%";
       weightsContainer.style.display = "flex";
       weightsContainer.style.justifyContent = "center";
-      weightsContainer.style.marginTop = "4px";
+      weightsContainer.style.marginTop = "6px";
       tempDiv.appendChild(weightsContainer);
 
       const addWeightText = (label: string, weight?: number) => {
@@ -366,7 +366,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Render card
       const canvas = await html2canvas(tempDiv, {
         backgroundColor: cardBg,
-        scale: 6,
+        scale: 10,
       });
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
