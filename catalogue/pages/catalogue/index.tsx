@@ -630,10 +630,15 @@ return (
       {(editImagePreview || currentEditImageUrl) && (
         <div style={{ marginBottom: "10px" }}>
           <img
-            src={editImagePreview || currentEditImageUrl}
-            alt="Preview"
-            style={{ width: "100%", maxHeight: "200px", objectFit: "contain", borderRadius: "12px" }}
-          />
+  src={editImagePreview || currentEditImageUrl || ""}
+  alt="Preview"
+  style={{
+    width: "100%",
+    maxHeight: "200px",
+    objectFit: "contain",
+    borderRadius: "12px",
+  }}
+/>
         </div>
       )}
 
