@@ -312,7 +312,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         tempImg.style.maxHeight = "243px"; // slightly smaller to fit tighter
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "10px";
-        tempImg.style.marginBottom = "1px"; // closer to model no
+        tempImg.style.marginBottom = "0px"; // closer to model no
         tempDiv.appendChild(tempImg);
       }
 
@@ -322,7 +322,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.style.fontWeight = "900";
       modelText.style.color = accentColor;
       modelText.style.marginTop = "0"; // tight to image
-      modelText.style.fontSize = "34px";
+      modelText.style.fontSize = "38px";
       modelText.style.textAlign = "center";
       tempDiv.appendChild(modelText);
 
