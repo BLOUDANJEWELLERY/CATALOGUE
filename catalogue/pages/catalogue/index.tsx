@@ -290,14 +290,14 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Offscreen product card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "280px";
-      tempDiv.style.height = "350px"; // shorter card height
+      tempDiv.style.height = "340px"; // shorter card height
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
       tempDiv.style.alignItems = "center";
       tempDiv.style.border = `3px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
-      tempDiv.style.padding = "6px 6px 4px 6px"; // less bottom padding
+      tempDiv.style.padding = "6px 6px 2px 6px"; // less bottom padding
       tempDiv.style.overflow = "hidden";
       tempDiv.style.boxSizing = "border-box";
       tempDiv.style.position = "absolute";
@@ -322,7 +322,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.innerText = `B${item.modelNumber}`;
       modelText.style.fontWeight = "900";
       modelText.style.color = accentColor;
-      modelText.style.marginTop = "2px"; 
+      modelText.style.marginTop = "1px"; 
       modelText.style.fontSize = "45px"; // bold and large
       modelText.style.textAlign = "center";
       modelText.style.lineHeight = "1";
