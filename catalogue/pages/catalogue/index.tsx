@@ -253,7 +253,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       (pageIndex + 1) * itemsPerPage
     );
 
-    // Header (shorter)
+    // Header
     doc.setFillColor(...hexToRgb(accentColor));
     doc.rect(0, 0, pageWidth, 18, "F");
 
@@ -270,7 +270,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const item = pageItems[i];
       let imgDataUrl = "";
 
-      // Fetch sharper image
+      // Fetch sharp image
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
@@ -309,41 +309,58 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "250px";
+        tempImg.style.maxHeight = "245px";
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "10px";
-        tempImg.style.marginBottom = "4px"; // tighter spacing
+        tempImg.style.marginBottom = "2px"; // very tight
         tempDiv.appendChild(tempImg);
       }
 
-      // Model number (very close to image)
+      // Model number (hugging image)
       const modelText = document.createElement("p");
       modelText.innerText = `B${item.modelNumber}`;
       modelText.style.fontWeight = "900";
       modelText.style.color = accentColor;
-      modelText.style.marginTop = "1px"; // minimal gap
+      modelText.style.marginTop = "0"; // directly below image
       modelText.style.fontSize = "34px";
       modelText.style.textAlign = "center";
       tempDiv.appendChild(modelText);
 
-      // Sizes & weights
-      const addSizeText = (label: string, weight?: number) => {
-        const p = document.createElement("p");
-        p.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
-        p.style.fontSize = "17px";
-        p.style.color = textColor;
-        p.style.marginTop = "1px"; // minimal spacing
-        p.style.fontWeight = "500";
-        tempDiv.appendChild(p);
+      // Sizes & weights container
+      const weightsContainer = document.createElement("div");
+      weightsContainer.style.width = "100%";
+      weightsContainer.style.display = "flex";
+      weightsContainer.style.justifyContent = "center";
+      weightsContainer.style.marginTop = "4px"; // gap below model no
+      tempDiv.appendChild(weightsContainer);
+
+      const addWeightText = (label: string, weight?: number) => {
+        const span = document.createElement("span");
+        span.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
+        span.style.fontSize = "17px";
+        span.style.color = textColor;
+        span.style.fontWeight = "500";
+        return span;
       };
 
-      if (filter === "Adult" && item.sizes?.includes("Adult"))
-        addSizeText("Adult", item.weightAdult);
-      if (filter === "Kids" && item.sizes?.includes("Kids"))
-        addSizeText("Kids", item.weightKids);
-      if (filter === "Both") {
-        if (item.sizes?.includes("Adult")) addSizeText("Adult", item.weightAdult);
-        if (item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
+      const showAdult = filter !== "Kids" && item.sizes?.includes("Adult");
+      const showKids = filter !== "Adult" && item.sizes?.includes("Kids");
+
+      if (showAdult && showKids) {
+        // Two weights inline (Adult left, Kids right)
+        weightsContainer.style.justifyContent = "space-between";
+        weightsContainer.style.padding = "0 20px";
+
+        const adultSpan = addWeightText("Adult", item.weightAdult);
+        const kidsSpan = addWeightText("Kids", item.weightKids);
+        weightsContainer.appendChild(adultSpan);
+        weightsContainer.appendChild(kidsSpan);
+      } else if (showAdult) {
+        // Only Adult → centered
+        weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
+      } else if (showKids) {
+        // Only Kids → centered
+        weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       }
 
       // Render card
@@ -354,11 +371,11 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
-      // Place on PDF (tighter vertical distance, more page length if needed)
+      // Place on PDF
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 100;
-      const y = 22 + row * 140; // reduced spacing
+      const y = 22 + row * 140;
       doc.addImage(finalImgData, "PNG", x, y, 95, 130);
     }
 
@@ -380,6 +397,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
 };
+
 
 
 // Helper function
