@@ -241,11 +241,12 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 8;
+  const margin = 8;          // top/side margin
+  const bottomMargin = 15;   // bottom margin
 
   const accentColor = "#c7a332"; // gold
-  const textColor = "#0b1a3d"; // navy
-  const cardBg = "#ffffff"; // white
+  const textColor = "#0b1a3d";   // navy
+  const cardBg = "#ffffff";      // white
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = filteredItems.slice(
@@ -291,7 +292,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Build offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
-      tempDiv.style.height = "345px"; // reduced by 5px
+      tempDiv.style.height = "355px"; // slightly reduced
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -309,31 +310,31 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "245px"; // slightly smaller to fit tighter
+        tempImg.style.maxHeight = "243px"; // tight fit
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "10px";
-        tempImg.style.marginBottom = "0px"; // closer to model no
+        tempImg.style.marginBottom = "0px"; // very close to model no
         tempDiv.appendChild(tempImg);
       }
 
-      // Model number (hugging image)
+      // Model number
       const modelText = document.createElement("p");
       modelText.innerText = `B${item.modelNumber}`;
       modelText.style.fontWeight = "900";
       modelText.style.color = accentColor;
-      modelText.style.marginTop = "0"; // tight to image
-      modelText.style.marginBottom = "0.5px"; // tight to image
-modelText.style.fontSize = "38px";
+      modelText.style.marginTop = "0";
+      modelText.style.marginBottom = "0.5px";
+      modelText.style.fontSize = "38px";
       modelText.style.textAlign = "center";
-     modelText.style.lineHeight = "0.5";
- tempDiv.appendChild(modelText);
+      modelText.style.lineHeight = "0.5";
+      tempDiv.appendChild(modelText);
 
       // Sizes & weights container
       const weightsContainer = document.createElement("div");
       weightsContainer.style.width = "100%";
       weightsContainer.style.display = "flex";
       weightsContainer.style.justifyContent = "center";
-      weightsContainer.style.marginTop = "3px"; // smaller gap
+      weightsContainer.style.marginTop = "3px";
       tempDiv.appendChild(weightsContainer);
 
       const addWeightText = (label: string, weight?: number) => {
@@ -349,7 +350,6 @@ modelText.style.fontSize = "38px";
       const showKids = filter !== "Adult" && item.sizes?.includes("Kids");
 
       if (showAdult && showKids) {
-        // Two inline weights
         weightsContainer.style.justifyContent = "space-between";
         weightsContainer.style.padding = "0 20px";
 
@@ -371,18 +371,18 @@ modelText.style.fontSize = "38px";
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
-      // Place on PDF (reduced vertical gap between cards)
+      // Place on PDF
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 100;
-      const y = 22 + row * 136; // tighter rows
+      const y = 22 + row * 136;
       doc.addImage(finalImgData, "PNG", x, y, 95, 128);
     }
 
     // Footer
     const footerSize = 10;
     const cx = pageWidth / 2;
-    const cy = pageHeight - 12;
+    const cy = pageHeight - bottomMargin; // respect bottom margin
 
     doc.setFillColor(...hexToRgb(accentColor));
     doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD");
