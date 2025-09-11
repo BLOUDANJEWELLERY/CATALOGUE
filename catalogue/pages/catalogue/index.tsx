@@ -415,18 +415,21 @@ const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties 
     left: 0,
     width: "100%",
     height: "100%",
-    background: "rgba(0,0,0,0.5)",
+    background: "rgba(0,0,0,0.6)", // deeper, more luxurious overlay
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
   },
   content: {
-    background: "#fffaf5",
-    borderRadius: "16px",
-    padding: "20px",
+    background: "#0b1a3d", // deep navy background
+    borderRadius: "20px",
+    padding: "25px",
     width: "90%",
     maxWidth: "500px",
+    boxShadow: "0 15px 40px rgba(0,0,0,0.4)", // elevated shadow for premium feel
+    color: "#fff", // text color inside modal
+    border: "2px solid #c7a332", // subtle golden frame
   },
 };
 
@@ -659,32 +662,11 @@ return (
 
 
 
-{/* Add Product Modal */}
+ {/* Add Product Modal */}
 {showAddModal && (
-  <div style={{
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    background: "rgba(0,0,0,0.6)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  }}>
-    <div style={{
-      background: "#0b1a3d",
-      padding: "25px",
-      borderRadius: "20px",
-      width: "90%",
-      maxWidth: "500px",
-      boxShadow: "0 15px 40px rgba(0,0,0,0.4)",
-      color: "#fff",
-    }}>
-      <h2 style={{ color: "#c7a332", textAlign: "center", marginBottom: "20px" }}>
-        Add New Catalogue Item
-      </h2>
+  <div style={modalStyles.overlay}>
+    <div style={modalStyles.content}>
+      <h2 style={{ color: "#7a4c2e" }}>Add New Catalogue Item</h2>
 
       <input
         type="file"
@@ -694,52 +676,35 @@ return (
           setNewItemImage(file);
           if (file) setNewItemImagePreview(URL.createObjectURL(file));
         }}
-        style={{
-          marginBottom: "15px",
-          width: "100%",
-          padding: "8px",
-          borderRadius: "8px",
-          border: "1px solid #c7a332",
-          background: "#fff",
-          color: "#0b1a3d",
-          cursor: "pointer",
-        }}
+        style={{ marginBottom: "10px" }}
       />
 
       {/* Preview */}
       {newItemImagePreview && (
-        <div style={{ marginBottom: "15px", textAlign: "center" }}>
+        <div style={{ marginBottom: "10px" }}>
           <img
             src={newItemImagePreview}
             alt="Preview"
-            style={{
-              width: "100%",
-              maxHeight: "200px",
-              objectFit: "contain",
-              borderRadius: "12px",
-              border: "2px solid #c7a332",
-            }}
+            style={{ width: "100%", maxHeight: "200px", objectFit: "contain", borderRadius: "12px" }}
           />
         </div>
       )}
 
-      <div style={{ marginBottom: "15px", display: "flex", gap: "15px", color: "#c7a332" }}>
-        <label style={{ cursor: "pointer" }}>
+      <div style={{ marginBottom: "10px" }}>
+        <label style={{ marginRight: "10px" }}>
           <input
             type="checkbox"
             checked={newItemSizes.includes("Adult")}
             onChange={() => handleSizeChange("Adult")}
-            style={{ marginRight: "6px" }}
-          />
+          />{" "}
           Adult
         </label>
-        <label style={{ cursor: "pointer" }}>
+        <label>
           <input
             type="checkbox"
             checked={newItemSizes.includes("Kids")}
             onChange={() => handleSizeChange("Kids")}
-            style={{ marginRight: "6px" }}
-          />
+          />{" "}
           Kids
         </label>
       </div>
@@ -750,15 +715,7 @@ return (
           placeholder="Weight Adult (g)"
           value={newItemWeightAdult}
           onChange={(e) => setNewItemWeightAdult(e.target.value)}
-          style={{
-            marginBottom: "15px",
-            width: "100%",
-            padding: "8px",
-            borderRadius: "8px",
-            border: "1px solid #c7a332",
-            background: "#fff",
-            color: "#0b1a3d",
-          }}
+          style={{ marginBottom: "10px" }}
         />
       )}
       {newItemSizes.includes("Kids") && (
@@ -767,32 +724,21 @@ return (
           placeholder="Weight Kids (g)"
           value={newItemWeightKids}
           onChange={(e) => setNewItemWeightKids(e.target.value)}
-          style={{
-            marginBottom: "15px",
-            width: "100%",
-            padding: "8px",
-            borderRadius: "8px",
-            border: "1px solid #c7a332",
-            background: "#fff",
-            color: "#0b1a3d",
-          }}
+          style={{ marginBottom: "10px" }}
         />
       )}
 
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
         <button
           onClick={handleSaveNewItem}
           disabled={isUploading}
           style={{
-            flex: 1,
-            padding: "10px 16px",
-            background: isUploading ? "#8c6b1d" : "#c7a332",
-            color: "#0b1a3d",
+            padding: "8px 16px",
+            background: isUploading ? "#a67c5c" : "#8b5e3c",
+            color: "#fff",
             border: "none",
             borderRadius: "8px",
             cursor: isUploading ? "not-allowed" : "pointer",
-            fontWeight: 600,
-            transition: "background 0.3s",
           }}
         >
           {isUploading ? "Saving..." : "Save Item"}
@@ -800,14 +746,12 @@ return (
         <button
           onClick={() => setShowAddModal(false)}
           style={{
-            flex: 1,
-            padding: "10px 16px",
-            background: "#333",
-            color: "#fff",
+            padding: "8px 16px",
+            background: "#ccc",
+            color: "#333",
             border: "none",
             borderRadius: "8px",
             cursor: "pointer",
-            fontWeight: 600,
           }}
         >
           Cancel
@@ -817,6 +761,22 @@ return (
   </div>
 )}
 
+{/* Edit Product Modal */}
+{editingId && (
+  <div style={modalStyles.overlay}>
+    <div style={modalStyles.content}>
+      <h2 style={{ color: "#7a4c2e" }}>Edit Catalogue Item</h2>
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0] || null;
+          setEditImage(file);
+          if (file) setEditImagePreview(URL.createObjectURL(file));
+        }}
+        style={{ marginBottom: "10px" }}
+      />
 
       {/* Preview */}
       {(editImagePreview || currentEditImageUrl) && (
@@ -904,7 +864,6 @@ return (
     </div>
   </div>
 )}
-
   </div>
 );
 
