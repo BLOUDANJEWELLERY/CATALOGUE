@@ -494,34 +494,35 @@ return (
     gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
     gap: "15px",
     padding: "10px",
+    background: "linear-gradient(135deg, #fffaf5 0%, #fff8e1 100%)",
   }}
 >
   {/* Add Card */}
   <div
     onClick={() => setShowAddModal(true)}
     style={{
-      background: "#fffaf5",
+      background: "#fff8e1",
       borderRadius: "20px",
-      padding: "10px",
-      boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-      minHeight: "250px",
+      minHeight: "280px",
       display: "flex",
+      flexDirection: "column",
       justifyContent: "center",
       alignItems: "center",
       cursor: "pointer",
       textAlign: "center",
+      boxShadow: "0 12px 30px rgba(0,0,0,0.15)",
       transition: "transform 0.2s, box-shadow 0.2s",
     }}
     onMouseEnter={(e) => {
       (e.currentTarget as HTMLDivElement).style.transform = "translateY(-5px)";
-      (e.currentTarget as HTMLDivElement).style.boxShadow = "0 15px 30px rgba(0,0,0,0.15)";
+      (e.currentTarget as HTMLDivElement).style.boxShadow = "0 18px 35px rgba(0,0,0,0.2)";
     }}
     onMouseLeave={(e) => {
       (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-      (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.1)";
+      (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 30px rgba(0,0,0,0.15)";
     }}
   >
-    <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e" }}>+ Add New Item</span>
+    <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#b8870a" }}>+ Add New Item</span>
   </div>
 
   {/* Existing Items */}
@@ -533,34 +534,33 @@ return (
         key={item._id}
         onClick={() => handleEditClick(item)}
         style={{
-          background: "#fffaf5",
+          background: "white",
           borderRadius: "20px",
-          padding: "10px",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
           minHeight: "280px",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
           cursor: "pointer",
+          boxShadow: "0 12px 30px rgba(0,0,0,0.15)",
           transition: "transform 0.2s, box-shadow 0.2s",
+          overflow: "hidden",
         }}
         onMouseEnter={(e) => {
           (e.currentTarget as HTMLDivElement).style.transform = "translateY(-5px)";
-          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 15px 30px rgba(0,0,0,0.15)";
+          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 18px 35px rgba(0,0,0,0.2)";
         }}
         onMouseLeave={(e) => {
           (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.1)";
+          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 30px rgba(0,0,0,0.15)";
         }}
       >
+        {/* Top Half Image */}
         <div
           style={{
             width: "100%",
-            paddingTop: "100%", // square aspect ratio
+            height: "50%",
             position: "relative",
-            borderRadius: "16px",
             overflow: "hidden",
-            background: "#f5f0eb",
+            background: "linear-gradient(180deg, #fff8e1, #fbe8d0)",
           }}
         >
           {item.image && (
@@ -590,7 +590,7 @@ return (
                 justifyContent: "center",
                 alignItems: "center",
                 fontWeight: 600,
-                color: "#7a4c2e",
+                color: "#b8870a",
               }}
             >
               Uploading...
@@ -598,45 +598,61 @@ return (
           )}
         </div>
 
-        <p
+        {/* Bottom Info */}
+        <div
           style={{
-            fontSize: "1.2rem",
-            fontWeight: 600,
-            color: "#7a4c2e",
-            marginTop: "12px",
+            flex: 1,
+            padding: "8px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            background: "#fffaf5",
           }}
         >
-          B{item.modelNumber}
-        </p>
+          <p
+            style={{
+              fontSize: "1.2rem",
+              fontWeight: 600,
+              color: "#b8870a",
+              margin: "5px 0",
+            }}
+          >
+            B{item.modelNumber}
+          </p>
 
-        {/* Sizes */}
-        <div style={{ marginTop: "5px", display: "flex", gap: "8px" }}>
-          {item.sizes?.includes("Adult") && (
-            <span
-              style={{
-                fontSize: "0.9rem",
-                color: "#8b5e3c",
-                background: "#fbe8d0",
-                padding: "2px 6px",
-                borderRadius: "6px",
-              }}
-            >
-              Adult {item.weightAdult ? `- ${item.weightAdult}g` : ""}
-            </span>
-          )}
-          {item.sizes?.includes("Kids") && (
-            <span
-              style={{
-                fontSize: "0.9rem",
-                color: "#8b5e3c",
-                background: "#fbe8d0",
-                padding: "2px 6px",
-                borderRadius: "6px",
-              }}
-            >
-              Kids {item.weightKids ? `- ${item.weightKids}g` : ""}
-            </span>
-          )}
+          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center" }}>
+            {item.sizes?.includes("Adult") && (
+              <span
+                style={{
+                  fontSize: "0.9rem",
+                  color: "#fff",
+                  background: "#d4af37",
+                  padding: "3px 6px",
+                  borderRadius: "6px",
+                  fontWeight: 500,
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                }}
+              >
+                Adult {item.weightAdult ? `- ${item.weightAdult}g` : ""}
+              </span>
+            )}
+            {item.sizes?.includes("Kids") && (
+              <span
+                style={{
+                  fontSize: "0.9rem",
+                  color: "#fff",
+                  background: "#3a5fcd",
+                  padding: "3px 6px",
+                  borderRadius: "6px",
+                  fontWeight: 500,
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                }}
+              >
+                Kids {item.weightKids ? `- ${item.weightKids}g` : ""}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     ))}
