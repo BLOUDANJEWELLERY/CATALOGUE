@@ -291,7 +291,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Build offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
-      tempDiv.style.height = "355px"; // reduced by 5px
+      tempDiv.style.height = "350px"; // reduced by 5px
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -309,7 +309,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "243px"; // slightly smaller to fit tighter
+        tempImg.style.maxHeight = "245px"; // slightly smaller to fit tighter
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "10px";
         tempImg.style.marginBottom = "0px"; // closer to model no
