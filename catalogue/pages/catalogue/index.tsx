@@ -228,11 +228,13 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF("p", "mm", "a4");
 
-  // Filter items for selected type
+  // Filtering logic
   const filteredItems = items.filter((item) => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
     if (filter === "Kids") return item.sizes?.includes("Kids");
-    return item.sizes?.includes("Adult") || item.sizes?.includes("Kids"); // Both
+    if (filter === "Both")
+      return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
+    return false;
   });
 
   const itemsPerPage = 4;
@@ -325,7 +327,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.style.fontSize = "14px";
       tempDiv.appendChild(tempText);
 
-      // ✅ Sizes & Weights (respect filter properly)
+      // ✅ Corrected weights logic
       if (filter === "Adult" && item.sizes?.includes("Adult")) {
         const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
         const adultText = document.createElement("p");
@@ -379,7 +381,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       doc.addImage(finalImgData, "PNG", x, y, 75, 110);
     }
 
-    // Footer with diamond page number
+    // Footer
     const footerSize = 10;
     const cx = pageWidth / 2;
     const cy = pageHeight - 15;
