@@ -228,11 +228,11 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF("p", "mm", "a4");
 
-  // filter items by selected option
+  // Filter items for selected type
   const filteredItems = items.filter((item) => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
     if (filter === "Kids") return item.sizes?.includes("Kids");
-    return true; // Both
+    return item.sizes?.includes("Adult") || item.sizes?.includes("Kids"); // Both
   });
 
   const itemsPerPage = 4;
@@ -270,7 +270,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const item = pageItems[i];
       let imgDataUrl = "";
 
-      // load image
+      // Load image
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
@@ -288,7 +288,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         }
       }
 
-      // create card container
+      // Offscreen div
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "200px";
       tempDiv.style.height = "250px";
@@ -316,7 +316,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         tempDiv.appendChild(tempImg);
       }
 
-      // Model #
+      // Model Number
       const tempText = document.createElement("p");
       tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
@@ -325,7 +325,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.style.fontSize = "14px";
       tempDiv.appendChild(tempText);
 
-      // Sizes & Weights (controlled by filter)
+      // ✅ Sizes & Weights (respect filter properly)
       if (filter === "Adult" && item.sizes?.includes("Adult")) {
         const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
         const adultText = document.createElement("p");
@@ -363,6 +363,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         }
       }
 
+      // Convert to canvas
       const canvas = await html2canvas(tempDiv, {
         backgroundColor: bgColor,
         scale: 2,
@@ -370,6 +371,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
+      // Place on PDF
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 95;
@@ -384,27 +386,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
     doc.setFillColor(...hexToRgb(footerColor));
     doc.setDrawColor(...hexToRgb(footerColor));
-    doc.lines(
-      [
-        [0, -footerSize / 2],
-        [footerSize / 2, 0],
-        [0, footerSize / 2],
-        [-footerSize / 2, 0],
-        [0, -footerSize / 2],
-      ],
-      cx,
-      cy
-    );
-    doc.setFillColor(...hexToRgb(footerColor));
-    doc.setDrawColor(...hexToRgb(footerColor));
     doc.setLineWidth(0.5);
-    doc.rect(
-      cx - footerSize / 2,
-      cy - footerSize / 2,
-      footerSize,
-      footerSize,
-      "FD"
-    );
+    doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD");
 
     doc.setFontSize(10);
     doc.setTextColor(255, 255, 255);
