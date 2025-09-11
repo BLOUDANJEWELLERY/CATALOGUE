@@ -213,12 +213,13 @@ const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, itemId: string
 // Inside your component
 const [isLoading, setIsLoading] = useState(false);
 
-const handleDownloadPDFWithLoading = async () => {
+const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") => {
   setIsLoading(true);
   try {
-    await handleDownloadPDF(); // your existing PDF function
+    await handleDownloadPDF(filter); // pass the selected filter
   } catch (err) {
     console.error("Error generating PDF:", err);
+    alert("Failed to generate PDF. Check console for details.");
   } finally {
     setIsLoading(false);
   }
@@ -408,7 +409,14 @@ return (
       Our Catalogue
     </h1>
 
-<div style={{ display: "flex", justifyContent: "center", marginBottom: "30px", gap: "10px" }}>
+<div
+  style={{
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: "30px",
+    gap: "10px",
+  }}
+>
   <select
     value={pdfFilter}
     onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
@@ -419,6 +427,7 @@ return (
       border: "1px solid #8b5e3c",
       background: "#fffaf5",
       color: "#7a4c2e",
+      cursor: "pointer",
     }}
   >
     <option value="Adult">Adult Only</option>
