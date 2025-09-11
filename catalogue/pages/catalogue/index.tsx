@@ -502,10 +502,10 @@ return (
     style={{
       background: "#fffaf5",
       borderRadius: "20px",
-      padding: "10px",
       boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-      minHeight: "250px",
+      minHeight: "280px",
       display: "flex",
+      flexDirection: "column",
       justifyContent: "center",
       alignItems: "center",
       cursor: "pointer",
@@ -535,12 +535,10 @@ return (
         style={{
           background: "#fffaf5",
           borderRadius: "20px",
-          padding: "10px",
           boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
           minHeight: "280px",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
           cursor: "pointer",
           transition: "transform 0.2s, box-shadow 0.2s",
         }}
@@ -553,12 +551,14 @@ return (
           (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.1)";
         }}
       >
+        {/* Image Top Half */}
         <div
           style={{
             width: "100%",
-            paddingTop: "100%", // square aspect ratio
+            height: "50%", // top half
             position: "relative",
-            borderRadius: "16px",
+            borderTopLeftRadius: "20px",
+            borderTopRightRadius: "20px",
             overflow: "hidden",
             background: "#f5f0eb",
           }}
@@ -598,45 +598,56 @@ return (
           )}
         </div>
 
-        <p
+        {/* Bottom Half: Info */}
+        <div
           style={{
-            fontSize: "1.2rem",
-            fontWeight: 600,
-            color: "#7a4c2e",
-            marginTop: "12px",
+            flex: 1,
+            padding: "10px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          B{item.modelNumber}
-        </p>
+          <p
+            style={{
+              fontSize: "1.2rem",
+              fontWeight: 600,
+              color: "#7a4c2e",
+              margin: "5px 0",
+            }}
+          >
+            B{item.modelNumber}
+          </p>
 
-        {/* Sizes */}
-        <div style={{ marginTop: "5px", display: "flex", gap: "8px" }}>
-          {item.sizes?.includes("Adult") && (
-            <span
-              style={{
-                fontSize: "0.9rem",
-                color: "#8b5e3c",
-                background: "#fbe8d0",
-                padding: "2px 6px",
-                borderRadius: "6px",
-              }}
-            >
-              Adult {item.weightAdult ? `- ${item.weightAdult}g` : ""}
-            </span>
-          )}
-          {item.sizes?.includes("Kids") && (
-            <span
-              style={{
-                fontSize: "0.9rem",
-                color: "#8b5e3c",
-                background: "#fbe8d0",
-                padding: "2px 6px",
-                borderRadius: "6px",
-              }}
-            >
-              Kids {item.weightKids ? `- ${item.weightKids}g` : ""}
-            </span>
-          )}
+          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center" }}>
+            {item.sizes?.includes("Adult") && (
+              <span
+                style={{
+                  fontSize: "0.9rem",
+                  color: "#8b5e3c",
+                  background: "#fbe8d0",
+                  padding: "2px 6px",
+                  borderRadius: "6px",
+                }}
+              >
+                Adult {item.weightAdult ? `- ${item.weightAdult}g` : ""}
+              </span>
+            )}
+            {item.sizes?.includes("Kids") && (
+              <span
+                style={{
+                  fontSize: "0.9rem",
+                  color: "#8b5e3c",
+                  background: "#fbe8d0",
+                  padding: "2px 6px",
+                  borderRadius: "6px",
+                }}
+              >
+                Kids {item.weightKids ? `- ${item.weightKids}g` : ""}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     ))}
@@ -650,6 +661,7 @@ return (
     }
   }
 `}</style>
+
 
  {/* Add Product Modal */}
 {showAddModal && (
