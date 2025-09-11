@@ -366,6 +366,30 @@ function hexToRgb(hex: string): [number, number, number] {
   return match.map((x) => parseInt(x, 16)) as [number, number, number];
 }
 
+
+// Modal styles
+const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties } = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  content: {
+    background: "#fffaf5",
+    borderRadius: "16px",
+    padding: "20px",
+    width: "90%",
+    maxWidth: "500px",
+  },
+};
+
 return (
   <div style={{ padding: "30px", background: "#fdf6f0", minHeight: "100vh" }}>
     <h1 style={{ textAlign: "center", fontSize: "2.5rem", marginBottom: "20px", color: "#8b5e3c" }}>
@@ -685,28 +709,5 @@ return (
 )}
   </div>
 );
-
-// Modal styles
-const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties } = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    background: "rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  content: {
-    background: "#fffaf5",
-    borderRadius: "16px",
-    padding: "20px",
-    width: "90%",
-    maxWidth: "500px",
-  },
-};
 
 }
