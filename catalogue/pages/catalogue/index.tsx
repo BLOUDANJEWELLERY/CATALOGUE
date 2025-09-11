@@ -49,14 +49,78 @@ const [newItemImage, setNewItemImage] = useState<File | null>(null);
 const [newItemSizes, setNewItemSizes] = useState<("Adult" | "Kids")[]>([]);
 const [newItemWeightAdult, setNewItemWeightAdult] = useState("");
 const [newItemWeightKids, setNewItemWeightKids] = useState("");
-const [isUploading, setIsUploading] = useState(false);
 
+const [isUploading, setIsUploading] = useState(false);
+const [editingId, setEditingId] = useState<string | null>(null);
+const [editImage, setEditImage] = useState<File | null>(null);
+const [editSizes, setEditSizes] = useState<("Adult" | "Kids")[]>([]);
+const [editWeightAdult, setEditWeightAdult] = useState("");
+const [editWeightKids, setEditWeightKids] = useState("");
 // Handle checkbox selection
 const handleSizeChange = (size: "Adult" | "Kids") => {
   setNewItemSizes((prev) =>
     prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
   );
 };
+
+
+const handleEditClick = (item: CatalogueItem) => {
+  setEditingId(item._id);
+  setEditImage(null); // user can choose new image or keep old
+  setEditSizes(item.sizes || []);
+  setEditWeightAdult(item.weightAdult?.toString() || "");
+  setEditWeightKids(item.weightKids?.toString() || "");
+};
+
+const handleEditSizeChange = (size: "Adult" | "Kids") => {
+  setEditSizes(prev =>
+    prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
+  );
+};
+
+
+const handleSaveEdit = async (itemId: string) => {
+  if (editSizes.length === 0) return alert("Select at least one size");
+  if (editSizes.includes("Adult") && !editWeightAdult) return alert("Enter Adult weight");
+  if (editSizes.includes("Kids") && !editWeightKids) return alert("Enter Kids weight");
+
+  setIsUploading(true);
+
+  try {
+    let assetIdToSend: string | undefined;
+
+    if (editImage) {
+      const formData = new FormData();
+      formData.append("file", editImage);
+      const uploadRes = await fetch("/api/uploadImage", { method: "POST", body: formData });
+      const uploadData = await uploadRes.json();
+      assetIdToSend = uploadData.assetId;
+    }
+
+    const updateRes = await fetch(`/api/updateItem/${itemId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...(assetIdToSend ? { assetId: assetIdToSend } : {}),
+        sizes: editSizes,
+        weightAdult: editWeightAdult ? parseFloat(editWeightAdult) : undefined,
+        weightKids: editWeightKids ? parseFloat(editWeightKids) : undefined,
+      }),
+    });
+
+    const data = await updateRes.json();
+    if (!data.success) throw new Error(data.error || "Failed to save");
+
+    window.location.reload();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update item");
+  } finally {
+    setIsUploading(false);
+    setEditingId(null);
+  }
+};
+
 
 // Handle new item save
 const handleSaveNewItem = async () => {
@@ -321,74 +385,145 @@ return (
         gap: "20px",
       }}
     >
-      {itemsWithBlank.map((item) =>
-        item._id === "blank" ? (
+      {/* Add Card */}
+      <div
+        onClick={() => setShowAddModal(true)}
+        style={{
+          background: "#fffaf5",
+          borderRadius: "16px",
+          padding: "10px",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+          minHeight: "250px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          cursor: "pointer",
+          textAlign: "center",
+        }}
+      >
+        <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e" }}>+ Add New Item</span>
+      </div>
+
+      {/* Existing Items */}
+      {items.map((item) => (
+        <div
+          key={item._id}
+          onClick={() => handleEditClick(item)}
+          style={{
+            background: "#fffaf5",
+            borderRadius: "16px",
+            padding: "10px",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+            minHeight: "250px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+        >
           <div
-            key="blank"
             style={{
-              background: "#fffaf5",
-              borderRadius: "16px",
-              padding: "10px",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-              minHeight: "300px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
+              width: "100%",
+              paddingTop: "100%",
+              position: "relative",
+              borderRadius: "12px",
+              overflow: "hidden",
+              background: "#f5f0eb",
             }}
           >
-            <h2 style={{ color: "#7a4c2e", marginBottom: "10px" }}>
-              Auto Model #: {nextModelNumber}
-            </h2>
+            {item.image && (
+              <img
+                src={urlFor(item.image).width(400).url()}
+                alt={`Model ${item.modelNumber}`}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                }}
+              />
+            )}
+            {uploadingId === item._id && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  background: "rgba(255,255,255,0.6)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  fontWeight: 600,
+                  color: "#7a4c2e",
+                }}
+              >
+                Uploading...
+              </div>
+            )}
+          </div>
+          <p style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e", marginTop: "10px" }}>
+            Model #{item.modelNumber}
+          </p>
+        </div>
+      ))}
+    </div>
 
+    {/* Add Product Modal */}
+    {showAddModal && (
+      <div style={modalStyles.overlay}>
+        <div style={modalStyles.content}>
+          <h2 style={{ color: "#7a4c2e" }}>Add New Catalogue Item</h2>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setNewItemImage(e.target.files?.[0] || null)}
+            style={{ marginBottom: "10px" }}
+          />
+
+          <div style={{ marginBottom: "10px" }}>
+            <label style={{ marginRight: "10px" }}>
+              <input
+                type="checkbox"
+                checked={newItemSizes.includes("Adult")}
+                onChange={() => handleSizeChange("Adult")}
+              />{" "}
+              Adult
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={newItemSizes.includes("Kids")}
+                onChange={() => handleSizeChange("Kids")}
+              />{" "}
+              Kids
+            </label>
+          </div>
+
+          {newItemSizes.includes("Adult") && (
             <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setNewItemImage(e.target.files?.[0] || null)}
+              type="number"
+              placeholder="Weight Adult (g)"
+              value={newItemWeightAdult}
+              onChange={(e) => setNewItemWeightAdult(e.target.value)}
               style={{ marginBottom: "10px" }}
             />
+          )}
+          {newItemSizes.includes("Kids") && (
+            <input
+              type="number"
+              placeholder="Weight Kids (g)"
+              value={newItemWeightKids}
+              onChange={(e) => setNewItemWeightKids(e.target.value)}
+              style={{ marginBottom: "10px" }}
+            />
+          )}
 
-            <div style={{ marginBottom: "10px" }}>
-              <label style={{ marginRight: "10px" }}>
-                <input
-                  type="checkbox"
-                  value="Adult"
-                  checked={newItemSizes.includes("Adult")}
-                  onChange={(e) => handleSizeChange(e.target.value as "Adult" | "Kids")}
-                />{" "}
-                Adult
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  value="Kids"
-                  checked={newItemSizes.includes("Kids")}
-                  onChange={(e) => handleSizeChange(e.target.value as "Adult" | "Kids")}
-                />{" "}
-                Kids
-              </label>
-            </div>
-
-            {newItemSizes.includes("Adult") && (
-              <input
-                type="number"
-                placeholder="Weight Adult (g)"
-                value={newItemWeightAdult}
-                onChange={(e) => setNewItemWeightAdult(e.target.value)}
-                style={{ marginBottom: "10px" }}
-              />
-            )}
-
-            {newItemSizes.includes("Kids") && (
-              <input
-                type="number"
-                placeholder="Weight Kids (g)"
-                value={newItemWeightKids}
-                onChange={(e) => setNewItemWeightKids(e.target.value)}
-                style={{ marginBottom: "10px" }}
-              />
-            )}
-
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
             <button
               onClick={handleSaveNewItem}
               disabled={isUploading}
@@ -403,74 +538,132 @@ return (
             >
               {isUploading ? "Saving..." : "Save Item"}
             </button>
-          </div>
-        ) : (
-          <label htmlFor={`file-upload-${item._id}`} key={item._id} style={{ cursor: "pointer" }}>
-            <div
+            <button
+              onClick={() => setShowAddModal(false)}
               style={{
-                background: "#fffaf5",
-                borderRadius: "16px",
-                padding: "10px",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                minHeight: "250px",
+                padding: "8px 16px",
+                background: "#ccc",
+                color: "#333",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
               }}
             >
-              <div
-                style={{
-                  width: "100%",
-                  paddingTop: "100%",
-                  position: "relative",
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  background: "#f5f0eb",
-                }}
-              >
-                {item.image && (
-                  <img
-                    src={urlFor(item.image).width(400).url()}
-                    alt={`Model ${item.modelNumber}`}
-                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "contain" }}
-                  />
-                )}
-                {uploadingId === item._id && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      background: "rgba(255,255,255,0.6)",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      fontWeight: 600,
-                      color: "#7a4c2e",
-                    }}
-                  >
-                    Uploading...
-                  </div>
-                )}
-              </div>
-              <p style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e", marginTop: "10px" }}>
-                Model #{item.modelNumber}
-              </p>
-            </div>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Edit Product Modal */}
+    {editingId && (
+      <div style={modalStyles.overlay}>
+        <div style={modalStyles.content}>
+          <h2 style={{ color: "#7a4c2e" }}>Edit Catalogue Item</h2>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setEditImage(e.target.files?.[0] || null)}
+            style={{ marginBottom: "10px" }}
+          />
+
+          <div style={{ marginBottom: "10px" }}>
+            <label style={{ marginRight: "10px" }}>
+              <input
+                type="checkbox"
+                checked={editSizes.includes("Adult")}
+                onChange={() => handleEditSizeChange("Adult")}
+              />{" "}
+              Adult
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={editSizes.includes("Kids")}
+                onChange={() => handleEditSizeChange("Kids")}
+              />{" "}
+              Kids
+            </label>
+          </div>
+
+          {editSizes.includes("Adult") && (
             <input
-              id={`file-upload-${item._id}`}
-              type="file"
-              style={{ display: "none" }}
-              onChange={(e) => handleFileChange(e, item._id)}
+              type="number"
+              placeholder="Weight Adult (g)"
+              value={editWeightAdult}
+              onChange={(e) => setEditWeightAdult(e.target.value)}
+              style={{ marginBottom: "10px" }}
             />
-          </label>
-        )
-      )}
-    </div>
+          )}
+          {editSizes.includes("Kids") && (
+            <input
+              type="number"
+              placeholder="Weight Kids (g)"
+              value={editWeightKids}
+              onChange={(e) => setEditWeightKids(e.target.value)}
+              style={{ marginBottom: "10px" }}
+            />
+          )}
+
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <button
+              onClick={() => handleSaveEdit(editingId)}
+              disabled={isUploading}
+              style={{
+                padding: "8px 16px",
+                background: isUploading ? "#a67c5c" : "#8b5e3c",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                cursor: isUploading ? "not-allowed" : "pointer",
+              }}
+            >
+              {isUploading ? "Saving..." : "Save Changes"}
+            </button>
+            <button
+              onClick={() => setEditingId(null)}
+              style={{
+                padding: "8px 16px",
+                background: "#ccc",
+                color: "#333",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
   </div>
 );
+
+// Modal styles
+const modalStyles = {
+  overlay: {
+    position: "fixed" as "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    background: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+  },
+  content: {
+    background: "#fffaf5",
+    padding: "30px",
+    borderRadius: "16px",
+    minWidth: "300px",
+    maxWidth: "400px",
+    width: "90%",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+  },
+};
 }
