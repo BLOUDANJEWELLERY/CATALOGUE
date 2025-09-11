@@ -272,7 +272,7 @@ const handleDownloadPDF = async () => {
             reader.readAsDataURL(blob);
           });
         } catch (err) {
-          console.error(`Failed to load image for Model #${item.modelNumber}`, err);
+          console.error(`Failed to load image for B${item.modelNumber}`, err);
         }
       }
 
@@ -304,7 +304,7 @@ const handleDownloadPDF = async () => {
       }
 
       const tempText = document.createElement("p");
-      tempText.innerText = `Model #${item.modelNumber}`;
+      tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
       tempText.style.color = textColor;
       tempText.style.marginTop = "8px";
@@ -472,7 +472,7 @@ return (
             {item.image && (
               <img
                 src={urlFor(item.image).width(400).url()}
-                alt={`Model ${item.modelNumber}`}
+                alt={`B{item.modelNumber}`}
                 style={{
                   position: "absolute",
                   top: 0,
@@ -504,7 +504,7 @@ return (
             )}
           </div>
           <p style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e", marginTop: "10px" }}>
-            Model #{item.modelNumber}
+            B{item.modelNumber}
           </p>
         </div>
       ))}
