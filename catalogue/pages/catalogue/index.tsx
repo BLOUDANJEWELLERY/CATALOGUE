@@ -241,7 +241,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 8; // tighter margins for bigger content
+  const margin = 5; // tighter margins for bigger content
 
   const accentColor = "#c7a332"; // gold
   const textColor = "#0b1a3d"; // navy
@@ -254,7 +254,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     );
 
     // Header
-    doc.setFillColor(...hexToRgb(accentColor));
+    {/*doc.setFillColor(...hexToRgb(accentColor));
     doc.rect(0, 0, pageWidth, 25, "F");
 
     doc.setFontSize(22);
@@ -265,7 +265,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     doc.setFontSize(18);
     doc.setFont("helvetica", "normal");
     doc.text("BANGLES CATALOGUE", pageWidth / 2, 21, { align: "center" });
-
+*/}
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
       let imgDataUrl = "";
