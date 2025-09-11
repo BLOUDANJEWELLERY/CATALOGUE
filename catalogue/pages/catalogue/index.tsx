@@ -275,7 +275,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
-            urlFor(item.image).width(3000).auto("format").url()
+            urlFor(item.image).width(1000).auto("format").url()
           )}`;
           const res = await fetch(proxyUrl);
           const blob = await res.blob();
@@ -366,7 +366,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Render card
       const canvas = await html2canvas(tempDiv, {
         backgroundColor: cardBg,
-        scale: 10,
+        scale: 7,
       });
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
