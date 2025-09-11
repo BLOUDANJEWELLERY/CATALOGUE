@@ -328,42 +328,47 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.appendChild(tempText);
 
       // ✅ Corrected weights logic
-      if (filter === "Adult" && item.sizes?.includes("Adult")) {
-        const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
-        const adultText = document.createElement("p");
-        adultText.innerText = `Adult${weight}`;
-        adultText.style.fontSize = "12px";
-        adultText.style.color = textColor;
-        tempDiv.appendChild(adultText);
-      }
+// ✅ Sizes & Weights Rendering
+if (filter === "Adult") {
+  if (item.sizes?.includes("Adult")) {
+    const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
+    const adultText = document.createElement("p");
+    adultText.innerText = `Adult${weight}`;
+    adultText.style.fontSize = "12px";
+    adultText.style.color = textColor;
+    tempDiv.appendChild(adultText);
+  }
+}
 
-      if (filter === "Kids" && item.sizes?.includes("Kids")) {
-        const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
-        const kidsText = document.createElement("p");
-        kidsText.innerText = `Kids${weight}`;
-        kidsText.style.fontSize = "12px";
-        kidsText.style.color = textColor;
-        tempDiv.appendChild(kidsText);
-      }
+if (filter === "Kids") {
+  if (item.sizes?.includes("Kids")) {
+    const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
+    const kidsText = document.createElement("p");
+    kidsText.innerText = `Kids${weight}`;
+    kidsText.style.fontSize = "12px";
+    kidsText.style.color = textColor;
+    tempDiv.appendChild(kidsText);
+  }
+}
 
-      if (filter === "Both") {
-        if (item.sizes?.includes("Adult")) {
-          const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
-          const adultText = document.createElement("p");
-          adultText.innerText = `Adult${weight}`;
-          adultText.style.fontSize = "12px";
-          adultText.style.color = textColor;
-          tempDiv.appendChild(adultText);
-        }
-        if (item.sizes?.includes("Kids")) {
-          const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
-          const kidsText = document.createElement("p");
-          kidsText.innerText = `Kids${weight}`;
-          kidsText.style.fontSize = "12px";
-          kidsText.style.color = textColor;
-          tempDiv.appendChild(kidsText);
-        }
-      }
+if (filter === "Both") {
+  if (item.sizes?.includes("Adult")) {
+    const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
+    const adultText = document.createElement("p");
+    adultText.innerText = `Adult${weight}`;
+    adultText.style.fontSize = "12px";
+    adultText.style.color = textColor;
+    tempDiv.appendChild(adultText);
+  }
+  if (item.sizes?.includes("Kids")) {
+    const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
+    const kidsText = document.createElement("p");
+    kidsText.innerText = `Kids${weight}`;
+    kidsText.style.fontSize = "12px";
+    kidsText.style.color = textColor;
+    tempDiv.appendChild(kidsText);
+  }
+}
 
       // Convert to canvas
       const canvas = await html2canvas(tempDiv, {
