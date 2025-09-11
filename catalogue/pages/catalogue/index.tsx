@@ -292,7 +292,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Build offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
-      tempDiv.style.height = "355px"; // slightly reduced
+      tempDiv.style.height = "340px"; // slightly reduced
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -310,7 +310,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "243px"; // tight fit
+        tempImg.style.maxHeight = "245px"; // tight fit
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "10px";
         tempImg.style.marginBottom = "0px"; // very close to model no
@@ -334,7 +334,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       weightsContainer.style.width = "100%";
       weightsContainer.style.display = "flex";
       weightsContainer.style.justifyContent = "center";
-      weightsContainer.style.marginTop = "3px";
+      weightsContainer.style.marginTop = "4px";
       tempDiv.appendChild(weightsContainer);
 
       const addWeightText = (label: string, weight?: number) => {
