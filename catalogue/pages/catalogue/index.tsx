@@ -291,7 +291,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Build offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
-      tempDiv.style.height = "360px";
+      tempDiv.style.height = "355px"; // reduced by 5px
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -309,10 +309,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "245px";
+        tempImg.style.maxHeight = "243px"; // slightly smaller to fit tighter
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "10px";
-        tempImg.style.marginBottom = "2px"; // very tight
+        tempImg.style.marginBottom = "1px"; // closer to model no
         tempDiv.appendChild(tempImg);
       }
 
@@ -321,7 +321,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.innerText = `B${item.modelNumber}`;
       modelText.style.fontWeight = "900";
       modelText.style.color = accentColor;
-      modelText.style.marginTop = "0"; // directly below image
+      modelText.style.marginTop = "0"; // tight to image
       modelText.style.fontSize = "34px";
       modelText.style.textAlign = "center";
       tempDiv.appendChild(modelText);
@@ -331,13 +331,13 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       weightsContainer.style.width = "100%";
       weightsContainer.style.display = "flex";
       weightsContainer.style.justifyContent = "center";
-      weightsContainer.style.marginTop = "4px"; // gap below model no
+      weightsContainer.style.marginTop = "3px"; // smaller gap
       tempDiv.appendChild(weightsContainer);
 
       const addWeightText = (label: string, weight?: number) => {
         const span = document.createElement("span");
         span.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
-        span.style.fontSize = "17px";
+        span.style.fontSize = "16px";
         span.style.color = textColor;
         span.style.fontWeight = "500";
         return span;
@@ -347,7 +347,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const showKids = filter !== "Adult" && item.sizes?.includes("Kids");
 
       if (showAdult && showKids) {
-        // Two weights inline (Adult left, Kids right)
+        // Two inline weights
         weightsContainer.style.justifyContent = "space-between";
         weightsContainer.style.padding = "0 20px";
 
@@ -356,10 +356,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         weightsContainer.appendChild(adultSpan);
         weightsContainer.appendChild(kidsSpan);
       } else if (showAdult) {
-        // Only Adult → centered
         weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
       } else if (showKids) {
-        // Only Kids → centered
         weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       }
 
@@ -371,12 +369,12 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
-      // Place on PDF
+      // Place on PDF (reduced vertical gap between cards)
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 100;
-      const y = 22 + row * 140;
-      doc.addImage(finalImgData, "PNG", x, y, 95, 130);
+      const y = 22 + row * 136; // tighter rows
+      doc.addImage(finalImgData, "PNG", x, y, 95, 128);
     }
 
     // Footer
