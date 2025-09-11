@@ -290,7 +290,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Offscreen product card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "280px";
-      tempDiv.style.height = "300px"; // shorter card height
+      tempDiv.style.height = "280px"; // shorter card height
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -310,7 +310,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "225px"; // capped so text stays inside
+        tempImg.style.maxHeight = "205px"; // capped so text stays inside
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "10px";
         tempImg.style.marginBottom = "0px"; // tight to model no
