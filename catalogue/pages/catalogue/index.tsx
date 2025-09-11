@@ -291,7 +291,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Build offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
-      tempDiv.style.height = "350px"; // reduced by 5px
+      tempDiv.style.height = "345px"; // reduced by 5px
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -322,7 +322,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.style.fontWeight = "900";
       modelText.style.color = accentColor;
       modelText.style.marginTop = "0"; // tight to image
-      modelText.style.fontSize = "38px";
+      modelText.style.marginBottom = "0.5px"; // tight to image
+modelText.style.fontSize = "38px";
       modelText.style.textAlign = "center";
      modelText.style.lineHeight = "0.5";
  tempDiv.appendChild(modelText);
