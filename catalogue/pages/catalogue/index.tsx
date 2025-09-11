@@ -491,8 +491,8 @@ return (
   ref={containerRef}
   style={{
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", // reduced min width
-    gap: "20px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", // smaller min width
+    gap: "15px", // smaller gap
   }}
 >
   {/* Add Card */}
@@ -594,7 +594,7 @@ return (
     ))}
 </div>
 
-{/* Mobile-Friendly CSS */}
+{/* Force 2 cards per row on small screens */}
 <style jsx>{`
   @media (max-width: 480px) {
     div[ref] {
