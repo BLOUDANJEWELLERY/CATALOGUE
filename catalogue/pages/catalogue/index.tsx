@@ -487,17 +487,43 @@ return (
   </button>
 </div>
 
-    <div
-      ref={containerRef}
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-        gap: "20px",
-      }}
-    >
-      {/* Add Card */}
+ <div
+  ref={containerRef}
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+    gap: "20px",
+  }}
+>
+  {/* Add Card */}
+  <div
+    onClick={() => setShowAddModal(true)}
+    style={{
+      background: "#fffaf5",
+      borderRadius: "16px",
+      padding: "10px",
+      boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+      minHeight: "250px",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      cursor: "pointer",
+      textAlign: "center",
+    }}
+  >
+    <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e" }}>
+      + Add New Item
+    </span>
+  </div>
+
+  {/* Existing Items (Descending Order) */}
+  {items
+    .slice() // clone array
+    .sort((a, b) => b.modelNumber - a.modelNumber) // descending order
+    .map((item) => (
       <div
-        onClick={() => setShowAddModal(true)}
+        key={item._id}
+        onClick={() => handleEditClick(item)}
         style={{
           background: "#fffaf5",
           borderRadius: "16px",
@@ -505,82 +531,77 @@ return (
           boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
           minHeight: "250px",
           display: "flex",
-          justifyContent: "center",
+          flexDirection: "column",
           alignItems: "center",
           cursor: "pointer",
-          textAlign: "center",
         }}
       >
-        <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e" }}>+ Add New Item</span>
-      </div>
-
-      {/* Existing Items */}
-      {items.map((item) => (
         <div
-          key={item._id}
-          onClick={() => handleEditClick(item)}
           style={{
-            background: "#fffaf5",
-            borderRadius: "16px",
-            padding: "10px",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-            minHeight: "250px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            cursor: "pointer",
+            width: "100%",
+            paddingTop: "100%", // 1:1 ratio
+            position: "relative",
+            borderRadius: "12px",
+            overflow: "hidden",
+            background: "#f5f0eb",
           }}
         >
-          <div
-            style={{
-              width: "100%",
-              paddingTop: "100%",
-              position: "relative",
-              borderRadius: "12px",
-              overflow: "hidden",
-              background: "#f5f0eb",
-            }}
-          >
-            {item.image && (
-              <img
-                src={urlFor(item.image).width(400).url()}
-                alt={`B{item.modelNumber}`}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                }}
-              />
-            )}
-            {uploadingId === item._id && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  background: "rgba(255,255,255,0.6)",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  fontWeight: 600,
-                  color: "#7a4c2e",
-                }}
-              >
-                Uploading...
-              </div>
-            )}
-          </div>
-          <p style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e", marginTop: "10px" }}>
-            B{item.modelNumber}
-          </p>
+          {item.image && (
+            <img
+              src={urlFor(item.image).width(400).url()}
+              alt={`B${item.modelNumber}`}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+              }}
+            />
+          )}
+          {uploadingId === item._id && (
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                background: "rgba(255,255,255,0.6)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontWeight: 600,
+                color: "#7a4c2e",
+              }}
+            >
+              Uploading...
+            </div>
+          )}
         </div>
-      ))}
-    </div>
+        <p
+          style={{
+            fontSize: "1.2rem",
+            fontWeight: 600,
+            color: "#7a4c2e",
+            marginTop: "10px",
+          }}
+        >
+          B{item.modelNumber}
+        </p>
+      </div>
+    ))}
+</div>
+
+{/* Mobile-Friendly CSS (inline via style tag) */}
+<style jsx>{`
+  @media (max-width: 480px) {
+    div[ref] {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+`}</style>
 
  {/* Add Product Modal */}
 {showAddModal && (
