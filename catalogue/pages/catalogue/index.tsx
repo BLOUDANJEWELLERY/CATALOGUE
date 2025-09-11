@@ -322,7 +322,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.innerText = `B${item.modelNumber}`;
       modelText.style.fontWeight = "900";
       modelText.style.color = accentColor;
-      modelText.style.marginTop = "2px"; // minimal gap
+      modelText.style.marginTop = "0px"; // minimal gap
       modelText.style.fontSize = "36px";
       modelText.style.textAlign = "center";
       tempDiv.appendChild(modelText);
