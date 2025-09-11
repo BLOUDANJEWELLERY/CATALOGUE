@@ -290,14 +290,14 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Offscreen product card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "280px";
-      tempDiv.style.height = "340px"; // shorter card height
+      tempDiv.style.height = "320px"; // shorter card height
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
       tempDiv.style.alignItems = "center";
       tempDiv.style.border = `3px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
-      tempDiv.style.padding = "6px 6px 2px 6px"; // less bottom padding
+      tempDiv.style.padding = "6px 6px 1px 6px"; // less bottom padding
       tempDiv.style.overflow = "hidden";
       tempDiv.style.boxSizing = "border-box";
       tempDiv.style.position = "absolute";
@@ -310,7 +310,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "215px"; // capped so text stays inside
+        tempImg.style.maxHeight = "225px"; // capped so text stays inside
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "10px";
         tempImg.style.marginBottom = "0px"; // tight to model no
@@ -322,7 +322,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.innerText = `B${item.modelNumber}`;
       modelText.style.fontWeight = "900";
       modelText.style.color = accentColor;
-      modelText.style.marginTop = "1px"; 
+      modelText.style.marginTop = "0px"; 
       modelText.style.fontSize = "45px"; // bold and large
       modelText.style.textAlign = "center";
       modelText.style.lineHeight = "1";
@@ -334,7 +334,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         p.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
         p.style.fontSize = "18px";
         p.style.color = textColor;
-        p.style.marginTop = "0px";
+        p.style.marginTop = "1px";
         p.style.fontWeight = "500";
         p.style.textAlign = "center";
         p.style.lineHeight = "1.1";
