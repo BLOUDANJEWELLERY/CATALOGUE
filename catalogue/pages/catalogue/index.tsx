@@ -834,92 +834,117 @@ return (
         style={{ marginBottom: "10px" }}
       />
 
-      {/* Preview */}
-      {(editImagePreview || currentEditImageUrl) && (
-        <div style={{ marginBottom: "10px" }}>
-          <img
-  src={editImagePreview || currentEditImageUrl || ""}
-  alt="Preview"
-  style={{
-    width: "100%",
-    maxHeight: "200px",
-    objectFit: "contain",
-    borderRadius: "12px",
-  }}
-/>
-        </div>
-      )}
 
-      <div style={{ marginBottom: "10px" }}>
-        <label style={{ marginRight: "10px" }}>
-          <input
-            type="checkbox"
-            checked={editSizes.includes("Adult")}
-            onChange={() => handleEditSizeChange("Adult")}
-          />{" "}
-          Adult
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={editSizes.includes("Kids")}
-            onChange={() => handleEditSizeChange("Kids")}
-          />{" "}
-          Kids
-        </label>
-      </div>
-
-      {editSizes.includes("Adult") && (
-        <input
-          type="number"
-          placeholder="Weight Adult (g)"
-          value={editWeightAdult}
-          onChange={(e) => setEditWeightAdult(e.target.value)}
-          style={{ marginBottom: "10px" }}
-        />
-      )}
-      {editSizes.includes("Kids") && (
-        <input
-          type="number"
-          placeholder="Weight Kids (g)"
-          value={editWeightKids}
-          onChange={(e) => setEditWeightKids(e.target.value)}
-          style={{ marginBottom: "10px" }}
-        />
-      )}
-
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <button
-          onClick={() => handleSaveEdit(editingId)}
-          disabled={isUploading}
-          style={{
-            padding: "8px 16px",
-            background: isUploading ? "#a67c5c" : "#8b5e3c",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            cursor: isUploading ? "not-allowed" : "pointer",
-          }}
-        >
-          {isUploading ? "Saving..." : "Save Changes"}
-        </button>
-        <button
-          onClick={() => setEditingId(null)}
-          style={{
-            padding: "8px 16px",
-            background: "#ccc",
-            color: "#333",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-          }}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
+{/* Preview */}
+{(editImagePreview || currentEditImageUrl) && (
+  <div style={{ marginBottom: "15px", textAlign: "center" }}>
+    <img
+      src={editImagePreview || currentEditImageUrl || ""}
+      alt="Preview"
+      style={{
+        width: "100%",
+        maxHeight: "200px",
+        objectFit: "contain",
+        borderRadius: "12px",
+        border: "2px solid #c7a332",
+        background: "#0b1a3d",
+        padding: "4px",
+      }}
+    />
   </div>
 )}
+
+<div style={{ marginBottom: "15px", display: "flex", gap: "15px", color: "#c7a332" }}>
+  <label style={{ cursor: "pointer" }}>
+    <input
+      type="checkbox"
+      checked={editSizes.includes("Adult")}
+      onChange={() => handleEditSizeChange("Adult")}
+      style={{ marginRight: "6px" }}
+    />
+    Adult
+  </label>
+  <label style={{ cursor: "pointer" }}>
+    <input
+      type="checkbox"
+      checked={editSizes.includes("Kids")}
+      onChange={() => handleEditSizeChange("Kids")}
+      style={{ marginRight: "6px" }}
+    />
+    Kids
+  </label>
+</div>
+
+{editSizes.includes("Adult") && (
+  <input
+    type="number"
+    placeholder="Weight Adult (g)"
+    value={editWeightAdult}
+    onChange={(e) => setEditWeightAdult(e.target.value)}
+    style={{
+      marginBottom: "15px",
+      width: "100%",
+      padding: "8px",
+      borderRadius: "8px",
+      border: "1px solid #c7a332",
+      background: "#fff",
+      color: "#0b1a3d",
+    }}
+  />
+)}
+{editSizes.includes("Kids") && (
+  <input
+    type="number"
+    placeholder="Weight Kids (g)"
+    value={editWeightKids}
+    onChange={(e) => setEditWeightKids(e.target.value)}
+    style={{
+      marginBottom: "15px",
+      width: "100%",
+      padding: "8px",
+      borderRadius: "8px",
+      border: "1px solid #c7a332",
+      background: "#fff",
+      color: "#0b1a3d",
+    }}
+  />
+)}
+
+<div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
+  <button
+    onClick={() => handleSaveEdit(editingId)}
+    disabled={isUploading}
+    style={{
+      flex: 1,
+      padding: "10px 16px",
+      background: isUploading ? "#8c6b1d" : "#c7a332",
+      color: "#0b1a3d",
+      border: "none",
+      borderRadius: "8px",
+      cursor: isUploading ? "not-allowed" : "pointer",
+      fontWeight: 600,
+      transition: "background 0.3s",
+    }}
+  >
+    {isUploading ? "Saving..." : "Save Changes"}
+  </button>
+  <button
+    onClick={() => setEditingId(null)}
+    style={{
+      flex: 1,
+      padding: "10px 16px",
+      background: "#333",
+      color: "#fff",
+      border: "none",
+      borderRadius: "8px",
+      cursor: "pointer",
+      fontWeight: 600,
+    }}
+  >
+    Cancel
+  </button>
+</div>
+
   </div>
 );
 
