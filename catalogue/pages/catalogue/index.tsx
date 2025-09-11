@@ -243,10 +243,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 15;
 
-  const bgColor = "#0b1a3d"; // navy background
-  const accentColor = "#c7a332"; // luxurious gold
-  const textColor = "#fff"; // white text
-  const cardBg = "#fff"; // white card background
+  const bgColor = "#0b1a3d"; // navy
+  const accentColor = "#c7a332"; // gold
+  const textColor = "#0b1a3d"; // dark navy
+  const cardBg = "#fff"; // white card
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = filteredItems.slice(
@@ -275,7 +275,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
-            urlFor(item.image).width(400).auto("format").url()
+            urlFor(item.image).width(600).auto("format").url() // bigger fetch size
           )}`;
           const res = await fetch(proxyUrl);
           const blob = await res.blob();
@@ -289,10 +289,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         }
       }
 
-      // Offscreen div for card
+      // Offscreen card
       const tempDiv = document.createElement("div");
-      tempDiv.style.width = "200px";
-      tempDiv.style.height = "300px";
+      tempDiv.style.width = "220px";
+      tempDiv.style.height = "320px";
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -300,39 +300,39 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.style.justifyContent = "flex-start";
       tempDiv.style.border = `2px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
-      tempDiv.style.padding = "10px";
+      tempDiv.style.padding = "12px";
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.style.top = "-9999px";
       document.body.appendChild(tempDiv);
 
-      // Image (keep natural size, centered)
+      // Image (bigger now, ~200px tall)
       if (imgDataUrl) {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "150px";
+        tempImg.style.maxHeight = "200px";
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
-        tempImg.style.marginBottom = "8px";
+        tempImg.style.marginBottom = "10px";
         tempDiv.appendChild(tempImg);
       }
 
-      // Model number
+      // Model Number (bigger)
       const tempText = document.createElement("p");
       tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
-      tempText.style.color = "#0b1a3d";
-      tempText.style.marginTop = "8px";
-      tempText.style.fontSize = "14px";
+      tempText.style.color = textColor;
+      tempText.style.marginTop = "6px";
+      tempText.style.fontSize = "16px";
       tempDiv.appendChild(tempText);
 
-      // Sizes & weights
+      // Sizes & Weights (bigger too)
       const addSizeText = (label: string, weight?: number) => {
         const p = document.createElement("p");
         p.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
-        p.style.fontSize = "12px";
-        p.style.color = "#0b1a3d";
+        p.style.fontSize = "14px";
+        p.style.color = textColor;
         tempDiv.appendChild(p);
       };
 
@@ -343,17 +343,17 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         if (item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
       }
 
-      // Convert to canvas
-      const canvas = await html2canvas(tempDiv, { backgroundColor: cardBg, scale: 2 });
+      // High-resolution canvas
+      const canvas = await html2canvas(tempDiv, { backgroundColor: cardBg, scale: 3 });
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
-      // Place on PDF
+      // Place on PDF (slightly bigger size)
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 95;
-      const y = 35 + row * 120;
-      doc.addImage(finalImgData, "PNG", x, y, 75, 110);
+      const y = 35 + row * 125;
+      doc.addImage(finalImgData, "PNG", x, y, 85, 120);
     }
 
     // Footer
