@@ -223,24 +223,28 @@ const handleDownloadPDFWithLoading = async () => {
   }
 };
 
-
-const handleDownloadPDF = async () => {
+const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF("p", "mm", "a4");
+  const filteredItems = items.filter((item) => {
+    if (filter === "Adult") return item.sizes?.includes("Adult");
+    if (filter === "Kids") return item.sizes?.includes("Kids");
+    return true; // Both
+  });
+
   const itemsPerPage = 4;
-  const pages = Math.ceil(items.length / itemsPerPage);
+  const pages = Math.ceil(filteredItems.length / itemsPerPage);
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 15;
 
-  // Colors
   const bgColor = "#fdf6f0";
   const accentColor = "#8b5e3c";
   const textColor = "#7a4c2e";
   const footerColor = "#8b5e3c";
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
-    const pageItems = items.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
+    const pageItems = filteredItems.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
 
     // Header
     doc.setFillColor(...hexToRgb(accentColor));
@@ -293,6 +297,7 @@ const handleDownloadPDF = async () => {
       tempDiv.style.top = "-9999px";
       document.body.appendChild(tempDiv);
 
+      // Image
       if (imgDataUrl) {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
@@ -303,6 +308,7 @@ const handleDownloadPDF = async () => {
         tempDiv.appendChild(tempImg);
       }
 
+      // Model Number
       const tempText = document.createElement("p");
       tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
@@ -310,6 +316,24 @@ const handleDownloadPDF = async () => {
       tempText.style.marginTop = "8px";
       tempText.style.fontSize = "14px";
       tempDiv.appendChild(tempText);
+
+      // Sizes & Weights
+      if (item.sizes?.includes("Adult")) {
+        const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
+        const adultText = document.createElement("p");
+        adultText.innerText = `Adult${weight}`;
+        adultText.style.fontSize = "12px";
+        adultText.style.color = textColor;
+        tempDiv.appendChild(adultText);
+      }
+      if (item.sizes?.includes("Kids")) {
+        const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
+        const kidsText = document.createElement("p");
+        kidsText.innerText = `Kids${weight}`;
+        kidsText.style.fontSize = "12px";
+        kidsText.style.color = textColor;
+        tempDiv.appendChild(kidsText);
+      }
 
       const canvas = await html2canvas(tempDiv, { backgroundColor: bgColor, scale: 2 });
       const finalImgData = canvas.toDataURL("image/png");
@@ -322,32 +346,19 @@ const handleDownloadPDF = async () => {
       doc.addImage(finalImgData, "PNG", x, y, 75, 110);
     }
 
-    // Footer with page number inside diamond
-    const footerSize = 10; // diamond width/height
+    // Footer with diamond page number
+    const footerSize = 10;
     const cx = pageWidth / 2;
     const cy = pageHeight - 15;
 
     doc.setFillColor(...hexToRgb(footerColor));
     doc.setDrawColor(...hexToRgb(footerColor));
-
-    // Draw diamond
-    doc.lines(
-      [
-        [0, -footerSize / 2],
-        [footerSize / 2, 0],
-        [0, footerSize / 2],
-        [-footerSize / 2, 0],
-        [0, -footerSize / 2],
-      ],
-      cx,
-      cy
-    );
+    doc.lines([[0, -footerSize / 2], [footerSize / 2, 0], [0, footerSize / 2], [-footerSize / 2, 0], [0, -footerSize / 2]], cx, cy);
     doc.setFillColor(...hexToRgb(footerColor));
     doc.setDrawColor(...hexToRgb(footerColor));
     doc.setLineWidth(0.5);
-    doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD"); // Fill & stroke
+    doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD");
 
-    // Page number
     doc.setFontSize(10);
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
@@ -356,7 +367,7 @@ const handleDownloadPDF = async () => {
     if (pageIndex < pages - 1) doc.addPage();
   }
 
-  doc.save("BLOUDAN_BANGLES_CATALOGUE.pdf");
+  doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
 };
 
 // Helper function
@@ -396,24 +407,48 @@ return (
       Our Catalogue
     </h1>
 
-    <button
-      onClick={handleDownloadPDFWithLoading}
-      disabled={isLoading}
-      style={{
-        display: "block",
-        margin: "0 auto 30px",
-        padding: "10px 20px",
-        fontSize: "1rem",
-        background: isLoading ? "#a67c5c" : "#8b5e3c",
-        color: "#fff",
-        border: "none",
-        borderRadius: "8px",
-        cursor: isLoading ? "not-allowed" : "pointer",
-        transition: "background 0.3s",
-      }}
-    >
-      {isLoading ? "Generating PDF..." : "Download PDF"}
-    </button>
+<div style={{ display: "flex", justifyContent: "center", marginBottom: "30px", gap: "10px" }}>
+  <select
+    value={pdfFilter}
+    onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
+    style={{
+      padding: "10px",
+      fontSize: "1rem",
+      borderRadius: "8px",
+      border: "1px solid #8b5e3c",
+      background: "#fffaf5",
+      color: "#7a4c2e",
+    }}
+  >
+    <option value="Adult">Adult Only</option>
+    <option value="Kids">Kids Only</option>
+    <option value="Both">Both</option>
+  </select>
+
+  <button
+    onClick={async () => {
+      setIsLoading(true);
+      try {
+        await handleDownloadPDF(pdfFilter);
+      } finally {
+        setIsLoading(false);
+      }
+    }}
+    disabled={isLoading}
+    style={{
+      padding: "10px 20px",
+      fontSize: "1rem",
+      background: isLoading ? "#a67c5c" : "#8b5e3c",
+      color: "#fff",
+      border: "none",
+      borderRadius: "8px",
+      cursor: isLoading ? "not-allowed" : "pointer",
+      transition: "background 0.3s",
+    }}
+  >
+    {isLoading ? "Generating PDF..." : "Download PDF"}
+  </button>
+</div>
 
     <div
       ref={containerRef}
