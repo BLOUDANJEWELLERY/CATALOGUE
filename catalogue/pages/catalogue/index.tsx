@@ -228,7 +228,6 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF("p", "mm", "a4");
 
-  // Filter items based on selection
   const filteredItems = items.filter((item) => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
     if (filter === "Kids") return item.sizes?.includes("Kids");
@@ -244,10 +243,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 15;
 
-  const bgColor = "#fdf6f0";
-  const accentColor = "#8b5e3c";
-  const textColor = "#7a4c2e";
-  const footerColor = "#8b5e3c";
+  const bgColor = "#0b1a3d"; // navy background
+  const accentColor = "#c7a332"; // luxurious gold
+  const textColor = "#fff"; // white text
+  const cardBg = "#fff"; // white card background
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = filteredItems.slice(
@@ -260,7 +259,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     doc.rect(0, 0, pageWidth, 25, "F");
 
     doc.setFontSize(20);
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(...hexToRgb("#0b1a3d"));
     doc.setFont("helvetica", "bold");
     doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 12, { align: "center" });
 
@@ -290,11 +289,11 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         }
       }
 
-      // Offscreen div
+      // Offscreen div for card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "200px";
-      tempDiv.style.height = "300px"; // Increased height to fit both weights
-      tempDiv.style.background = bgColor;
+      tempDiv.style.height = "300px";
+      tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
       tempDiv.style.alignItems = "center";
@@ -307,66 +306,45 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.style.top = "-9999px";
       document.body.appendChild(tempDiv);
 
-      // Image
+      // Image (keep natural size, centered)
       if (imgDataUrl) {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
-        tempImg.style.width = "100%";
-        tempImg.style.maxHeight = "150px"; // Reduced to make space for weights
+        tempImg.style.maxWidth = "100%";
+        tempImg.style.maxHeight = "150px";
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
+        tempImg.style.marginBottom = "8px";
         tempDiv.appendChild(tempImg);
       }
 
-      // Model Number
+      // Model number
       const tempText = document.createElement("p");
       tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
-      tempText.style.color = textColor;
+      tempText.style.color = "#0b1a3d";
       tempText.style.marginTop = "8px";
       tempText.style.fontSize = "14px";
       tempDiv.appendChild(tempText);
 
-      // Sizes & Weights
-      if (filter === "Adult" && item.sizes?.includes("Adult")) {
-        const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
-        const adultText = document.createElement("p");
-        adultText.innerText = `Adult${weight}`;
-        adultText.style.fontSize = "12px";
-        adultText.style.color = textColor;
-        tempDiv.appendChild(adultText);
-      }
+      // Sizes & weights
+      const addSizeText = (label: string, weight?: number) => {
+        const p = document.createElement("p");
+        p.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
+        p.style.fontSize = "12px";
+        p.style.color = "#0b1a3d";
+        tempDiv.appendChild(p);
+      };
 
-      if (filter === "Kids" && item.sizes?.includes("Kids")) {
-        const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
-        const kidsText = document.createElement("p");
-        kidsText.innerText = `Kids${weight}`;
-        kidsText.style.fontSize = "12px";
-        kidsText.style.color = textColor;
-        tempDiv.appendChild(kidsText);
-      }
-
+      if (filter === "Adult" && item.sizes?.includes("Adult")) addSizeText("Adult", item.weightAdult);
+      if (filter === "Kids" && item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
       if (filter === "Both") {
-        if (item.sizes?.includes("Adult")) {
-          const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
-          const adultText = document.createElement("p");
-          adultText.innerText = `Adult${weight}`;
-          adultText.style.fontSize = "12px";
-          adultText.style.color = textColor;
-          tempDiv.appendChild(adultText);
-        }
-        if (item.sizes?.includes("Kids")) {
-          const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
-          const kidsText = document.createElement("p");
-          kidsText.innerText = `Kids${weight}`;
-          kidsText.style.fontSize = "12px";
-          kidsText.style.color = textColor;
-          tempDiv.appendChild(kidsText);
-        }
+        if (item.sizes?.includes("Adult")) addSizeText("Adult", item.weightAdult);
+        if (item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
       }
 
       // Convert to canvas
-      const canvas = await html2canvas(tempDiv, { backgroundColor: bgColor, scale: 2 });
+      const canvas = await html2canvas(tempDiv, { backgroundColor: cardBg, scale: 2 });
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
@@ -383,13 +361,13 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     const cx = pageWidth / 2;
     const cy = pageHeight - 15;
 
-    doc.setFillColor(...hexToRgb(footerColor));
-    doc.setDrawColor(...hexToRgb(footerColor));
+    doc.setFillColor(...hexToRgb(accentColor));
+    doc.setDrawColor(...hexToRgb(accentColor));
     doc.setLineWidth(0.5);
     doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD");
 
     doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(...hexToRgb("#0b1a3d"));
     doc.setFont("helvetica", "bold");
     doc.text(`${pageIndex + 1}`, cx, cy + 3, { align: "center" });
 
