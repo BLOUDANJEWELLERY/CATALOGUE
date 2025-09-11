@@ -9,6 +9,9 @@ interface CatalogueItem {
   _id: string;
   modelNumber: number;
   image: { _type: "image"; asset: { _ref: string; _type: "reference" } } | null;
+  sizes: ("Adult" | "Kids")[];
+  weightAdult?: number;
+  weightKids?: number;
 }
 
 interface CatalogueProps {
@@ -17,8 +20,16 @@ interface CatalogueProps {
 
 export const getServerSideProps: GetServerSideProps<CatalogueProps> = async () => {
   const items: CatalogueItem[] = await client.fetch(
-    `*[_type == "catalogueItem"] | order(modelNumber asc) { _id, modelNumber, image }`
+    `*[_type == "catalogueItem"] | order(modelNumber asc){
+      _id,
+      modelNumber,
+      image,
+      sizes,
+      weightAdult,
+      weightKids
+    }`
   );
+
   return { props: { items } };
 };
 
@@ -26,11 +37,11 @@ export default function Catalogue({ items }: CatalogueProps) {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const itemsWithBlank: CatalogueItem[] = [
+  // Add a "blank" item for the new item form
+  const itemsWithBlank: (CatalogueItem & { _id: string })[] = [
     ...items,
-    { _id: "blank", modelNumber: 0, image: null },
+    { _id: "blank", modelNumber: 0, image: null, sizes: [], weightAdult: undefined, weightKids: undefined },
   ];
-
 
 // State
 const [nextModelNumber, setNextModelNumber] = useState(items.length + 1);
