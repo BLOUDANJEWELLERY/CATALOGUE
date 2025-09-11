@@ -491,8 +491,9 @@ return (
   ref={containerRef}
   style={{
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", // smaller min width
-    gap: "15px", // smaller gap
+    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+    gap: "15px",
+    padding: "10px",
   }}
 >
   {/* Add Card */}
@@ -500,23 +501,30 @@ return (
     onClick={() => setShowAddModal(true)}
     style={{
       background: "#fffaf5",
-      borderRadius: "16px",
+      borderRadius: "20px",
       padding: "10px",
-      boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+      boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
       minHeight: "250px",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
       cursor: "pointer",
       textAlign: "center",
+      transition: "transform 0.2s, box-shadow 0.2s",
+    }}
+    onMouseEnter={(e) => {
+      (e.currentTarget as HTMLDivElement).style.transform = "translateY(-5px)";
+      (e.currentTarget as HTMLDivElement).style.boxShadow = "0 15px 30px rgba(0,0,0,0.15)";
+    }}
+    onMouseLeave={(e) => {
+      (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+      (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.1)";
     }}
   >
-    <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e" }}>
-      + Add New Item
-    </span>
+    <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e" }}>+ Add New Item</span>
   </div>
 
-  {/* Existing Items (Descending Order) */}
+  {/* Existing Items */}
   {items
     .slice()
     .sort((a, b) => b.modelNumber - a.modelNumber)
@@ -526,29 +534,38 @@ return (
         onClick={() => handleEditClick(item)}
         style={{
           background: "#fffaf5",
-          borderRadius: "16px",
+          borderRadius: "20px",
           padding: "10px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-          minHeight: "250px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          minHeight: "280px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           cursor: "pointer",
+          transition: "transform 0.2s, box-shadow 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLDivElement).style.transform = "translateY(-5px)";
+          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 15px 30px rgba(0,0,0,0.15)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.1)";
         }}
       >
         <div
           style={{
             width: "100%",
-            paddingTop: "100%",
+            paddingTop: "100%", // square aspect ratio
             position: "relative",
-            borderRadius: "12px",
+            borderRadius: "16px",
             overflow: "hidden",
             background: "#f5f0eb",
           }}
         >
           {item.image && (
             <img
-              src={urlFor(item.image).width(400).url()}
+              src={urlFor(item.image).width(500).url()}
               alt={`B${item.modelNumber}`}
               style={{
                 position: "absolute",
@@ -556,7 +573,7 @@ return (
                 left: 0,
                 width: "100%",
                 height: "100%",
-                objectFit: "contain",
+                objectFit: "cover",
               }}
             />
           )}
@@ -580,21 +597,52 @@ return (
             </div>
           )}
         </div>
+
         <p
           style={{
             fontSize: "1.2rem",
             fontWeight: 600,
             color: "#7a4c2e",
-            marginTop: "10px",
+            marginTop: "12px",
           }}
         >
           B{item.modelNumber}
         </p>
+
+        {/* Sizes */}
+        <div style={{ marginTop: "5px", display: "flex", gap: "8px" }}>
+          {item.sizes?.includes("Adult") && (
+            <span
+              style={{
+                fontSize: "0.9rem",
+                color: "#8b5e3c",
+                background: "#fbe8d0",
+                padding: "2px 6px",
+                borderRadius: "6px",
+              }}
+            >
+              Adult {item.weightAdult ? `- ${item.weightAdult}g` : ""}
+            </span>
+          )}
+          {item.sizes?.includes("Kids") && (
+            <span
+              style={{
+                fontSize: "0.9rem",
+                color: "#8b5e3c",
+                background: "#fbe8d0",
+                padding: "2px 6px",
+                borderRadius: "6px",
+              }}
+            >
+              Kids {item.weightKids ? `- ${item.weightKids}g` : ""}
+            </span>
+          )}
+        </div>
       </div>
     ))}
 </div>
 
-{/* Force 2 cards per row on small screens */}
+{/* Force 2 cards per row on mobile */}
 <style jsx>{`
   @media (max-width: 480px) {
     div[ref] {
