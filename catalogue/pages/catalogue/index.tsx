@@ -325,7 +325,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.style.marginTop = "0px"; 
       modelText.style.fontSize = "45px"; // bold and large
       modelText.style.textAlign = "center";
-      modelText.style.lineHeight = "1";
+      modelText.style.lineHeight = "0";
       tempDiv.appendChild(modelText);
 
       // Sizes & Weights
