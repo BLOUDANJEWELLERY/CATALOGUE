@@ -659,11 +659,32 @@ return (
 
 
 
- {/* Add Product Modal */}
+{/* Add Product Modal */}
 {showAddModal && (
-  <div style={modalStyles.overlay}>
-    <div style={modalStyles.content}>
-      <h2 style={{ color: "#7a4c2e" }}>Add New Catalogue Item</h2>
+  <div style={{
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "rgba(0,0,0,0.6)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  }}>
+    <div style={{
+      background: "#0b1a3d",
+      padding: "25px",
+      borderRadius: "20px",
+      width: "90%",
+      maxWidth: "500px",
+      boxShadow: "0 15px 40px rgba(0,0,0,0.4)",
+      color: "#fff",
+    }}>
+      <h2 style={{ color: "#c7a332", textAlign: "center", marginBottom: "20px" }}>
+        Add New Catalogue Item
+      </h2>
 
       <input
         type="file"
@@ -673,35 +694,52 @@ return (
           setNewItemImage(file);
           if (file) setNewItemImagePreview(URL.createObjectURL(file));
         }}
-        style={{ marginBottom: "10px" }}
+        style={{
+          marginBottom: "15px",
+          width: "100%",
+          padding: "8px",
+          borderRadius: "8px",
+          border: "1px solid #c7a332",
+          background: "#fff",
+          color: "#0b1a3d",
+          cursor: "pointer",
+        }}
       />
 
       {/* Preview */}
       {newItemImagePreview && (
-        <div style={{ marginBottom: "10px" }}>
+        <div style={{ marginBottom: "15px", textAlign: "center" }}>
           <img
             src={newItemImagePreview}
             alt="Preview"
-            style={{ width: "100%", maxHeight: "200px", objectFit: "contain", borderRadius: "12px" }}
+            style={{
+              width: "100%",
+              maxHeight: "200px",
+              objectFit: "contain",
+              borderRadius: "12px",
+              border: "2px solid #c7a332",
+            }}
           />
         </div>
       )}
 
-      <div style={{ marginBottom: "10px" }}>
-        <label style={{ marginRight: "10px" }}>
+      <div style={{ marginBottom: "15px", display: "flex", gap: "15px", color: "#c7a332" }}>
+        <label style={{ cursor: "pointer" }}>
           <input
             type="checkbox"
             checked={newItemSizes.includes("Adult")}
             onChange={() => handleSizeChange("Adult")}
-          />{" "}
+            style={{ marginRight: "6px" }}
+          />
           Adult
         </label>
-        <label>
+        <label style={{ cursor: "pointer" }}>
           <input
             type="checkbox"
             checked={newItemSizes.includes("Kids")}
             onChange={() => handleSizeChange("Kids")}
-          />{" "}
+            style={{ marginRight: "6px" }}
+          />
           Kids
         </label>
       </div>
@@ -712,7 +750,15 @@ return (
           placeholder="Weight Adult (g)"
           value={newItemWeightAdult}
           onChange={(e) => setNewItemWeightAdult(e.target.value)}
-          style={{ marginBottom: "10px" }}
+          style={{
+            marginBottom: "15px",
+            width: "100%",
+            padding: "8px",
+            borderRadius: "8px",
+            border: "1px solid #c7a332",
+            background: "#fff",
+            color: "#0b1a3d",
+          }}
         />
       )}
       {newItemSizes.includes("Kids") && (
@@ -721,21 +767,32 @@ return (
           placeholder="Weight Kids (g)"
           value={newItemWeightKids}
           onChange={(e) => setNewItemWeightKids(e.target.value)}
-          style={{ marginBottom: "10px" }}
+          style={{
+            marginBottom: "15px",
+            width: "100%",
+            padding: "8px",
+            borderRadius: "8px",
+            border: "1px solid #c7a332",
+            background: "#fff",
+            color: "#0b1a3d",
+          }}
         />
       )}
 
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
         <button
           onClick={handleSaveNewItem}
           disabled={isUploading}
           style={{
-            padding: "8px 16px",
-            background: isUploading ? "#a67c5c" : "#8b5e3c",
-            color: "#fff",
+            flex: 1,
+            padding: "10px 16px",
+            background: isUploading ? "#8c6b1d" : "#c7a332",
+            color: "#0b1a3d",
             border: "none",
             borderRadius: "8px",
             cursor: isUploading ? "not-allowed" : "pointer",
+            fontWeight: 600,
+            transition: "background 0.3s",
           }}
         >
           {isUploading ? "Saving..." : "Save Item"}
@@ -743,12 +800,14 @@ return (
         <button
           onClick={() => setShowAddModal(false)}
           style={{
-            padding: "8px 16px",
-            background: "#ccc",
-            color: "#333",
+            flex: 1,
+            padding: "10px 16px",
+            background: "#333",
+            color: "#fff",
             border: "none",
             borderRadius: "8px",
             cursor: "pointer",
+            fontWeight: 600,
           }}
         >
           Cancel
