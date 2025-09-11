@@ -387,6 +387,5 @@ function hexToRgb(hex: string): [number, number, number] {
           </label>
         ))}
       </div>
-    </div>
   );
 }
