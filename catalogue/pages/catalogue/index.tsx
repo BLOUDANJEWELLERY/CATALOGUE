@@ -228,7 +228,7 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF("p", "mm", "a4");
 
-  // Filtering logic
+  // Filter items based on selection
   const filteredItems = items.filter((item) => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
     if (filter === "Kids") return item.sizes?.includes("Kids");
@@ -293,7 +293,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Offscreen div
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "200px";
-      tempDiv.style.height = "250px";
+      tempDiv.style.height = "300px"; // Increased height to fit both weights
       tempDiv.style.background = bgColor;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -312,7 +312,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.width = "100%";
-        tempImg.style.maxHeight = "180px";
+        tempImg.style.maxHeight = "150px"; // Reduced to make space for weights
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
         tempDiv.appendChild(tempImg);
@@ -327,54 +327,46 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.style.fontSize = "14px";
       tempDiv.appendChild(tempText);
 
-      // ✅ Corrected weights logic
-// ✅ Sizes & Weights Rendering
-if (filter === "Adult") {
-  if (item.sizes?.includes("Adult")) {
-    const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
-    const adultText = document.createElement("p");
-    adultText.innerText = `Adult${weight}`;
-    adultText.style.fontSize = "12px";
-    adultText.style.color = textColor;
-    tempDiv.appendChild(adultText);
-  }
-}
+      // Sizes & Weights
+      if (filter === "Adult" && item.sizes?.includes("Adult")) {
+        const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
+        const adultText = document.createElement("p");
+        adultText.innerText = `Adult${weight}`;
+        adultText.style.fontSize = "12px";
+        adultText.style.color = textColor;
+        tempDiv.appendChild(adultText);
+      }
 
-if (filter === "Kids") {
-  if (item.sizes?.includes("Kids")) {
-    const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
-    const kidsText = document.createElement("p");
-    kidsText.innerText = `Kids${weight}`;
-    kidsText.style.fontSize = "12px";
-    kidsText.style.color = textColor;
-    tempDiv.appendChild(kidsText);
-  }
-}
+      if (filter === "Kids" && item.sizes?.includes("Kids")) {
+        const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
+        const kidsText = document.createElement("p");
+        kidsText.innerText = `Kids${weight}`;
+        kidsText.style.fontSize = "12px";
+        kidsText.style.color = textColor;
+        tempDiv.appendChild(kidsText);
+      }
 
-if (filter === "Both") {
-  if (item.sizes?.includes("Adult")) {
-    const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
-    const adultText = document.createElement("p");
-    adultText.innerText = `Adult${weight}`;
-    adultText.style.fontSize = "12px";
-    adultText.style.color = textColor;
-    tempDiv.appendChild(adultText);
-  }
-  if (item.sizes?.includes("Kids")) {
-    const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
-    const kidsText = document.createElement("p");
-    kidsText.innerText = `Kids${weight}`;
-    kidsText.style.fontSize = "12px";
-    kidsText.style.color = textColor;
-    tempDiv.appendChild(kidsText);
-  }
-}
+      if (filter === "Both") {
+        if (item.sizes?.includes("Adult")) {
+          const weight = item.weightAdult ? ` - ${item.weightAdult}g` : "";
+          const adultText = document.createElement("p");
+          adultText.innerText = `Adult${weight}`;
+          adultText.style.fontSize = "12px";
+          adultText.style.color = textColor;
+          tempDiv.appendChild(adultText);
+        }
+        if (item.sizes?.includes("Kids")) {
+          const weight = item.weightKids ? ` - ${item.weightKids}g` : "";
+          const kidsText = document.createElement("p");
+          kidsText.innerText = `Kids${weight}`;
+          kidsText.style.fontSize = "12px";
+          kidsText.style.color = textColor;
+          tempDiv.appendChild(kidsText);
+        }
+      }
 
       // Convert to canvas
-      const canvas = await html2canvas(tempDiv, {
-        backgroundColor: bgColor,
-        scale: 2,
-      });
+      const canvas = await html2canvas(tempDiv, { backgroundColor: bgColor, scale: 2 });
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
