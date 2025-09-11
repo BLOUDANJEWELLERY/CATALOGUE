@@ -687,27 +687,26 @@ return (
 );
 
 // Modal styles
-const modalStyles = {
+const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties } = {
   overlay: {
     position: "fixed",
     top: 0,
     left: 0,
-    width: "100vw",
-    height: "100vh",
+    width: "100%",
+    height: "100%",
     background: "rgba(0,0,0,0.5)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 999,
+    zIndex: 1000,
   },
   content: {
     background: "#fffaf5",
-    padding: "30px",
     borderRadius: "16px",
-    minWidth: "300px",
-    maxWidth: "400px",
+    padding: "20px",
     width: "90%",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+    maxWidth: "500px",
   },
 };
+
 }
