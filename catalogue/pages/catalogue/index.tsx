@@ -377,7 +377,6 @@ function hexToRgb(hex: string): [number, number, number] {
         {isUploading ? "Saving..." : "Save Item"}
       </button>
     </div>
-  ) : (
     
             <input
               id={`file-upload-${item._id}`}
