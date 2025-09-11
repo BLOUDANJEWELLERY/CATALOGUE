@@ -487,11 +487,11 @@ return (
   </button>
 </div>
 
- <div
+<div
   ref={containerRef}
   style={{
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", // reduced min width
     gap: "20px",
   }}
 >
@@ -518,8 +518,8 @@ return (
 
   {/* Existing Items (Descending Order) */}
   {items
-    .slice() // clone array
-    .sort((a, b) => b.modelNumber - a.modelNumber) // descending order
+    .slice()
+    .sort((a, b) => b.modelNumber - a.modelNumber)
     .map((item) => (
       <div
         key={item._id}
@@ -539,7 +539,7 @@ return (
         <div
           style={{
             width: "100%",
-            paddingTop: "100%", // 1:1 ratio
+            paddingTop: "100%",
             position: "relative",
             borderRadius: "12px",
             overflow: "hidden",
@@ -594,7 +594,7 @@ return (
     ))}
 </div>
 
-{/* Mobile-Friendly CSS (inline via style tag) */}
+{/* Mobile-Friendly CSS */}
 <style jsx>{`
   @media (max-width: 480px) {
     div[ref] {
