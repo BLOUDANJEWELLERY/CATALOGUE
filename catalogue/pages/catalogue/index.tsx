@@ -34,28 +34,42 @@ export const getServerSideProps: GetServerSideProps<CatalogueProps> = async () =
 };
 
 export default function Catalogue({ items }: CatalogueProps) {
-  const [uploadingId, setUploadingId] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
   // Add a "blank" item for the new item form
   const itemsWithBlank: (CatalogueItem & { _id: string })[] = [
     ...items,
     { _id: "blank", modelNumber: 0, image: null, sizes: [], weightAdult: undefined, weightKids: undefined },
   ];
 
-// State
-const [nextModelNumber, setNextModelNumber] = useState(items.length + 1);
-const [newItemImage, setNewItemImage] = useState<File | null>(null);
-const [newItemSizes, setNewItemSizes] = useState<("Adult" | "Kids")[]>([]);
-const [newItemWeightAdult, setNewItemWeightAdult] = useState("");
-const [newItemWeightKids, setNewItemWeightKids] = useState("");
 
-const [isUploading, setIsUploading] = useState(false);
+// Modal visibility
+const [showAddModal, setShowAddModal] = useState(false);
 const [editingId, setEditingId] = useState<string | null>(null);
+
+// Uploading state
+const [isUploading, setIsUploading] = useState(false);
+
+// Add New Item States
+const [newItemImage, setNewItemImage] = useState<File | null>(null);
+const [newItemImagePreview, setNewItemImagePreview] = useState<string | null>(null);
+const [newItemSizes, setNewItemSizes] = useState<("Adult" | "Kids")[]>([]);
+const [newItemWeightAdult, setNewItemWeightAdult] = useState<string>("");
+const [newItemWeightKids, setNewItemWeightKids] = useState<string>("");
+
+// Edit Item States
 const [editImage, setEditImage] = useState<File | null>(null);
+const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+const [currentEditImageUrl, setCurrentEditImageUrl] = useState<string | null>(null);
 const [editSizes, setEditSizes] = useState<("Adult" | "Kids")[]>([]);
-const [editWeightAdult, setEditWeightAdult] = useState("");
-const [editWeightKids, setEditWeightKids] = useState("");
+const [editWeightAdult, setEditWeightAdult] = useState<string>("");
+const [editWeightKids, setEditWeightKids] = useState<string>("");
+
+// General
+const [uploadingId, setUploadingId] = useState<string | null>(null);
+const containerRef = useRef<HTMLDivElement>(null);
+
+// Auto Model Number for Add New Item
+const nextModelNumber = items.length > 0 ? Math.max(...items.map(i => i.modelNumber)) + 1 : 1;
+
 // Handle checkbox selection
 const handleSizeChange = (size: "Adult" | "Kids") => {
   setNewItemSizes((prev) =>
