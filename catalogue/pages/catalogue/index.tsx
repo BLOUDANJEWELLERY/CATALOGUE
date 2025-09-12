@@ -227,73 +227,50 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 
 
 
-// Full device-proof jsPDF implementation (no html2canvas)
-async function handleDownloadPDF(filter: "Adult" | "Kids" | "Both") {
-  const doc = new jsPDF("p", "mm", "a4");
+  const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
+  const doc = new jsPDF({
+    orientation: "p",
+    unit: "mm",
+    format: "a4",
+  });
+
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  // Layout constants (mm)
-  const sideMargin = 8;
+  const margin = 8;         // side margin
   const headerHeight = 18;
-  const footerHeight = 36;   // give room for footer text
-  const footerGap = 25;      // minimum gap between bottom row and footer
-  const colGap = 12;
-  const rowGap = 12;
-  const cols = 2;
-  const rows = 2;
-  const itemsPerPage = cols * rows;
+  const footerHeight = 25;  // full footer
+  const spacingBetweenRows = 12;
 
-  const accentColor = "#c7a332";
-  const textColor = "#0b1a3d";
-  const bgColor = "#ffffff";
+  const accentColor = "#c7a332"; // gold
+  const textColor = "#0b1a3d";   // navy
+  const cardBg = "#ffffff";
 
-  // Filter items
-  const filteredItems = items.filter((it) => {
-    if (filter === "Adult") return it.sizes?.includes("Adult");
-    if (filter === "Kids") return it.sizes?.includes("Kids");
-    if (filter === "Both") return it.sizes?.includes("Adult") || it.sizes?.includes("Kids");
+  const filteredItems = items.filter((item) => {
+    if (filter === "Adult") return item.sizes?.includes("Adult");
+    if (filter === "Kids") return item.sizes?.includes("Kids");
+    if (filter === "Both")
+      return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
     return false;
   });
 
-  // Compute card dimensions strictly in mm so they cannot overflow footer
-  const usableWidth = pageWidth - sideMargin * 2 - colGap * (cols - 1);
-  const cardWidth = usableWidth / cols;
+  const itemsPerPage = 4;
+  const pages = Math.ceil(filteredItems.length / itemsPerPage);
 
-  // calculate usable vertical space for all card rows
-  const usableHeightForCards =
-    pageHeight - headerHeight - footerHeight - footerGap - (rowGap * (rows - 1)) - 8; // small inner padding
-  if (usableHeightForCards <= 0) {
-    throw new Error("Page too small for layout. Reduce font/card sizes or increase page size.");
-  }
-  const cardHeight = usableHeightForCards / rows;
+  const hexToRgbTuple = (hex: string): [number, number, number] => {
+    const rgb = hexToRgb(hex);
+    return [rgb[0], rgb[1], rgb[2]];
+  };
 
-  // helper: fetch image blob -> dataURL and natural dimensions
-  async function fetchImageData(url: string) {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-    // measure natural size
-    const imgEl = new Image();
-    return await new Promise<{ dataUrl: string; w: number; h: number }>((resolve) => {
-      imgEl.onload = () => resolve({ dataUrl, w: imgEl.naturalWidth, h: imgEl.naturalHeight });
-      imgEl.src = dataUrl;
-    });
-  }
-
-  // pages
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-
-  for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
-    const pageItems = filteredItems.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
+  for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
+    const pageItems = filteredItems.slice(
+      pageIndex * itemsPerPage,
+      (pageIndex + 1) * itemsPerPage
+    );
 
     // ----------------- HEADER -----------------
-    doc.setFillColor(...hexToRgb(accentColor));
+    const [rAccent, gAccent, bAccent] = hexToRgbTuple(accentColor);
+    doc.setFillColor(rAccent, gAccent, bAccent);
     doc.rect(0, 0, pageWidth, headerHeight, "F");
 
     doc.setFont("helvetica", "bold");
@@ -305,118 +282,145 @@ async function handleDownloadPDF(filter: "Adult" | "Kids" | "Both") {
     doc.setFontSize(15);
     doc.text("BANGLES CATALOGUE", pageWidth / 2, 15, { align: "center" });
 
-    // ----------------- CARDS (load images synchronously first) -----------------
-    const pageImageInfos = await Promise.all(
-      pageItems.map(async (it) => {
-        if (!it.image) return null;
-        try {
-          const imageUrl = urlFor(it.image).width(1200).auto("format").url();
-          const info = await fetchImageData(imageUrl);
-          return info;
-        } catch (e) {
-          console.error("Image load fail", e);
-          return null;
-        }
-      })
-    );
+    // ----------------- CARDS -----------------
+    const cardWidth = 90;
+    const cardHeight = 110; // scaled to fit footer and header
+    const colGap = 12;
+    const rowGap = spacingBetweenRows;
 
-    // Now draw cards
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const x = sideMargin + col * (cardWidth + colGap);
-      const y = headerHeight + 6 + row * (cardHeight + rowGap); // +6 small top inset
+      let imgDataUrl = "";
 
-      // Draw card background and border
-      doc.setFillColor(...hexToRgb(bgColor));
-      doc.setDrawColor(...hexToRgb(accentColor));
-      doc.setLineWidth(1);
-      doc.roundedRect(x, y, cardWidth, cardHeight, 4, 4, "FD");
-
-      // IMAGE: place scaled to fit within image area inside card
-      const imageInfo = pageImageInfos[i];
-      let textBaseY = y + 12; // default baseline if no image
-      if (imageInfo) {
-        const imgMaxW = cardWidth - 12; // 6mm side padding
-        const imgMaxH = cardHeight * 0.52; // reserve ~48% for model & weights
-        const aspect = imageInfo.w / imageInfo.h;
-        let drawW = imgMaxW;
-        let drawH = drawW / aspect;
-        if (drawH > imgMaxH) {
-          drawH = imgMaxH;
-          drawW = drawH * aspect;
-        }
-        const imgX = x + (cardWidth - drawW) / 2;
-        const imgY = y + 6; // little top padding inside card
+      if (item.image) {
         try {
-          doc.addImage(imageInfo.dataUrl, "PNG", imgX, imgY, drawW, drawH);
-        } catch (e) {
-          console.warn("addImage failed, skipping image:", e);
+          const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
+            urlFor(item.image).width(1000).auto("format").url()
+          )}`;
+          const res = await fetch(proxyUrl);
+          const blob = await res.blob();
+          imgDataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+        } catch (err) {
+          console.error(`Failed to load image for B${item.modelNumber}`, err);
         }
-        textBaseY = imgY + drawH + 4;
       }
 
-      // MODEL number (adaptive size)
-      const modelFontSize = Math.max(14, Math.min(20, cardHeight * 0.13)); // dynamic but clamped
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(modelFontSize);
-      doc.setTextColor(...hexToRgb(accentColor));
-      doc.text(`B${item.modelNumber}`, x + cardWidth / 2, textBaseY + modelFontSize / 2, { align: "center" });
+      // Build offscreen card
+      const tempDiv = document.createElement("div");
+      tempDiv.style.width = `${cardWidth}px`;
+      tempDiv.style.height = `${cardHeight}px`;
+      tempDiv.style.background = cardBg;
+      tempDiv.style.display = "flex";
+      tempDiv.style.flexDirection = "column";
+      tempDiv.style.alignItems = "center";
+      tempDiv.style.border = `2px solid ${accentColor}`;
+      tempDiv.style.borderRadius = "14px";
+      tempDiv.style.padding = "6px 6px 2px 6px";
+      tempDiv.style.position = "absolute";
+      tempDiv.style.left = "-9999px";
+      tempDiv.style.top = "-9999px";
+      document.body.appendChild(tempDiv);
 
-      // WEIGHTS (below model number)
-      const weightsY = textBaseY + modelFontSize + 4;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.setTextColor(...hexToRgb(textColor));
+      if (imgDataUrl) {
+        const tempImg = document.createElement("img");
+        tempImg.src = imgDataUrl;
+        tempImg.style.maxWidth = "100%";
+        tempImg.style.maxHeight = "55%";
+        tempImg.style.objectFit = "contain";
+        tempImg.style.borderRadius = "8px";
+        tempImg.style.marginBottom = "2px";
+        tempDiv.appendChild(tempImg);
+      }
+
+      const modelText = document.createElement("p");
+      modelText.innerText = `B${item.modelNumber}`;
+      modelText.style.fontWeight = "900";
+      modelText.style.color = accentColor;
+      modelText.style.marginTop = "0";
+      modelText.style.marginBottom = "1px";
+      modelText.style.fontSize = "28px";
+      modelText.style.textAlign = "center";
+      modelText.style.lineHeight = "1";
+      tempDiv.appendChild(modelText);
+
+      const weightsContainer = document.createElement("div");
+      weightsContainer.style.width = "100%";
+      weightsContainer.style.display = "flex";
+      weightsContainer.style.justifyContent = "center";
+      weightsContainer.style.marginTop = "2px";
+      tempDiv.appendChild(weightsContainer);
+
+      const addWeightText = (label: string, weight?: number) => {
+        const span = document.createElement("span");
+        span.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
+        span.style.fontSize = "14px";
+        span.style.color = textColor;
+        span.style.fontWeight = "500";
+        return span;
+      };
 
       const showAdult = filter !== "Kids" && item.sizes?.includes("Adult");
       const showKids = filter !== "Adult" && item.sizes?.includes("Kids");
 
       if (showAdult && showKids) {
-        // left and right within card with 6mm padding
-        doc.text(`Adult - ${item.weightAdult ?? ""}g`, x + 6, weightsY);
-        doc.text(`Kids - ${item.weightKids ?? ""}g`, x + cardWidth - 6, weightsY, { align: "right" });
+        weightsContainer.style.justifyContent = "space-between";
+        weightsContainer.style.padding = "0 10px";
+        weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
+        weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       } else if (showAdult) {
-        doc.text(`Adult - ${item.weightAdult ?? ""}g`, x + cardWidth / 2, weightsY, { align: "center" });
+        weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
       } else if (showKids) {
-        doc.text(`Kids - ${item.weightKids ?? ""}g`, x + cardWidth / 2, weightsY, { align: "center" });
+        weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       }
-    } // end cards loop
 
-    // ----------------- FOOTER (draw LAST, guaranteed visible on top) -----------------
-    const footerY = pageHeight - footerHeight;
-    doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, footerY, pageWidth, footerHeight, "F");
+      const canvas = await html2canvas(tempDiv, {
+        backgroundColor: cardBg,
+        scale: 6,
+      });
+      const finalImgData = canvas.toDataURL("image/png");
+      document.body.removeChild(tempDiv);
 
-    // small inner decorative stroke
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.4);
-    doc.rect(6, footerY + 6, pageWidth - 12, footerHeight - 12, "S");
+      // Determine position (2 columns x 2 rows)
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = margin + col * (cardWidth + colGap);
+      const y =
+        headerHeight + 10 + row * (cardHeight + rowGap); // below header, above footer
+      doc.addImage(finalImgData, "PNG", x, y, cardWidth, cardHeight);
+    }
 
-    // Footer text same style as header (draw after cards)
+    // ----------------- FOOTER -----------------
+    const footerTop = pageHeight - footerHeight;
+    doc.setFillColor(rAccent, gAccent, bAccent);
+    doc.rect(0, footerTop, pageWidth, footerHeight, "F");
+
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
+    doc.setFontSize(14);
     doc.setTextColor(0, 0, 0);
-    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, footerY + 12, { align: "center" });
+    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, footerTop + 8, { align: "center" });
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.text("BANGLES CATALOGUE", pageWidth / 2, footerY + 22, { align: "center" });
+    doc.text("BANGLES CATALOGUE", pageWidth / 2, footerTop + 16, { align: "center" });
 
-    // Page number (bottom center)
+    // Page number
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(...hexToRgb(textColor));
-    doc.text(String(pageIndex + 1), pageWidth / 2, pageHeight - 6, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(`${pageIndex + 1}`, pageWidth / 2, footerTop + footerHeight - 5, {
+      align: "center",
+    });
 
-    // Add new page if needed
-    if (pageIndex < totalPages - 1) doc.addPage();
-  } // end pages
+    if (pageIndex < pages - 1) doc.addPage();
+  }
 
   doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
-}
+};
 
+  
 /* hexToRgb: convert '#rrggbb' to [r,g,b] */
 function hexToRgb(hex: string) {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
