@@ -226,7 +226,11 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 };
 
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
-  const doc = new jsPDF("p", "mm", "a4");
+  const doc = new jsPDF({
+    orientation: "p",
+    unit: "mm",
+    format: [210, 350], // A4 width, extra height
+  });
 
   const filteredItems = items.filter((item) => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
@@ -236,24 +240,17 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     return false;
   });
 
-  const itemsPerPage = 4;
+  const itemsPerPage = 4; // still 2x2 grid
   const pages = Math.ceil(filteredItems.length / itemsPerPage);
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-
-  const margin = 8;          // left/right/top margin
-  const headerHeight = 18;   // header bar
-  const bottomMargin = 25;   // footer safe zone
+  const margin = 8;          // side margin
+  const bottomMargin = 30;   // safe space for footer
 
   const accentColor = "#c7a332"; // gold
   const textColor = "#0b1a3d";   // navy
   const cardBg = "#ffffff";      // white
-
-  // Space for cards between header and footer
-  const usableHeight = pageHeight - headerHeight - bottomMargin;
-  const topOffset = headerHeight + 4; // start a bit below header
-  const rowSpacing = usableHeight / 2; // since 2 rows of cards per page
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = filteredItems.slice(
@@ -261,9 +258,9 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       (pageIndex + 1) * itemsPerPage
     );
 
-    // Header
+    // ===== HEADER =====
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, 0, pageWidth, headerHeight, "F");
+    doc.rect(0, 0, pageWidth, 18, "F");
 
     doc.setFontSize(20);
     doc.setTextColor(0, 0, 0);
@@ -274,11 +271,11 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     doc.setFont("helvetica", "normal");
     doc.text("BANGLES CATALOGUE", pageWidth / 2, 15, { align: "center" });
 
+    // ===== CARDS =====
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
       let imgDataUrl = "";
 
-      // Fetch sharp image
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
@@ -296,10 +293,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         }
       }
 
-      // Build offscreen card
+      // Build card offscreen
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
-      tempDiv.style.height = "300px";
+      tempDiv.style.height = "330px";
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -336,7 +333,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.style.lineHeight = "0.5";
       tempDiv.appendChild(modelText);
 
-      // Sizes & weights container
+      // Weights
       const weightsContainer = document.createElement("div");
       weightsContainer.style.width = "100%";
       weightsContainer.style.display = "flex";
@@ -370,7 +367,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       }
 
-      // Render card
+      // Render card as canvas
       const canvas = await html2canvas(tempDiv, {
         backgroundColor: cardBg,
         scale: 7,
@@ -378,15 +375,15 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
-      // Place on PDF (adjusted for bottom margin)
+      // Place on PDF grid
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 100;
-      const y = topOffset + row * rowSpacing - 5; // small upward shift
+      const y = 22 + row * 136; // higher spacing
       doc.addImage(finalImgData, "PNG", x, y, 95, 128);
     }
 
-    // Footer
+    // ===== FOOTER =====
     const footerSize = 10;
     const cx = pageWidth / 2;
     const cy = pageHeight - bottomMargin;
