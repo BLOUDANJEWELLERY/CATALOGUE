@@ -226,63 +226,63 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 };
 
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
-  const doc = new jsPDF("p", "mm", "a4"); // A4 portrait
+  const doc = new jsPDF("p", "mm", "a4"); // standard A4
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  const margin = 8;        // side margin
-  const topMargin = 18;    // header height
-  const bottomMargin = 25; // footer height
-  const cardSpacingX = 12; // horizontal space between cards
-  const cardSpacingY = 15; // vertical space between cards
-  const cardWidth = 90;    // width of card
-  const cardHeight = 115;  // height of card
-  const accentColor = "#c7a332"; // gold
-  const textColor = "#0b1a3d";   // navy
+  const margin = 8;            // side margin
+  const headerHeight = 18;
+  const footerHeight = 25;     // full footer height
+  const cardSpacingX = 12;
+  const cardSpacingY = 15;     // vertical spacing between cards
+  const cardWidth = 90;        // width of each card
+  const cardHeight = 110;      // height of each card
+  const accentColor = "#c7a332";
+  const textColor = "#0b1a3d";
+  const cardBg = "#ffffff";
 
-  const filteredItems = items.filter((item) => {
+  // Filter items
+  const filteredItems = items.filter(item => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
     if (filter === "Kids") return item.sizes?.includes("Kids");
     if (filter === "Both") return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
     return false;
   });
 
-  const itemsPerPage = 4;
+  // Calculate rows per page dynamically to fit within A4 minus header & footer
+  const availableHeight = pageHeight - headerHeight - footerHeight - margin*2;
+  const rowsPerPage = 2; // 2 rows always
+  const itemsPerPage = 2 * rowsPerPage; // 2 columns
+
   const pages = Math.ceil(filteredItems.length / itemsPerPage);
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = filteredItems.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
 
-    // Header
+    // --- HEADER ---
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, 0, pageWidth, topMargin, "F");
+    doc.rect(0, 0, pageWidth, headerHeight, "F");
+
     doc.setFontSize(20);
+    doc.setTextColor(0,0,0);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 12, { align: "center" });
+    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 8, { align: "center" });
+
     doc.setFontSize(15);
     doc.setFont("helvetica", "normal");
-    doc.text("BANGLES CATALOGUE", pageWidth / 2, 18, { align: "center" });
+    doc.text("BANGLES CATALOGUE", pageWidth / 2, 15, { align: "center" });
 
-    // Cards placement: 2 columns x 2 rows
+    // --- CARDS ---
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const x = margin + col * (cardWidth + cardSpacingX);
-      const y = topMargin + row * (cardHeight + cardSpacingY);
-
-      // Draw card background
-      doc.setFillColor(...hexToRgb("#ffffff"));
-      doc.setDrawColor(...hexToRgb(accentColor));
-      doc.setLineWidth(1.5);
-      doc.roundedRect(x, y, cardWidth, cardHeight, 4, 4, "FD");
-
-      // Load image and scale it
       let imgDataUrl = "";
+
+      // Load image synchronously
       if (item.image) {
         try {
-          const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(urlFor(item.image).width(1000).auto("format").url())}`;
+          const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
+            urlFor(item.image).width(1000).auto("format").url()
+          )}`;
           const res = await fetch(proxyUrl);
           const blob = await res.blob();
           imgDataUrl = await new Promise<string>((resolve) => {
@@ -290,73 +290,112 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
             reader.onloadend = () => resolve(reader.result as string);
             reader.readAsDataURL(blob);
           });
-        } catch (err) {
-          console.error(`Failed to load image for B${item.modelNumber}`, err);
+        } catch(e) {
+          console.error(`Image load failed for B${item.modelNumber}`, e);
         }
       }
 
+      // Build offscreen card div
+      const tempDiv = document.createElement("div");
+      tempDiv.style.width = `${cardWidth}px`;
+      tempDiv.style.height = `${cardHeight}px`;
+      tempDiv.style.background = cardBg;
+      tempDiv.style.display = "flex";
+      tempDiv.style.flexDirection = "column";
+      tempDiv.style.alignItems = "center";
+      tempDiv.style.border = `2px solid ${accentColor}`;
+      tempDiv.style.borderRadius = "12px";
+      tempDiv.style.padding = "4px 4px 2px 4px";
+      tempDiv.style.position = "absolute";
+      tempDiv.style.left = "-9999px";
+      tempDiv.style.top = "-9999px";
+      document.body.appendChild(tempDiv);
+
+      // Image
       if (imgDataUrl) {
-        const imgMaxWidth = cardWidth - 10;
-        const imgMaxHeight = 60;
-        const img = new Image();
+        const img = document.createElement("img");
         img.src = imgDataUrl;
-        await new Promise<void>((resolve) => {
-          img.onload = () => {
-            const imgAspect = img.width / img.height;
-            let drawWidth = imgMaxWidth;
-            let drawHeight = drawWidth / imgAspect;
-            if (drawHeight > imgMaxHeight) {
-              drawHeight = imgMaxHeight;
-              drawWidth = drawHeight * imgAspect;
-            }
-            const imgX = x + (cardWidth - drawWidth) / 2;
-            const imgY = y + 5; // small padding from top inside card
-            doc.addImage(imgDataUrl, "PNG", imgX, imgY, drawWidth, drawHeight);
-            resolve();
-          };
-        });
+        img.style.maxWidth = "100%";
+        img.style.maxHeight = "60%";
+        img.style.objectFit = "contain";
+        img.style.borderRadius = "8px";
+        img.style.marginBottom = "1px";
+        tempDiv.appendChild(img);
       }
 
       // Model Number
-      doc.setFontSize(20);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...hexToRgb(accentColor));
-      doc.text(`B${item.modelNumber}`, x + cardWidth / 2, y + 70, { align: "center" });
+      const modelText = document.createElement("p");
+      modelText.innerText = `B${item.modelNumber}`;
+      modelText.style.fontWeight = "900";
+      modelText.style.color = accentColor;
+      modelText.style.marginTop = "1px";
+      modelText.style.marginBottom = "1px";
+      modelText.style.fontSize = "24px";
+      modelText.style.textAlign = "center";
+      tempDiv.appendChild(modelText);
 
-      // Sizes & weights
+      // Sizes & weights container
+      const weightsDiv = document.createElement("div");
+      weightsDiv.style.display = "flex";
+      weightsDiv.style.width = "100%";
+      weightsDiv.style.justifyContent = "center";
+      weightsDiv.style.marginTop = "4px";
+
+      const addWeight = (label:string, weight?: number) => {
+        const span = document.createElement("span");
+        span.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
+        span.style.fontSize = "12px";
+        span.style.fontWeight = "500";
+        span.style.color = textColor;
+        return span;
+      };
+
       const showAdult = filter !== "Kids" && item.sizes?.includes("Adult");
       const showKids = filter !== "Adult" && item.sizes?.includes("Kids");
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(...hexToRgb(textColor));
-      if (showAdult && showKids) {
-        doc.text(`Adult - ${item.weightAdult}g`, x + 10, y + 85);
-        doc.text(`Kids - ${item.weightKids}g`, x + cardWidth - 10, y + 85, { align: "right" });
-      } else if (showAdult) {
-        doc.text(`Adult - ${item.weightAdult}g`, x + cardWidth / 2, y + 85, { align: "center" });
-      } else if (showKids) {
-        doc.text(`Kids - ${item.weightKids}g`, x + cardWidth / 2, y + 85, { align: "center" });
+
+      if(showAdult && showKids) {
+        weightsDiv.style.justifyContent = "space-between";
+        weightsDiv.style.padding = "0 10px";
+        weightsDiv.appendChild(addWeight("Adult", item.weightAdult));
+        weightsDiv.appendChild(addWeight("Kids", item.weightKids));
+      } else if(showAdult) {
+        weightsDiv.appendChild(addWeight("Adult", item.weightAdult));
+      } else if(showKids) {
+        weightsDiv.appendChild(addWeight("Kids", item.weightKids));
       }
+
+      tempDiv.appendChild(weightsDiv);
+
+      // Render card to canvas
+      const canvas = await html2canvas(tempDiv, { backgroundColor: cardBg, scale: 6 });
+      const finalImg = canvas.toDataURL("image/png");
+      document.body.removeChild(tempDiv);
+
+      // Place on PDF
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = margin + col * (cardWidth + cardSpacingX);
+      const y = headerHeight + margin + row * (cardHeight + cardSpacingY);
+      doc.addImage(finalImg, "PNG", x, y, cardWidth, cardHeight);
     }
 
-    // Footer
+    // --- FOOTER ---
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, pageHeight - bottomMargin, pageWidth, bottomMargin, "F");
-    doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, pageHeight - bottomMargin + 10, { align: "center" });
-    doc.setFontSize(15);
-    doc.setFont("helvetica", "normal");
-    doc.text("BANGLES CATALOGUE", pageWidth / 2, pageHeight - bottomMargin + 18, { align: "center" });
+    doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
 
-    // Page number on footer
-    doc.setFontSize(11);
+    doc.setFontSize(16);
+    doc.setTextColor(0,0,0);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...hexToRgb(textColor));
-    doc.text(`${pageIndex + 1}`, pageWidth / 2, pageHeight - 5, { align: "center" });
+    doc.text("BLOUDAN JEWELLERY", pageWidth/2, pageHeight - footerHeight + 8, {align: "center"});
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(12);
+    doc.text("BANGLES CATALOGUE", pageWidth/2, pageHeight - footerHeight + 15, {align: "center"});
 
-    if (pageIndex < pages - 1) doc.addPage();
+    // Page number
+    doc.setFontSize(10);
+    doc.text(`${pageIndex+1}`, pageWidth/2, pageHeight - 5, {align: "center"});
+
+    if(pageIndex < pages - 1) doc.addPage();
   }
 
   doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
