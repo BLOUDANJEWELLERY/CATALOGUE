@@ -226,11 +226,7 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 };
 
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
-  const doc = new jsPDF({
-    orientation: "p",
-    unit: "mm",
-    format: [210, 550], // custom taller A4 width
-  });
+  const doc = new jsPDF("p", "mm", "a4"); // Standard A4
 
   const filteredItems = items.filter((item) => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
@@ -240,19 +236,26 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     return false;
   });
 
-  const itemsPerPage = 4;
-  const pages = Math.ceil(filteredItems.length / itemsPerPage);
-
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 8;          // side margin
-  const bottomMargin = 30;   // space for footer
+  const sideMargin = 8;
+  const headerHeight = 18;
+  const footerHeight = 25; // Footer area for page number
+  const cardSpacingX = 12;
+  const cardSpacingY = 20;
+  const cardWidth = 90;
+  const cardHeight = 115;
 
-  const accentColor = "#c7a332"; // gold
-  const textColor = "#0b1a3d";   // navy
-  const cardBg = "#ffffff";      // white
+  const accentColor = "#c7a332"; // Gold
+  const textColor = "#0b1a3d";   // Navy
+  const cardBg = "#ffffff";      // White
 
-  for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
+  const itemsPerRow = 2;
+  const rowsPerPage = 2; // Two rows fit safely between header & footer
+  const itemsPerPage = itemsPerRow * rowsPerPage;
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+
+  for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
     const pageItems = filteredItems.slice(
       pageIndex * itemsPerPage,
       (pageIndex + 1) * itemsPerPage
@@ -260,22 +263,32 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
     // Header
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, 0, pageWidth, 18, "F");
-
+    doc.rect(0, 0, pageWidth, headerHeight, "F");
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
     doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "bold");
     doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 8, { align: "center" });
-
-    doc.setFontSize(15);
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(15);
     doc.text("BANGLES CATALOGUE", pageWidth / 2, 15, { align: "center" });
 
+    // Footer (rectangle + page number)
+    const footerY = pageHeight - footerHeight;
+    doc.setFillColor(...hexToRgb(accentColor));
+    doc.rect(0, footerY, pageWidth, footerHeight, "F"); // full-width footer background
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...hexToRgb(textColor));
+    doc.text(`${pageIndex + 1}`, pageWidth / 2, footerY + footerHeight / 2 + 3, {
+      align: "center",
+    });
+
+    // Cards
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
       let imgDataUrl = "";
 
-      // Fetch sharp image
+      // Fetch image
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
@@ -293,10 +306,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         }
       }
 
-      // Build offscreen card
+      // Offscreen card
       const tempDiv = document.createElement("div");
-      tempDiv.style.width = "270px";
-      tempDiv.style.height = "330px";
+      tempDiv.style.width = `${cardWidth}px`;
+      tempDiv.style.height = `${cardHeight}px`;
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -311,14 +324,14 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
       // Image
       if (imgDataUrl) {
-        const tempImg = document.createElement("img");
-        tempImg.src = imgDataUrl;
-        tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "245px";
-        tempImg.style.objectFit = "contain";
-        tempImg.style.borderRadius = "10px";
-        tempImg.style.marginBottom = "0px";
-        tempDiv.appendChild(tempImg);
+        const img = document.createElement("img");
+        img.src = imgDataUrl;
+        img.style.maxWidth = "100%";
+        img.style.maxHeight = "245px";
+        img.style.objectFit = "contain";
+        img.style.borderRadius = "10px";
+        img.style.marginBottom = "0px";
+        tempDiv.appendChild(img);
       }
 
       // Model number
@@ -333,7 +346,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.style.lineHeight = "0.5";
       tempDiv.appendChild(modelText);
 
-      // Sizes & weights container
+      // Weights
       const weightsContainer = document.createElement("div");
       weightsContainer.style.width = "100%";
       weightsContainer.style.display = "flex";
@@ -356,18 +369,15 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       if (showAdult && showKids) {
         weightsContainer.style.justifyContent = "space-between";
         weightsContainer.style.padding = "0 20px";
-
-        const adultSpan = addWeightText("Adult", item.weightAdult);
-        const kidsSpan = addWeightText("Kids", item.weightKids);
-        weightsContainer.appendChild(adultSpan);
-        weightsContainer.appendChild(kidsSpan);
+        weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
+        weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       } else if (showAdult) {
         weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
       } else if (showKids) {
         weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       }
 
-      // Render card
+      // Render to image
       const canvas = await html2canvas(tempDiv, {
         backgroundColor: cardBg,
         scale: 6,
@@ -375,30 +385,17 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
-      // Place on PDF (scaled smaller)
-      const cardWidth = 90;   // was 95
-      const cardHeight = 115; // was 128
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const x = margin + col * (cardWidth + 12);  // spacing between columns
-      const y = 22 + row * (cardHeight + 20);     // spacing between rows
+      // Calculate position
+      const col = i % itemsPerRow;
+      const row = Math.floor(i / itemsPerRow);
+      const yStart = headerHeight + 10;
+      const y = yStart + row * (cardHeight + cardSpacingY);
+      const x = sideMargin + col * (cardWidth + cardSpacingX);
+
       doc.addImage(finalImgData, "PNG", x, y, cardWidth, cardHeight);
     }
 
-    // Footer
-    const footerSize = 10;
-    const cx = pageWidth / 2;
-    const cy = pageHeight - bottomMargin;
-
-    doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD");
-
-    doc.setFontSize(11);
-    doc.setTextColor(...hexToRgb(textColor));
-    doc.setFont("helvetica", "bold");
-    doc.text(`${pageIndex + 1}`, cx, cy + 3, { align: "center" });
-
-    if (pageIndex < pages - 1) doc.addPage();
+    if (pageIndex < totalPages - 1) doc.addPage();
   }
 
   doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
