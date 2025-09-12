@@ -229,7 +229,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF({
     orientation: "p",
     unit: "mm",
-    format: [210, 350], // A4 width, extra height
+    format: [210, 350], // custom taller A4 width
   });
 
   const filteredItems = items.filter((item) => {
@@ -240,13 +240,13 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     return false;
   });
 
-  const itemsPerPage = 4; // still 2x2 grid
+  const itemsPerPage = 4;
   const pages = Math.ceil(filteredItems.length / itemsPerPage);
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 8;          // side margin
-  const bottomMargin = 30;   // safe space for footer
+  const bottomMargin = 30;   // space for footer
 
   const accentColor = "#c7a332"; // gold
   const textColor = "#0b1a3d";   // navy
@@ -258,7 +258,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       (pageIndex + 1) * itemsPerPage
     );
 
-    // ===== HEADER =====
+    // Header
     doc.setFillColor(...hexToRgb(accentColor));
     doc.rect(0, 0, pageWidth, 18, "F");
 
@@ -271,11 +271,11 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     doc.setFont("helvetica", "normal");
     doc.text("BANGLES CATALOGUE", pageWidth / 2, 15, { align: "center" });
 
-    // ===== CARDS =====
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
       let imgDataUrl = "";
 
+      // Fetch sharp image
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
@@ -293,7 +293,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         }
       }
 
-      // Build card offscreen
+      // Build offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
       tempDiv.style.height = "330px";
@@ -333,7 +333,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.style.lineHeight = "0.5";
       tempDiv.appendChild(modelText);
 
-      // Weights
+      // Sizes & weights container
       const weightsContainer = document.createElement("div");
       weightsContainer.style.width = "100%";
       weightsContainer.style.display = "flex";
@@ -367,23 +367,25 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       }
 
-      // Render card as canvas
+      // Render card
       const canvas = await html2canvas(tempDiv, {
         backgroundColor: cardBg,
-        scale: 7,
+        scale: 6,
       });
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
-      // Place on PDF grid
+      // Place on PDF (scaled smaller)
+      const cardWidth = 90;   // was 95
+      const cardHeight = 115; // was 128
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const x = margin + col * 100;
-      const y = 22 + row * 136; // higher spacing
-      doc.addImage(finalImgData, "PNG", x, y, 95, 128);
+      const x = margin + col * (cardWidth + 12);  // spacing between columns
+      const y = 22 + row * (cardHeight + 20);     // spacing between rows
+      doc.addImage(finalImgData, "PNG", x, y, cardWidth, cardHeight);
     }
 
-    // ===== FOOTER =====
+    // Footer
     const footerSize = 10;
     const cx = pageWidth / 2;
     const cy = pageHeight - bottomMargin;
