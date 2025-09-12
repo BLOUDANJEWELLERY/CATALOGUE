@@ -239,26 +239,26 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  // Layout constants
   const sideMargin = 8;
   const headerHeight = 18;
   const footerHeight = 35;
-  const footerGap = 25; // gap above footer
+  const footerGap = 25; // minimum gap above footer
   const rowsPerPage = 2;
   const colsPerRow = 2;
   const itemsPerPage = rowsPerPage * colsPerRow;
 
   const cardSpacingX = 12;
   const cardSpacingY = 15;
+
   const accentColor = "#c7a332";
   const textColor = "#0b1a3d";
   const cardBg = "#ffffff";
 
-  // Calculate card width/height dynamically
-  const usableWidth = pageWidth - sideMargin * 2 - cardSpacingX;
-  const cardWidth = usableWidth / colsPerRow;
+  // Usable area between header and footer
   const usableHeight = pageHeight - headerHeight - footerHeight - footerGap - cardSpacingY;
   const cardHeight = usableHeight / rowsPerPage;
+  const usableWidth = pageWidth - sideMargin * 2 - cardSpacingX;
+  const cardWidth = usableWidth / colsPerRow;
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
 
@@ -311,7 +311,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.style.alignItems = "center";
       tempDiv.style.border = `3px solid ${accentColor}`;
       tempDiv.style.borderRadius = "12px";
-      tempDiv.style.padding = "6px 6px 4px 6px";
+      tempDiv.style.padding = "4px 6px 4px 6px";
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.style.top = "-9999px";
@@ -322,10 +322,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = `${cardHeight * 0.55}px`; // 55% of card height
+        tempImg.style.maxHeight = `${cardHeight * 0.55}px`;
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "10px";
-        tempImg.style.marginBottom = "0px";
+        tempImg.style.marginBottom = "2px";
         tempDiv.appendChild(tempImg);
       }
 
@@ -336,7 +336,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.style.color = accentColor;
       modelText.style.marginTop = "2px";
       modelText.style.marginBottom = "2px";
-      modelText.style.fontSize = "24px";
+      modelText.style.fontSize = "22px";
       modelText.style.textAlign = "center";
       tempDiv.appendChild(modelText);
 
@@ -362,7 +362,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
       if (showAdult && showKids) {
         weightsContainer.style.justifyContent = "space-between";
-        weightsContainer.style.padding = "0 8px";
+        weightsContainer.style.padding = "0 6px";
         weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
         weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       } else if (showAdult) {
@@ -378,7 +378,6 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
-      // Position card
       const row = Math.floor(i / colsPerRow);
       const col = i % colsPerRow;
       const yStart = headerHeight + 10;
@@ -397,6 +396,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     doc.setFontSize(18);
     doc.setTextColor(0, 0, 0);
     doc.text("BLOUDAN JEWELLERY", pageWidth / 2, footerY + 12, { align: "center" });
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(14);
     doc.text("BANGLES CATALOGUE", pageWidth / 2, footerY + 22, { align: "center" });
