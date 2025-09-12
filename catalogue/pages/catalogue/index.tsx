@@ -229,7 +229,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF({
     orientation: "p",
     unit: "mm",
-    format: [210, 350], // custom taller A4 width
+    format: [210, 550], // custom taller A4 width
   });
 
   const filteredItems = items.filter((item) => {
