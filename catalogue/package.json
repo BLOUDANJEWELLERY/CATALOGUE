@@ -24,6 +24,7 @@
     "next-auth": "^4.24.11",
     "next-sanity": "^10.0.16",
     "node-fetch": "^3.3.2",
+    "puppeteer": "^24.20.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "session": "^0.1.0"
