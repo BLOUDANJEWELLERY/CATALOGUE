@@ -226,145 +226,135 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 };
 
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
-  const doc = new jsPDF("p", "mm", "a4"); // default A4
+  const doc = new jsPDF("p", "mm", "a4"); // A4 portrait
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  const margin = 8;        // side margin
+  const topMargin = 18;    // header height
+  const bottomMargin = 25; // footer height
+  const cardSpacingX = 12; // horizontal space between cards
+  const cardSpacingY = 15; // vertical space between cards
+  const cardWidth = 90;    // width of card
+  const cardHeight = 115;  // height of card
+  const accentColor = "#c7a332"; // gold
+  const textColor = "#0b1a3d";   // navy
 
   const filteredItems = items.filter((item) => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
     if (filter === "Kids") return item.sizes?.includes("Kids");
-    if (filter === "Both")
-      return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
+    if (filter === "Both") return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
     return false;
   });
 
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-
-  const margin = 8;          // side margin
-  const headerHeight = 20;   // header
-  const footerHeight = 25;   // footer space
-  const cardWidth = 90;      // width of each card
-  const cardHeight = 110;    // height of each card
-  const rowGap = 12;         // vertical gap between card rows
-  const colGap = 10;         // horizontal gap between card columns
-
-  const accentColor = "#c7a332"; // gold
-  const textColor = "#0b1a3d";   // navy
-  const cardBg = "#ffffff";      // white
-
-  const itemsPerRow = 2;
-  const rowsPerPage = 2;
-  const itemsPerPage = itemsPerRow * rowsPerPage;
+  const itemsPerPage = 4;
   const pages = Math.ceil(filteredItems.length / itemsPerPage);
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
-    const pageItems = filteredItems.slice(
-      pageIndex * itemsPerPage,
-      (pageIndex + 1) * itemsPerPage
-    );
+    const pageItems = filteredItems.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
 
-    // HEADER
+    // Header
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, 0, pageWidth, headerHeight, "F");
-
-    doc.setFont("helvetica", "bold");
+    doc.rect(0, 0, pageWidth, topMargin, "F");
     doc.setFontSize(20);
-    doc.setTextColor(0, 0, 0);
-    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 8, { align: "center" });
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(15);
-    doc.text("BANGLES CATALOGUE", pageWidth / 2, 16, { align: "center" });
-
-    // FOOTER
-    doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
-
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(...hexToRgb(textColor));
-    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, pageHeight - footerHeight + 8, { align: "center" });
-    doc.text("BANGLES CATALOGUE", pageWidth / 2, pageHeight - footerHeight + 15, { align: "center" });
-    doc.text(`${pageIndex + 1}`, pageWidth / 2, pageHeight - 5, { align: "center" });
+    doc.setTextColor(0, 0, 0);
+    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 12, { align: "center" });
+    doc.setFontSize(15);
+    doc.setFont("helvetica", "normal");
+    doc.text("BANGLES CATALOGUE", pageWidth / 2, 18, { align: "center" });
 
-    // CARDS
+    // Cards placement: 2 columns x 2 rows
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
-      const col = i % itemsPerRow;
-      const row = Math.floor(i / itemsPerRow);
-      const x = margin + col * (cardWidth + colGap);
-      const y = headerHeight + row * (cardHeight + rowGap);
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = margin + col * (cardWidth + cardSpacingX);
+      const y = topMargin + row * (cardHeight + cardSpacingY);
 
-      // CARD BACKGROUND & BORDER
-      doc.setFillColor(...hexToRgb(cardBg));
+      // Draw card background
+      doc.setFillColor(...hexToRgb("#ffffff"));
       doc.setDrawColor(...hexToRgb(accentColor));
-      doc.setLineWidth(0.8);
-      doc.roundedRect(x, y, cardWidth, cardHeight, 6, 6, "FD");
+      doc.setLineWidth(1.5);
+      doc.roundedRect(x, y, cardWidth, cardHeight, 4, 4, "FD");
 
-      // IMAGE
+      // Load image and scale it
+      let imgDataUrl = "";
       if (item.image) {
         try {
-          const imgUrl = await fetch(
-            `/api/proxyImage?url=${encodeURIComponent(
-              urlFor(item.image).width(1000).auto("format").url()
-            )}`
-          ).then(res => res.blob())
-           .then(blob => new Promise<string>((resolve) => {
-             const reader = new FileReader();
-             reader.onloadend = () => resolve(reader.result as string);
-             reader.readAsDataURL(blob);
-           }));
-
-          const imgHeight = 55; // fits in card
-          const imgWidth = cardWidth - 16;
-          doc.addImage(imgUrl, "PNG", x + 8, y + 8, imgWidth, imgHeight);
+          const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(urlFor(item.image).width(1000).auto("format").url())}`;
+          const res = await fetch(proxyUrl);
+          const blob = await res.blob();
+          imgDataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
         } catch (err) {
           console.error(`Failed to load image for B${item.modelNumber}`, err);
         }
       }
 
-      // MODEL NUMBER
-      doc.setFont("helvetica", "bold");
+      if (imgDataUrl) {
+        const imgMaxWidth = cardWidth - 10;
+        const imgMaxHeight = 60;
+        const img = new Image();
+        img.src = imgDataUrl;
+        await new Promise<void>((resolve) => {
+          img.onload = () => {
+            const imgAspect = img.width / img.height;
+            let drawWidth = imgMaxWidth;
+            let drawHeight = drawWidth / imgAspect;
+            if (drawHeight > imgMaxHeight) {
+              drawHeight = imgMaxHeight;
+              drawWidth = drawHeight * imgAspect;
+            }
+            const imgX = x + (cardWidth - drawWidth) / 2;
+            const imgY = y + 5; // small padding from top inside card
+            doc.addImage(imgDataUrl, "PNG", imgX, imgY, drawWidth, drawHeight);
+            resolve();
+          };
+        });
+      }
+
+      // Model Number
       doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
       doc.setTextColor(...hexToRgb(accentColor));
       doc.text(`B${item.modelNumber}`, x + cardWidth / 2, y + 70, { align: "center" });
 
-      // WEIGHTS
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-      doc.setTextColor(...hexToRgb(textColor));
-
+      // Sizes & weights
       const showAdult = filter !== "Kids" && item.sizes?.includes("Adult");
       const showKids = filter !== "Adult" && item.sizes?.includes("Kids");
-
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...hexToRgb(textColor));
       if (showAdult && showKids) {
-        // inline adult/kids weights
-        doc.text(
-          `Adult - ${item.weightAdult}g`,
-          x + 10,
-          y + 82
-        );
-        doc.text(
-          `Kids - ${item.weightKids}g`,
-          x + cardWidth - 10,
-          y + 82,
-          { align: "right" }
-        );
+        doc.text(`Adult - ${item.weightAdult}g`, x + 10, y + 85);
+        doc.text(`Kids - ${item.weightKids}g`, x + cardWidth - 10, y + 85, { align: "right" });
       } else if (showAdult) {
-        doc.text(
-          `Adult - ${item.weightAdult}g`,
-          x + cardWidth / 2,
-          y + 82,
-          { align: "center" }
-        );
+        doc.text(`Adult - ${item.weightAdult}g`, x + cardWidth / 2, y + 85, { align: "center" });
       } else if (showKids) {
-        doc.text(
-          `Kids - ${item.weightKids}g`,
-          x + cardWidth / 2,
-          y + 82,
-          { align: "center" }
-        );
+        doc.text(`Kids - ${item.weightKids}g`, x + cardWidth / 2, y + 85, { align: "center" });
       }
     }
+
+    // Footer
+    doc.setFillColor(...hexToRgb(accentColor));
+    doc.rect(0, pageHeight - bottomMargin, pageWidth, bottomMargin, "F");
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, pageHeight - bottomMargin + 10, { align: "center" });
+    doc.setFontSize(15);
+    doc.setFont("helvetica", "normal");
+    doc.text("BANGLES CATALOGUE", pageWidth / 2, pageHeight - bottomMargin + 18, { align: "center" });
+
+    // Page number on footer
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...hexToRgb(textColor));
+    doc.text(`${pageIndex + 1}`, pageWidth / 2, pageHeight - 5, { align: "center" });
 
     if (pageIndex < pages - 1) doc.addPage();
   }
@@ -372,16 +362,15 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
 };
 
-// Helper to convert hex color to rgb array
+// Helper function to convert hex to RGB array
 function hexToRgb(hex: string): [number, number, number] {
-  const parsed = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!parsed) return [0, 0, 0];
-  return [
-    parseInt(parsed[1], 16),
-    parseInt(parsed[2], 16),
-    parseInt(parsed[3], 16),
-  ];
+  const bigint = parseInt(hex.replace("#", ""), 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return [r, g, b];
 }
+
 
 
 // Modal styles
