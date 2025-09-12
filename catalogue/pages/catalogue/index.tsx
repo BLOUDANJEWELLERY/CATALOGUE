@@ -241,12 +241,19 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 8;          // top/side margin
-  const bottomMargin = 25;   // bottom margin
+
+  const margin = 8;          // left/right/top margin
+  const headerHeight = 18;   // header bar
+  const bottomMargin = 25;   // footer safe zone
 
   const accentColor = "#c7a332"; // gold
   const textColor = "#0b1a3d";   // navy
   const cardBg = "#ffffff";      // white
+
+  // Space for cards between header and footer
+  const usableHeight = pageHeight - headerHeight - bottomMargin;
+  const topOffset = headerHeight + 4; // start a bit below header
+  const rowSpacing = usableHeight / 2; // since 2 rows of cards per page
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = filteredItems.slice(
@@ -256,7 +263,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
     // Header
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, 0, pageWidth, 18, "F");
+    doc.rect(0, 0, pageWidth, headerHeight, "F");
 
     doc.setFontSize(20);
     doc.setTextColor(0, 0, 0);
@@ -292,7 +299,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Build offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
-      tempDiv.style.height = "330px"; // slightly reduced
+      tempDiv.style.height = "330px";
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -310,10 +317,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "245px"; // tight fit
+        tempImg.style.maxHeight = "245px";
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "10px";
-        tempImg.style.marginBottom = "0px"; // very close to model no
+        tempImg.style.marginBottom = "0px";
         tempDiv.appendChild(tempImg);
       }
 
@@ -334,7 +341,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       weightsContainer.style.width = "100%";
       weightsContainer.style.display = "flex";
       weightsContainer.style.justifyContent = "center";
-      weightsContainer.style.marginTop = "6px";
+      weightsContainer.style.marginTop = "8px";
       tempDiv.appendChild(weightsContainer);
 
       const addWeightText = (label: string, weight?: number) => {
@@ -371,18 +378,18 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
-      // Place on PDF
+      // Place on PDF (adjusted for bottom margin)
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 100;
-      const y = 22 + row * 136;
+      const y = topOffset + row * rowSpacing - 5; // small upward shift
       doc.addImage(finalImgData, "PNG", x, y, 95, 128);
     }
 
     // Footer
     const footerSize = 10;
     const cx = pageWidth / 2;
-    const cy = pageHeight - bottomMargin; // respect bottom margin
+    const cy = pageHeight - bottomMargin;
 
     doc.setFillColor(...hexToRgb(accentColor));
     doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD");
