@@ -225,6 +225,8 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
   }
 };
 
+
+
 // Full device-proof jsPDF implementation (no html2canvas)
 async function handleDownloadPDF(filter: "Adult" | "Kids" | "Both") {
   const doc = new jsPDF("p", "mm", "a4");
@@ -304,13 +306,11 @@ async function handleDownloadPDF(filter: "Adult" | "Kids" | "Both") {
     doc.text("BANGLES CATALOGUE", pageWidth / 2, 15, { align: "center" });
 
     // ----------------- CARDS (load images synchronously first) -----------------
-    // We'll prepare an array of image data (or null) so we draw only after all loads are done for this page
     const pageImageInfos = await Promise.all(
       pageItems.map(async (it) => {
         if (!it.image) return null;
         try {
           const imageUrl = urlFor(it.image).width(1200).auto("format").url();
-          // use proxy if needed: `/api/proxyImage?url=${encodeURIComponent(imageUrl)}`
           const info = await fetchImageData(imageUrl);
           return info;
         } catch (e) {
@@ -320,7 +320,7 @@ async function handleDownloadPDF(filter: "Adult" | "Kids" | "Both") {
       })
     );
 
-    // Now draw each card (images already loaded/measured)
+    // Now draw cards
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
       const col = i % cols;
@@ -336,11 +336,10 @@ async function handleDownloadPDF(filter: "Adult" | "Kids" | "Both") {
 
       // IMAGE: place scaled to fit within image area inside card
       const imageInfo = pageImageInfos[i];
+      let textBaseY = y + 12; // default baseline if no image
       if (imageInfo) {
-        // image bounding box inside card
         const imgMaxW = cardWidth - 12; // 6mm side padding
         const imgMaxH = cardHeight * 0.52; // reserve ~48% for model & weights
-        // compute target w/h preserving aspect
         const aspect = imageInfo.w / imageInfo.h;
         let drawW = imgMaxW;
         let drawH = drawW / aspect;
@@ -350,21 +349,15 @@ async function handleDownloadPDF(filter: "Adult" | "Kids" | "Both") {
         }
         const imgX = x + (cardWidth - drawW) / 2;
         const imgY = y + 6; // little top padding inside card
-        // addImage with measured data URL
         try {
           doc.addImage(imageInfo.dataUrl, "PNG", imgX, imgY, drawW, drawH);
         } catch (e) {
           console.warn("addImage failed, skipping image:", e);
         }
-        // compute baseline for text below image
-        var textBaseY = imgY + drawH + 4;
-      } else {
-        // no image: reserve small top space
-        var textBaseY = y + 12;
+        textBaseY = imgY + drawH + 4;
       }
 
-      // MODEL number (slightly adaptive size)
-      // keep it small enough to never overflow card
+      // MODEL number (adaptive size)
       const modelFontSize = Math.max(14, Math.min(20, cardHeight * 0.13)); // dynamic but clamped
       doc.setFont("helvetica", "bold");
       doc.setFontSize(modelFontSize);
@@ -425,11 +418,12 @@ async function handleDownloadPDF(filter: "Adult" | "Kids" | "Both") {
 }
 
 /* hexToRgb: convert '#rrggbb' to [r,g,b] */
-function hexToRgb(hex) {
+function hexToRgb(hex: string) {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!m) return [0, 0, 0];
   return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
 }
+
 
 
 
