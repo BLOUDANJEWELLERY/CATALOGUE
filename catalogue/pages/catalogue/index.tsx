@@ -225,189 +225,210 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
   }
 };
 
-const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
-  const doc = new jsPDF("p", "mm", "a4"); // standard A4
+// Full device-proof jsPDF implementation (no html2canvas)
+async function handleDownloadPDF(filter: "Adult" | "Kids" | "Both") {
+  const doc = new jsPDF("p", "mm", "a4");
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  const margin = 8;            // side margin
+  // Layout constants (mm)
+  const sideMargin = 8;
   const headerHeight = 18;
-  const footerHeight = 25;     // full footer height
-  const cardSpacingX = 12;
-  const cardSpacingY = 15;     // vertical spacing between cards
-  const cardWidth = 90;        // width of each card
-  const cardHeight = 110;      // height of each card
+  const footerHeight = 36;   // give room for footer text
+  const footerGap = 25;      // minimum gap between bottom row and footer
+  const colGap = 12;
+  const rowGap = 12;
+  const cols = 2;
+  const rows = 2;
+  const itemsPerPage = cols * rows;
+
   const accentColor = "#c7a332";
   const textColor = "#0b1a3d";
-  const cardBg = "#ffffff";
+  const bgColor = "#ffffff";
 
   // Filter items
-  const filteredItems = items.filter(item => {
-    if (filter === "Adult") return item.sizes?.includes("Adult");
-    if (filter === "Kids") return item.sizes?.includes("Kids");
-    if (filter === "Both") return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
+  const filteredItems = items.filter((it) => {
+    if (filter === "Adult") return it.sizes?.includes("Adult");
+    if (filter === "Kids") return it.sizes?.includes("Kids");
+    if (filter === "Both") return it.sizes?.includes("Adult") || it.sizes?.includes("Kids");
     return false;
   });
 
-  // Calculate rows per page dynamically to fit within A4 minus header & footer
-  const availableHeight = pageHeight - headerHeight - footerHeight - margin*2;
-  const rowsPerPage = 2; // 2 rows always
-  const itemsPerPage = 2 * rowsPerPage; // 2 columns
+  // Compute card dimensions strictly in mm so they cannot overflow footer
+  const usableWidth = pageWidth - sideMargin * 2 - colGap * (cols - 1);
+  const cardWidth = usableWidth / cols;
 
-  const pages = Math.ceil(filteredItems.length / itemsPerPage);
+  // calculate usable vertical space for all card rows
+  const usableHeightForCards =
+    pageHeight - headerHeight - footerHeight - footerGap - (rowGap * (rows - 1)) - 8; // small inner padding
+  if (usableHeightForCards <= 0) {
+    throw new Error("Page too small for layout. Reduce font/card sizes or increase page size.");
+  }
+  const cardHeight = usableHeightForCards / rows;
 
-  for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
+  // helper: fetch image blob -> dataURL and natural dimensions
+  async function fetchImageData(url: string) {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    // measure natural size
+    const imgEl = new Image();
+    return await new Promise<{ dataUrl: string; w: number; h: number }>((resolve) => {
+      imgEl.onload = () => resolve({ dataUrl, w: imgEl.naturalWidth, h: imgEl.naturalHeight });
+      imgEl.src = dataUrl;
+    });
+  }
+
+  // pages
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+
+  for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
     const pageItems = filteredItems.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
 
-    // --- HEADER ---
+    // ----------------- HEADER -----------------
     doc.setFillColor(...hexToRgb(accentColor));
     doc.rect(0, 0, pageWidth, headerHeight, "F");
 
-    doc.setFontSize(20);
-    doc.setTextColor(0,0,0);
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(0, 0, 0);
     doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 8, { align: "center" });
 
-    doc.setFontSize(15);
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(15);
     doc.text("BANGLES CATALOGUE", pageWidth / 2, 15, { align: "center" });
 
-    // --- CARDS ---
+    // ----------------- CARDS (load images synchronously first) -----------------
+    // We'll prepare an array of image data (or null) so we draw only after all loads are done for this page
+    const pageImageInfos = await Promise.all(
+      pageItems.map(async (it) => {
+        if (!it.image) return null;
+        try {
+          const imageUrl = urlFor(it.image).width(1200).auto("format").url();
+          // use proxy if needed: `/api/proxyImage?url=${encodeURIComponent(imageUrl)}`
+          const info = await fetchImageData(imageUrl);
+          return info;
+        } catch (e) {
+          console.error("Image load fail", e);
+          return null;
+        }
+      })
+    );
+
+    // Now draw each card (images already loaded/measured)
     for (let i = 0; i < pageItems.length; i++) {
       const item = pageItems[i];
-      let imgDataUrl = "";
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = sideMargin + col * (cardWidth + colGap);
+      const y = headerHeight + 6 + row * (cardHeight + rowGap); // +6 small top inset
 
-      // Load image synchronously
-      if (item.image) {
-        try {
-          const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
-            urlFor(item.image).width(1000).auto("format").url()
-          )}`;
-          const res = await fetch(proxyUrl);
-          const blob = await res.blob();
-          imgDataUrl = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-          });
-        } catch(e) {
-          console.error(`Image load failed for B${item.modelNumber}`, e);
+      // Draw card background and border
+      doc.setFillColor(...hexToRgb(bgColor));
+      doc.setDrawColor(...hexToRgb(accentColor));
+      doc.setLineWidth(1);
+      doc.roundedRect(x, y, cardWidth, cardHeight, 4, 4, "FD");
+
+      // IMAGE: place scaled to fit within image area inside card
+      const imageInfo = pageImageInfos[i];
+      if (imageInfo) {
+        // image bounding box inside card
+        const imgMaxW = cardWidth - 12; // 6mm side padding
+        const imgMaxH = cardHeight * 0.52; // reserve ~48% for model & weights
+        // compute target w/h preserving aspect
+        const aspect = imageInfo.w / imageInfo.h;
+        let drawW = imgMaxW;
+        let drawH = drawW / aspect;
+        if (drawH > imgMaxH) {
+          drawH = imgMaxH;
+          drawW = drawH * aspect;
         }
+        const imgX = x + (cardWidth - drawW) / 2;
+        const imgY = y + 6; // little top padding inside card
+        // addImage with measured data URL
+        try {
+          doc.addImage(imageInfo.dataUrl, "PNG", imgX, imgY, drawW, drawH);
+        } catch (e) {
+          console.warn("addImage failed, skipping image:", e);
+        }
+        // compute baseline for text below image
+        var textBaseY = imgY + drawH + 4;
+      } else {
+        // no image: reserve small top space
+        var textBaseY = y + 12;
       }
 
-      // Build offscreen card div
-      const tempDiv = document.createElement("div");
-      tempDiv.style.width = `${cardWidth}px`;
-      tempDiv.style.height = `${cardHeight}px`;
-      tempDiv.style.background = cardBg;
-      tempDiv.style.display = "flex";
-      tempDiv.style.flexDirection = "column";
-      tempDiv.style.alignItems = "center";
-      tempDiv.style.border = `2px solid ${accentColor}`;
-      tempDiv.style.borderRadius = "12px";
-      tempDiv.style.padding = "4px 4px 2px 4px";
-      tempDiv.style.position = "absolute";
-      tempDiv.style.left = "-9999px";
-      tempDiv.style.top = "-9999px";
-      document.body.appendChild(tempDiv);
+      // MODEL number (slightly adaptive size)
+      // keep it small enough to never overflow card
+      const modelFontSize = Math.max(14, Math.min(20, cardHeight * 0.13)); // dynamic but clamped
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(modelFontSize);
+      doc.setTextColor(...hexToRgb(accentColor));
+      doc.text(`B${item.modelNumber}`, x + cardWidth / 2, textBaseY + modelFontSize / 2, { align: "center" });
 
-      // Image
-      if (imgDataUrl) {
-        const img = document.createElement("img");
-        img.src = imgDataUrl;
-        img.style.maxWidth = "100%";
-        img.style.maxHeight = "60%";
-        img.style.objectFit = "contain";
-        img.style.borderRadius = "8px";
-        img.style.marginBottom = "1px";
-        tempDiv.appendChild(img);
-      }
-
-      // Model Number
-      const modelText = document.createElement("p");
-      modelText.innerText = `B${item.modelNumber}`;
-      modelText.style.fontWeight = "900";
-      modelText.style.color = accentColor;
-      modelText.style.marginTop = "1px";
-      modelText.style.marginBottom = "1px";
-      modelText.style.fontSize = "24px";
-      modelText.style.textAlign = "center";
-      tempDiv.appendChild(modelText);
-
-      // Sizes & weights container
-      const weightsDiv = document.createElement("div");
-      weightsDiv.style.display = "flex";
-      weightsDiv.style.width = "100%";
-      weightsDiv.style.justifyContent = "center";
-      weightsDiv.style.marginTop = "4px";
-
-      const addWeight = (label:string, weight?: number) => {
-        const span = document.createElement("span");
-        span.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
-        span.style.fontSize = "12px";
-        span.style.fontWeight = "500";
-        span.style.color = textColor;
-        return span;
-      };
+      // WEIGHTS (below model number)
+      const weightsY = textBaseY + modelFontSize + 4;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(...hexToRgb(textColor));
 
       const showAdult = filter !== "Kids" && item.sizes?.includes("Adult");
       const showKids = filter !== "Adult" && item.sizes?.includes("Kids");
 
-      if(showAdult && showKids) {
-        weightsDiv.style.justifyContent = "space-between";
-        weightsDiv.style.padding = "0 10px";
-        weightsDiv.appendChild(addWeight("Adult", item.weightAdult));
-        weightsDiv.appendChild(addWeight("Kids", item.weightKids));
-      } else if(showAdult) {
-        weightsDiv.appendChild(addWeight("Adult", item.weightAdult));
-      } else if(showKids) {
-        weightsDiv.appendChild(addWeight("Kids", item.weightKids));
+      if (showAdult && showKids) {
+        // left and right within card with 6mm padding
+        doc.text(`Adult - ${item.weightAdult ?? ""}g`, x + 6, weightsY);
+        doc.text(`Kids - ${item.weightKids ?? ""}g`, x + cardWidth - 6, weightsY, { align: "right" });
+      } else if (showAdult) {
+        doc.text(`Adult - ${item.weightAdult ?? ""}g`, x + cardWidth / 2, weightsY, { align: "center" });
+      } else if (showKids) {
+        doc.text(`Kids - ${item.weightKids ?? ""}g`, x + cardWidth / 2, weightsY, { align: "center" });
       }
+    } // end cards loop
 
-      tempDiv.appendChild(weightsDiv);
-
-      // Render card to canvas
-      const canvas = await html2canvas(tempDiv, { backgroundColor: cardBg, scale: 6 });
-      const finalImg = canvas.toDataURL("image/png");
-      document.body.removeChild(tempDiv);
-
-      // Place on PDF
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const x = margin + col * (cardWidth + cardSpacingX);
-      const y = headerHeight + margin + row * (cardHeight + cardSpacingY);
-      doc.addImage(finalImg, "PNG", x, y, cardWidth, cardHeight);
-    }
-
-    // --- FOOTER ---
+    // ----------------- FOOTER (draw LAST, guaranteed visible on top) -----------------
+    const footerY = pageHeight - footerHeight;
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
+    doc.rect(0, footerY, pageWidth, footerHeight, "F");
 
-    doc.setFontSize(16);
-    doc.setTextColor(0,0,0);
+    // small inner decorative stroke
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.4);
+    doc.rect(6, footerY + 6, pageWidth - 12, footerHeight - 12, "S");
+
+    // Footer text same style as header (draw after cards)
     doc.setFont("helvetica", "bold");
-    doc.text("BLOUDAN JEWELLERY", pageWidth/2, pageHeight - footerHeight + 8, {align: "center"});
-    doc.setFont("helvetica","normal");
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, footerY + 12, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.text("BANGLES CATALOGUE", pageWidth/2, pageHeight - footerHeight + 15, {align: "center"});
+    doc.text("BANGLES CATALOGUE", pageWidth / 2, footerY + 22, { align: "center" });
 
-    // Page number
-    doc.setFontSize(10);
-    doc.text(`${pageIndex+1}`, pageWidth/2, pageHeight - 5, {align: "center"});
+    // Page number (bottom center)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...hexToRgb(textColor));
+    doc.text(String(pageIndex + 1), pageWidth / 2, pageHeight - 6, { align: "center" });
 
-    if(pageIndex < pages - 1) doc.addPage();
-  }
+    // Add new page if needed
+    if (pageIndex < totalPages - 1) doc.addPage();
+  } // end pages
 
   doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
-};
+}
 
-// Helper function to convert hex to RGB array
-function hexToRgb(hex: string): [number, number, number] {
-  const bigint = parseInt(hex.replace("#", ""), 16);
-  const r = (bigint >> 16) & 255;
-  const g = (bigint >> 8) & 255;
-  const b = bigint & 255;
-  return [r, g, b];
+/* hexToRgb: convert '#rrggbb' to [r,g,b] */
+function hexToRgb(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return [0, 0, 0];
+  return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
 }
 
 
