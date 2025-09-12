@@ -224,6 +224,7 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
     setIsLoading(false);
   }
 };
+
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF("p", "mm", "a4"); // Standard A4
 
@@ -240,7 +241,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const sideMargin = 8;
   const headerHeight = 18;
-  const footerHeight = 30; // full-width footer
+  const footerHeight = 40; // Increased to fit footer text + page number
   const footerGap = 25;    // gap between bottom row and footer
   const cardSpacingX = 12;
   const cardSpacingY = 15; 
@@ -280,16 +281,25 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     doc.setFillColor(...hexToRgb(accentColor));
     doc.rect(0, footerY, pageWidth, footerHeight, "F"); // full-width footer
 
-    // Optional inner rectangle for style
+    // Footer inner design rectangle
     doc.setDrawColor(...hexToRgb("#000000"));
     doc.setLineWidth(0.5);
     doc.rect(5, footerY + 5, pageWidth - 10, footerHeight - 10, "S");
 
-    // Page number centered
+    // Footer text: same as header
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0);
+    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, footerY + 12, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(14);
+    doc.text("BANGLES CATALOGUE", pageWidth / 2, footerY + 22, { align: "center" });
+
+    // Page number
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(...hexToRgb(textColor));
-    doc.text(`${pageIndex + 1}`, pageWidth / 2, footerY + footerHeight / 2 + 3, { align: "center" });
+    doc.text(`${pageIndex + 1}`, pageWidth / 2, footerY + footerHeight - 8, { align: "center" });
 
     // ===== CARDS =====
     for (let i = 0; i < pageItems.length; i++) {
