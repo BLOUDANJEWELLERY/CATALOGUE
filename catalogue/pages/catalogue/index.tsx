@@ -384,14 +384,6 @@ function hexToRgb(hex: string): [number, number, number] {
 }
 
 
-// Helper function
-function hexToRgb(hex: string): [number, number, number] {
-  const match = hex.replace("#", "").match(/.{1,2}/g);
-  if (!match) return [0, 0, 0];
-  return match.map((x) => parseInt(x, 16)) as [number, number, number];
-}
-
-
 // Modal styles
 const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties } = {
   overlay: {
