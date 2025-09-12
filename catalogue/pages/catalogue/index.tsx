@@ -299,7 +299,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Build offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
-      tempDiv.style.height = "330px";
+      tempDiv.style.height = "300px";
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
