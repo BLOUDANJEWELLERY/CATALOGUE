@@ -226,7 +226,7 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 };
 
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
-  const doc = new jsPDF("p", "mm", "a4"); // Standard A4
+  const doc = new jsPDF("p", "mm", "a4"); // standard A4
 
   const filteredItems = items.filter((item) => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
@@ -239,23 +239,26 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
+  // Layout constants
   const sideMargin = 8;
   const headerHeight = 18;
   const footerHeight = 35;
-  const footerGap = 25; // gap between last card and footer
+  const footerGap = 25; // gap above footer
+  const rowsPerPage = 2;
+  const colsPerRow = 2;
+  const itemsPerPage = rowsPerPage * colsPerRow;
+
   const cardSpacingX = 12;
   const cardSpacingY = 15;
-  const itemsPerRow = 2;
-  const rowsPerPage = 2;
-  const itemsPerPage = itemsPerRow * rowsPerPage;
-
   const accentColor = "#c7a332";
   const textColor = "#0b1a3d";
   const cardBg = "#ffffff";
 
-  const availableHeight = pageHeight - headerHeight - footerHeight - footerGap - 10;
-  const cardHeight = Math.floor((availableHeight - (rowsPerPage - 1) * cardSpacingY) / rowsPerPage);
-  const cardWidth = 90;
+  // Calculate card width/height dynamically
+  const usableWidth = pageWidth - sideMargin * 2 - cardSpacingX;
+  const cardWidth = usableWidth / colsPerRow;
+  const usableHeight = pageHeight - headerHeight - footerHeight - footerGap - cardSpacingY;
+  const cardHeight = usableHeight / rowsPerPage;
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
 
@@ -298,6 +301,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         }
       }
 
+      // Offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = `${cardWidth}px`;
       tempDiv.style.height = `${cardHeight}px`;
@@ -306,40 +310,42 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.style.flexDirection = "column";
       tempDiv.style.alignItems = "center";
       tempDiv.style.border = `3px solid ${accentColor}`;
-      tempDiv.style.borderRadius = "16px";
+      tempDiv.style.borderRadius = "12px";
       tempDiv.style.padding = "6px 6px 4px 6px";
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.style.top = "-9999px";
       document.body.appendChild(tempDiv);
 
+      // Image
       if (imgDataUrl) {
-        const img = document.createElement("img");
-        img.src = imgDataUrl;
-        img.style.maxWidth = "100%";
-        img.style.maxHeight = `${cardHeight - 70}px`;
-        img.style.objectFit = "contain";
-        img.style.borderRadius = "10px";
-        img.style.marginBottom = "0px";
-        tempDiv.appendChild(img);
+        const tempImg = document.createElement("img");
+        tempImg.src = imgDataUrl;
+        tempImg.style.maxWidth = "100%";
+        tempImg.style.maxHeight = `${cardHeight * 0.55}px`; // 55% of card height
+        tempImg.style.objectFit = "contain";
+        tempImg.style.borderRadius = "10px";
+        tempImg.style.marginBottom = "0px";
+        tempDiv.appendChild(tempImg);
       }
 
+      // Model number
       const modelText = document.createElement("p");
       modelText.innerText = `B${item.modelNumber}`;
       modelText.style.fontWeight = "900";
       modelText.style.color = accentColor;
-      modelText.style.marginTop = "0";
-      modelText.style.marginBottom = "0.5px";
-      modelText.style.fontSize = "32px";
+      modelText.style.marginTop = "2px";
+      modelText.style.marginBottom = "2px";
+      modelText.style.fontSize = "24px";
       modelText.style.textAlign = "center";
-      modelText.style.lineHeight = "1";
       tempDiv.appendChild(modelText);
 
+      // Weights
       const weightsContainer = document.createElement("div");
       weightsContainer.style.width = "100%";
       weightsContainer.style.display = "flex";
       weightsContainer.style.justifyContent = "center";
-      weightsContainer.style.marginTop = "6px";
+      weightsContainer.style.marginTop = "4px";
       tempDiv.appendChild(weightsContainer);
 
       const addWeightText = (label: string, weight?: number) => {
@@ -356,7 +362,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
       if (showAdult && showKids) {
         weightsContainer.style.justifyContent = "space-between";
-        weightsContainer.style.padding = "0 10px";
+        weightsContainer.style.padding = "0 8px";
         weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
         weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       } else if (showAdult) {
@@ -372,8 +378,9 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
-      const col = i % itemsPerRow;
-      const row = Math.floor(i / itemsPerRow);
+      // Position card
+      const row = Math.floor(i / colsPerRow);
+      const col = i % colsPerRow;
       const yStart = headerHeight + 10;
       const y = yStart + row * (cardHeight + cardSpacingY);
       const x = sideMargin + col * (cardWidth + cardSpacingX);
