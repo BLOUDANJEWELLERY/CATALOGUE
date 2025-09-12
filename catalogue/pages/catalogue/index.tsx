@@ -238,21 +238,26 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
+
   const sideMargin = 8;
   const headerHeight = 18;
   const footerHeight = 25; // Footer area for page number
+  const footerGap = 25;    // Space between bottom row and footer
   const cardSpacingX = 12;
-  const cardSpacingY = 20;
-  const cardWidth = 90;
-  const cardHeight = 115;
+  const cardSpacingY = 15; // Reduced vertical spacing
+  const itemsPerRow = 2;
+  const rowsPerPage = 2; // 2 rows fit between header and footer
+  const itemsPerPage = itemsPerRow * rowsPerPage;
 
   const accentColor = "#c7a332"; // Gold
   const textColor = "#0b1a3d";   // Navy
   const cardBg = "#ffffff";      // White
 
-  const itemsPerRow = 2;
-  const rowsPerPage = 2; // Two rows fit safely between header & footer
-  const itemsPerPage = itemsPerRow * rowsPerPage;
+  // Calculate available vertical space for cards
+  const availableHeight = pageHeight - headerHeight - footerHeight - footerGap - 20; // 20mm top padding inside cards
+  const cardHeight = Math.floor((availableHeight - (rowsPerPage - 1) * cardSpacingY) / rowsPerPage);
+  const cardWidth = 90; // tweak width to fit 2 columns
+
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
 
   for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
@@ -272,10 +277,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     doc.setFontSize(15);
     doc.text("BANGLES CATALOGUE", pageWidth / 2, 15, { align: "center" });
 
-    // Footer (rectangle + page number)
+    // Footer (full-width)
     const footerY = pageHeight - footerHeight;
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, footerY, pageWidth, footerHeight, "F"); // full-width footer background
+    doc.rect(0, footerY, pageWidth, footerHeight, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(...hexToRgb(textColor));
@@ -316,7 +321,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.style.alignItems = "center";
       tempDiv.style.border = `3px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
-      tempDiv.style.padding = "8px 8px 1px 8px";
+      tempDiv.style.padding = "6px 6px 4px 6px";
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.style.top = "-9999px";
@@ -327,7 +332,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const img = document.createElement("img");
         img.src = imgDataUrl;
         img.style.maxWidth = "100%";
-        img.style.maxHeight = "245px";
+        img.style.maxHeight = `${cardHeight - 70}px`; // leave space for model & weights
         img.style.objectFit = "contain";
         img.style.borderRadius = "10px";
         img.style.marginBottom = "0px";
@@ -341,9 +346,9 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       modelText.style.color = accentColor;
       modelText.style.marginTop = "0";
       modelText.style.marginBottom = "0.5px";
-      modelText.style.fontSize = "38px";
+      modelText.style.fontSize = "32px"; // slightly smaller to fit
       modelText.style.textAlign = "center";
-      modelText.style.lineHeight = "0.5";
+      modelText.style.lineHeight = "1";
       tempDiv.appendChild(modelText);
 
       // Weights
@@ -351,13 +356,13 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       weightsContainer.style.width = "100%";
       weightsContainer.style.display = "flex";
       weightsContainer.style.justifyContent = "center";
-      weightsContainer.style.marginTop = "8px";
+      weightsContainer.style.marginTop = "6px";
       tempDiv.appendChild(weightsContainer);
 
       const addWeightText = (label: string, weight?: number) => {
         const span = document.createElement("span");
         span.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
-        span.style.fontSize = "16px";
+        span.style.fontSize = "14px";
         span.style.color = textColor;
         span.style.fontWeight = "500";
         return span;
@@ -368,7 +373,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
       if (showAdult && showKids) {
         weightsContainer.style.justifyContent = "space-between";
-        weightsContainer.style.padding = "0 20px";
+        weightsContainer.style.padding = "0 10px";
         weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
         weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       } else if (showAdult) {
@@ -377,7 +382,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
       }
 
-      // Render to image
+      // Render card
       const canvas = await html2canvas(tempDiv, {
         backgroundColor: cardBg,
         scale: 6,
