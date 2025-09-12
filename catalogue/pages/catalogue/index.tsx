@@ -242,7 +242,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 8;          // top/side margin
-  const bottomMargin = 15;   // bottom margin
+  const bottomMargin = 25;   // bottom margin
 
   const accentColor = "#c7a332"; // gold
   const textColor = "#0b1a3d";   // navy
@@ -292,14 +292,14 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Build offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "270px";
-      tempDiv.style.height = "335px"; // slightly reduced
+      tempDiv.style.height = "330px"; // slightly reduced
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
       tempDiv.style.alignItems = "center";
       tempDiv.style.border = `3px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
-      tempDiv.style.padding = "8px";
+      tempDiv.style.padding = "8px 8px 1px 8px";
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.style.top = "-9999px";
