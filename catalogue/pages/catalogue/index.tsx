@@ -225,210 +225,238 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
   }
 };
 
+type FilterType = "Adult" | "Kids" | "Both";
 
+// Convert "#rrggbb" → {r,g,b}
+function hexToRgbTuple(hex: string): { r: number; g: number; b: number } {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return { r: 0, g: 0, b: 0 };
+  return {
+    r: parseInt(m[1], 16),
+    g: parseInt(m[2], 16),
+    b: parseInt(m[3], 16),
+  };
+}
 
-  const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
-  const doc = new jsPDF({
-    orientation: "p",
-    unit: "mm",
-    format: "a4",
+// Fetch one image as dataURL
+async function fetchImageDataUrl(item: CatalogueItem): Promise<string | null> {
+  if (!item.image) return null;
+  const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
+    urlFor(item.image).width(1000).auto("format").url()
+  )}`;
+  const res = await fetch(proxyUrl);
+  if (!res.ok) return null;
+  const blob = await res.blob();
+  return new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.readAsDataURL(blob);
+  });
+}
+
+// Draw the colored header
+function drawHeader(
+  doc: jsPDF,
+  pageWidth: number,
+  accent: { r: number; g: number; b: number }
+) {
+  const HEADER_H = 18;
+  doc.setFillColor(accent.r, accent.g, accent.b);
+  doc.rect(0, 0, pageWidth, HEADER_H, "F");
+
+  doc.setFont("helvetica", "bold").setFontSize(20).setTextColor(0, 0, 0);
+  doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 8, { align: "center" });
+
+  doc.setFont("helvetica", "normal").setFontSize(15);
+  doc.text("BANGLES CATALOGUE", pageWidth / 2, 15, { align: "center" });
+}
+
+// Draw the colored footer + page number
+function drawFooter(
+  doc: jsPDF,
+  pageWidth: number,
+  pageHeight: number,
+  accent: { r: number; g: number; b: number },
+  pageNum: number
+) {
+  const FOOTER_H = 25;
+  const top = pageHeight - FOOTER_H;
+  doc.setFillColor(accent.r, accent.g, accent.b);
+  doc.rect(0, top, pageWidth, FOOTER_H, "F");
+
+  doc.setFont("helvetica", "bold").setFontSize(14).setTextColor(0, 0, 0);
+  doc.text("BLOUDAN JEWELLERY", pageWidth / 2, top + 8, {
+    align: "center",
   });
 
+  doc.setFont("helvetica", "normal").setFontSize(12);
+  doc.text("BANGLES CATALOGUE", pageWidth / 2, top + 16, {
+    align: "center",
+  });
+
+  doc.setFont("helvetica", "bold").setFontSize(10);
+  doc.text(`${pageNum}`, pageWidth / 2, top + FOOTER_H - 5, {
+    align: "center",
+  });
+}
+
+// Render four cards onto the current page
+async function drawCardsOnPage(
+  doc: jsPDF,
+  cards: {
+    item: CatalogueItem;
+    imgDataUrl: string | null;
+  }[],
+  pageWidth: number
+) {
+  const M = 8;              // side margin
+  const HEADER_H = 18;
+  const ROW_GAP = 12;
+  const CARD_W = 90;
+  const CARD_H = 110;
+  const COL_GAP = 12;
+  const TEXT_COLOR = "#0b1a3d";
+  const BG = "#ffffff";
+
+  for (let i = 0; i < cards.length; i++) {
+    const { item, imgDataUrl } = cards[i];
+
+    // Prepare offscreen card element
+    const div = document.createElement("div");
+    Object.assign(div.style, {
+      width: `${CARD_W}px`,
+      height: `${CARD_H}px`,
+      background: BG,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      border: `2px solid #c7a332`,
+      borderRadius: "14px",
+      padding: "6px 6px 2px 6px",
+      position: "absolute",
+      left: "-9999px",
+      top: "-9999px",
+    });
+    document.body.appendChild(div);
+
+    if (imgDataUrl) {
+      const img = document.createElement("img");
+      Object.assign(img.style, {
+        maxWidth: "100%",
+        maxHeight: "55%",
+        objectFit: "contain",
+        borderRadius: "8px",
+        marginBottom: "2px",
+      });
+      img.src = imgDataUrl;
+      div.appendChild(img);
+    }
+
+    // Model number
+    const p = document.createElement("p");
+    p.innerText = `B${item.modelNumber}`;
+    Object.assign(p.style, {
+      fontWeight: "900",
+      color: "#c7a332",
+      margin: "0 0 1px",
+      fontSize: "28px",
+      textAlign: "center",
+      lineHeight: "1",
+    });
+    div.appendChild(p);
+
+    // Weights row
+    const weights = document.createElement("div");
+    Object.assign(weights.style, {
+      width: "100%",
+      display: "flex",
+      justifyContent: "center",
+      marginTop: "2px",
+    });
+    div.appendChild(weights);
+
+    const mkSpan = (label: string, w?: number) => {
+      const s = document.createElement("span");
+      s.innerText = `${label}${w ? ` - ${w}g` : ""}`;
+      Object.assign(s.style, {
+        fontSize: "14px",
+        color: TEXT_COLOR,
+        fontWeight: "500",
+      });
+      return s;
+    };
+
+    const showAdult = item.sizes.includes("Adult");
+    const showKids = item.sizes.includes("Kids");
+    if (showAdult && showKids) {
+      weights.style.justifyContent = "space-between";
+      weights.style.padding = "0 10px";
+      weights.append(mkSpan("Adult", item.weightAdult), mkSpan("Kids", item.weightKids));
+    } else if (showAdult) {
+      weights.append(mkSpan("Adult", item.weightAdult));
+    } else if (showKids) {
+      weights.append(mkSpan("Kids", item.weightKids));
+    }
+
+    // Capture card as canvas → image
+    const canvas = await html2canvas(div, { backgroundColor: BG, scale: 6 });
+    const dataUrl = canvas.toDataURL("image/png");
+    document.body.removeChild(div);
+
+    // Place on PDF
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const x = M + col * (CARD_W + COL_GAP);
+    const y = HEADER_H + 10 + row * (CARD_H + ROW_GAP);
+    doc.addImage(dataUrl, "PNG", x, y, CARD_W, CARD_H);
+  }
+}
+
+export async function handleDownloadPDF(
+  items: CatalogueItem[],
+  filter: FilterType
+) {
+  const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  const margin = 8;         // side margin
-  const headerHeight = 18;
-  const footerHeight = 25;  // full footer
-  const spacingBetweenRows = 12;
-
-  const accentColor = "#c7a332"; // gold
-  const textColor = "#0b1a3d";   // navy
-  const cardBg = "#ffffff";
-
-  const filteredItems = items.filter((item) => {
-    if (filter === "Adult") return item.sizes?.includes("Adult");
-    if (filter === "Kids") return item.sizes?.includes("Kids");
-    if (filter === "Both")
-      return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
-    return false;
+  // Filter items
+  const filtered = items.filter((it) => {
+    if (filter === "Adult") return it.sizes.includes("Adult");
+    if (filter === "Kids") return it.sizes.includes("Kids");
+    return it.sizes.includes("Adult") || it.sizes.includes("Kids");
   });
 
-  const itemsPerPage = 4;
-  const pages = Math.ceil(filteredItems.length / itemsPerPage);
+  // Preload all images in parallel
+  const allData = await Promise.all(
+    filtered.map(async (item) => ({
+      item,
+      imgDataUrl: await fetchImageDataUrl(item),
+    }))
+  );
 
-  const hexToRgbTuple = (hex: string): [number, number, number] => {
-    const rgb = hexToRgb(hex);
-    return [rgb[0], rgb[1], rgb[2]];
-  };
-
-  for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
-    const pageItems = filteredItems.slice(
-      pageIndex * itemsPerPage,
-      (pageIndex + 1) * itemsPerPage
-    );
-
-    // ----------------- HEADER -----------------
-    const [rAccent, gAccent, bAccent] = hexToRgbTuple(accentColor);
-    doc.setFillColor(rAccent, gAccent, bAccent);
-    doc.rect(0, 0, pageWidth, headerHeight, "F");
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.setTextColor(0, 0, 0);
-    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 8, { align: "center" });
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(15);
-    doc.text("BANGLES CATALOGUE", pageWidth / 2, 15, { align: "center" });
-
-    // ----------------- CARDS -----------------
-    const cardWidth = 90;
-    const cardHeight = 110; // scaled to fit footer and header
-    const colGap = 12;
-    const rowGap = spacingBetweenRows;
-
-    for (let i = 0; i < pageItems.length; i++) {
-      const item = pageItems[i];
-      let imgDataUrl = "";
-
-      if (item.image) {
-        try {
-          const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
-            urlFor(item.image).width(1000).auto("format").url()
-          )}`;
-          const res = await fetch(proxyUrl);
-          const blob = await res.blob();
-          imgDataUrl = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-          });
-        } catch (err) {
-          console.error(`Failed to load image for B${item.modelNumber}`, err);
-        }
-      }
-
-      // Build offscreen card
-      const tempDiv = document.createElement("div");
-      tempDiv.style.width = `${cardWidth}px`;
-      tempDiv.style.height = `${cardHeight}px`;
-      tempDiv.style.background = cardBg;
-      tempDiv.style.display = "flex";
-      tempDiv.style.flexDirection = "column";
-      tempDiv.style.alignItems = "center";
-      tempDiv.style.border = `2px solid ${accentColor}`;
-      tempDiv.style.borderRadius = "14px";
-      tempDiv.style.padding = "6px 6px 2px 6px";
-      tempDiv.style.position = "absolute";
-      tempDiv.style.left = "-9999px";
-      tempDiv.style.top = "-9999px";
-      document.body.appendChild(tempDiv);
-
-      if (imgDataUrl) {
-        const tempImg = document.createElement("img");
-        tempImg.src = imgDataUrl;
-        tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "55%";
-        tempImg.style.objectFit = "contain";
-        tempImg.style.borderRadius = "8px";
-        tempImg.style.marginBottom = "2px";
-        tempDiv.appendChild(tempImg);
-      }
-
-      const modelText = document.createElement("p");
-      modelText.innerText = `B${item.modelNumber}`;
-      modelText.style.fontWeight = "900";
-      modelText.style.color = accentColor;
-      modelText.style.marginTop = "0";
-      modelText.style.marginBottom = "1px";
-      modelText.style.fontSize = "28px";
-      modelText.style.textAlign = "center";
-      modelText.style.lineHeight = "1";
-      tempDiv.appendChild(modelText);
-
-      const weightsContainer = document.createElement("div");
-      weightsContainer.style.width = "100%";
-      weightsContainer.style.display = "flex";
-      weightsContainer.style.justifyContent = "center";
-      weightsContainer.style.marginTop = "2px";
-      tempDiv.appendChild(weightsContainer);
-
-      const addWeightText = (label: string, weight?: number) => {
-        const span = document.createElement("span");
-        span.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
-        span.style.fontSize = "14px";
-        span.style.color = textColor;
-        span.style.fontWeight = "500";
-        return span;
-      };
-
-      const showAdult = filter !== "Kids" && item.sizes?.includes("Adult");
-      const showKids = filter !== "Adult" && item.sizes?.includes("Kids");
-
-      if (showAdult && showKids) {
-        weightsContainer.style.justifyContent = "space-between";
-        weightsContainer.style.padding = "0 10px";
-        weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
-        weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
-      } else if (showAdult) {
-        weightsContainer.appendChild(addWeightText("Adult", item.weightAdult));
-      } else if (showKids) {
-        weightsContainer.appendChild(addWeightText("Kids", item.weightKids));
-      }
-
-      const canvas = await html2canvas(tempDiv, {
-        backgroundColor: cardBg,
-        scale: 6,
-      });
-      const finalImgData = canvas.toDataURL("image/png");
-      document.body.removeChild(tempDiv);
-
-      // Determine position (2 columns x 2 rows)
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const x = margin + col * (cardWidth + colGap);
-      const y =
-        headerHeight + 10 + row * (cardHeight + rowGap); // below header, above footer
-      doc.addImage(finalImgData, "PNG", x, y, cardWidth, cardHeight);
-    }
-
-    // ----------------- FOOTER -----------------
-    const footerTop = pageHeight - footerHeight;
-    doc.setFillColor(rAccent, gAccent, bAccent);
-    doc.rect(0, footerTop, pageWidth, footerHeight, "F");
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
-    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, footerTop + 8, { align: "center" });
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text("BANGLES CATALOGUE", pageWidth / 2, footerTop + 16, { align: "center" });
-
-    // Page number
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.text(`${pageIndex + 1}`, pageWidth / 2, footerTop + footerHeight - 5, {
-      align: "center",
-    });
-
-    if (pageIndex < pages - 1) doc.addPage();
+  // Chunk into pages of 4
+  const pages: typeof allData[][] = [];
+  while (allData.length) {
+    pages.push(allData.splice(0, 4));
   }
 
+  // Precompute accent color
+  const accent = hexToRgbTuple("#c7a332");
+
+  // Loop pages
+  pages.forEach((cards, idx) => {
+    // On page >1, add blank page then switch context
+    if (idx > 0) doc.addPage();
+    doc.setPage(idx + 1);
+
+    drawHeader(doc, pageWidth, accent);
+    drawCardsOnPage(doc, cards, pageWidth);
+    drawFooter(doc, pageWidth, pageHeight, accent, idx + 1);
+  });
+
   doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
-};
-
-  
-/* hexToRgb: convert '#rrggbb' to [r,g,b] */
-function hexToRgb(hex: string) {
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!m) return [0, 0, 0];
-  return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
 }
-
-
 
 
 // Modal styles
