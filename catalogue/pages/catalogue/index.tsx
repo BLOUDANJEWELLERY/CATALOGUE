@@ -241,17 +241,17 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const sideMargin = 8;
   const headerHeight = 18;
-  const footerHeight = 35; // enough for text + page number
-  const footerGap = 25;    // space between cards and footer
+  const footerHeight = 35;
+  const footerGap = 25; // gap between last card and footer
   const cardSpacingX = 12;
   const cardSpacingY = 15;
   const itemsPerRow = 2;
   const rowsPerPage = 2;
   const itemsPerPage = itemsPerRow * rowsPerPage;
 
-  const accentColor = "#c7a332"; // gold
-  const textColor = "#0b1a3d";   // navy
-  const cardBg = "#ffffff";      // white
+  const accentColor = "#c7a332";
+  const textColor = "#0b1a3d";
+  const cardBg = "#ffffff";
 
   const availableHeight = pageHeight - headerHeight - footerHeight - footerGap - 10;
   const cardHeight = Math.floor((availableHeight - (rowsPerPage - 1) * cardSpacingY) / rowsPerPage);
@@ -381,7 +381,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       doc.addImage(finalImgData, "PNG", x, y, cardWidth, cardHeight);
     }
 
-    // ===== FOOTER (draw after cards) =====
+    // ===== FOOTER =====
     const footerY = pageHeight - footerHeight;
     doc.setFillColor(...hexToRgb(accentColor));
     doc.rect(0, footerY, pageWidth, footerHeight, "F");
@@ -404,7 +404,6 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
 };
-
 
 // Helper function
 function hexToRgb(hex: string): [number, number, number] {
