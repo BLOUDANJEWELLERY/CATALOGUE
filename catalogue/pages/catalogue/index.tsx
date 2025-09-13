@@ -342,7 +342,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       }
 
       // Convert to canvas at super clarity
-const canvas = await html2canvas(element, {
+const canvas = await html2canvas(Element, {
   scale: 7, // ultra sharp
   useCORS: true,
   // @ts-expect-error - html2canvas accepts this at runtime but types don't include it
