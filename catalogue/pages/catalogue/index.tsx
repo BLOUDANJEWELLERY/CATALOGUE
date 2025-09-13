@@ -342,10 +342,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       }
 
       // Convert to canvas at super clarity
-const canvas = await html2canvas(Element, {
+const canvas = await html2canvas(tempDiv, {
   scale: 7, // ultra sharp
   useCORS: true,
-  // @ts-expect-error - html2canvas accepts this at runtime but types don't include it
+  // @ts-expect-error - not in type defs, but works at runtime
   imageSmoothingEnabled: false,
 });
       const finalImgData = canvas.toDataURL("image/png", 1.0);
