@@ -66,18 +66,10 @@ const validatePhoneNumber = (phone: string) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          role,
           firstName,
           lastName,
           email,
           phoneNumber: phone,
-          dob,
-          gender,
-          address1,
-          address2,
-          state,
-          country,
-          postalCode,
           password,
         }),
       });
