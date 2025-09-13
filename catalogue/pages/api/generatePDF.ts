@@ -28,18 +28,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: "Failed to generate HTML", details: htmlErr });
     }
 
-    let browser;
-    try {
-browser = await puppeteer.launch({
-  args: chromium.args,
-  defaultViewport: chromium.defaultViewport,
-  executablePath: chromium.executablePath, // <-- remove parentheses
-  headless: chromium.headless,
-});
-    } catch (launchErr) {
-      console.error("Error launching Puppeteer:", launchErr);
-      return res.status(500).json({ error: "Failed to launch Puppeteer", details: launchErr });
-    }
+let browser;
+try {
+  const executablePath = await chromium.executablePath; // await the Promise
+  browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: executablePath,
+    headless: chromium.headless,
+  });
+} catch (launchErr) {
+  console.error("Error launching Puppeteer:", launchErr);
+  return res.status(500).json({ error: "Failed to launch Puppeteer", details: launchErr });
+}
 
     let page;
     try {
