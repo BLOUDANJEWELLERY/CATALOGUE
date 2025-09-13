@@ -69,7 +69,6 @@ const validatePhoneNumber = (phone: string) => {
           firstName,
           lastName,
           email,
-          phoneNumber: phone,
           password,
         }),
       });
