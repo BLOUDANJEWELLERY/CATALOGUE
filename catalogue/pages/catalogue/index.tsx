@@ -241,7 +241,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 15;
+  const margin = 10; // reduced horizontal margins
 
   const accentColor = "#c7a332"; // luxurious gold
   const cardBg = "#fff"; // white card background
@@ -289,8 +289,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
       // Offscreen card
       const tempDiv = document.createElement("div");
-      tempDiv.style.width = "220px";
-      tempDiv.style.height = "300px";
+      tempDiv.style.width = "230px"; // increased width
+      tempDiv.style.height = "320px"; // slightly taller
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -309,10 +309,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "150px";
+        tempImg.style.maxHeight = "180px"; // increased image height
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
-        tempImg.style.marginBottom = "8px";
+        tempImg.style.marginBottom = "6px"; // slightly reduced spacing
         tempDiv.appendChild(tempImg);
       }
 
@@ -341,13 +341,13 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         if (item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
       }
 
-      // Convert to canvas at super clarity
-const canvas = await html2canvas(tempDiv, {
-  scale: 7, // ultra sharp
-  useCORS: true,
-  // @ts-expect-error - not in type defs, but works at runtime
-  imageSmoothingEnabled: false,
-});
+      // Convert to canvas at ultra clarity
+      const canvas = await html2canvas(tempDiv, {
+        scale: 7, // ultra sharp
+        useCORS: true,
+        // @ts-expect-error - not in type defs, but works at runtime
+        imageSmoothingEnabled: false,
+      });
       const finalImgData = canvas.toDataURL("image/png", 1.0);
 
       document.body.removeChild(tempDiv);
@@ -355,9 +355,9 @@ const canvas = await html2canvas(tempDiv, {
       // Place on PDF
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const x = margin + col * 95;
-      const y = 35 + row * 120;
-      doc.addImage(finalImgData, "PNG", x, y, 75, 110);
+      const x = margin + col * 105; // increased width reduces horizontal gap
+      const y = 35 + row * 130; // adjusted row height for taller cards
+      doc.addImage(finalImgData, "PNG", x, y, 90, 130); // increased card size
     }
 
     // Footer
