@@ -4,7 +4,6 @@ import { client } from "../../lib/sanity.client";
 import { urlFor } from "../../lib/sanity.image";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { generateCataloguePDF } from '../../utils/generateCataloguePDF';
 
 interface CatalogueItem {
   _id: string;
@@ -213,7 +212,20 @@ const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, itemId: string
 const [isLoading, setIsLoading] = useState(false);
 
 const handleDownloadPDF = async () => {
-  await generateCataloguePDF(items, "Both");
+  const res = await fetch('/api/generatePDF', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items, filter: "Both" })
+  });
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `BLOUDAN_BANGLES_CATALOGUE_Both.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 };
 
 
