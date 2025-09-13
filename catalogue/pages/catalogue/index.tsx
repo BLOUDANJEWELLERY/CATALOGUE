@@ -241,10 +241,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 10; // horizontal margin
+  const margin = 10;
 
-  const accentColor = "#c7a332"; // luxurious gold
-  const cardBg = "#fff"; // white card background
+  const accentColor = "#c7a332";
+  const cardBg = "#fff";
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = filteredItems.slice(
@@ -269,7 +269,6 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const item = pageItems[i];
       let imgDataUrl = "";
 
-      // Load highest quality image
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
@@ -289,7 +288,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
       // Offscreen card
       const tempDiv = document.createElement("div");
-      tempDiv.style.width = "230px"; // slightly wider
+      tempDiv.style.width = "230px";
+      tempDiv.style.height = "300px"; // reduced from 320px
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -297,7 +297,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.style.justifyContent = "flex-start";
       tempDiv.style.border = `2px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
-      tempDiv.style.padding = "10px 10px 5px 10px"; // reduced bottom padding
+      tempDiv.style.padding = "10px 10px 5px 10px"; // bottom padding reduced
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.style.top = "-9999px";
@@ -308,10 +308,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "180px"; // keep large
+        tempImg.style.maxHeight = "180px";
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
-        tempImg.style.marginBottom = "4px"; // smaller gap to text
+        tempImg.style.marginBottom = "4px"; // smaller margin to text
         tempDiv.appendChild(tempImg);
       }
 
@@ -320,7 +320,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
       tempText.style.color = "#0b1a3d";
-      tempText.style.margin = "4px 0 2px 0"; // compact
+      tempText.style.marginTop = "4px"; // reduced margin
+      tempText.style.marginBottom = "2px"; // reduce bottom space
       tempText.style.fontSize = "14px";
       tempDiv.appendChild(tempText);
 
@@ -341,23 +342,21 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         if (item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
       }
 
-       // Convert to canvas at ultra clarity
-const canvas = await html2canvas(tempDiv, {
-  scale: 7,
-  useCORS: true,
-  // @ts-expect-error works at runtime but types don't include it
-  imageSmoothingEnabled: false,
-});
+      const canvas = await html2canvas(tempDiv, {
+        scale: 7,
+        useCORS: true,
+        // @ts-expect-error
+        imageSmoothingEnabled: false,
+      });
       const finalImgData = canvas.toDataURL("image/png", 1.0);
-
       document.body.removeChild(tempDiv);
 
-      // Place on PDF
+      // PDF placement
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 105;
-      const y = 35 + row * 125; // slightly tighter vertical spacing
-      doc.addImage(finalImgData, "PNG", x, y, 90, 0); // auto height fits content
+      const y = 35 + row * 125; // slightly reduced from 130
+      doc.addImage(finalImgData, "PNG", x, y, 90, 125); // reduced height
     }
 
     // Footer
