@@ -342,12 +342,12 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       }
 
       // Convert to canvas at super clarity
-      const canvas = await html2canvas(tempDiv, {
-        backgroundColor: cardBg,
-        scale: 7, // 🔥 ultra sharp
-        useCORS: true,
-        imageSmoothingEnabled: false,
-      });
+    const canvas = await html2canvas(element, {
+  scale: 7, // ultra sharp
+  useCORS: true,
+  // @ts-ignore - html2canvas internally supports imageSmoothingEnabled
+  imageSmoothingEnabled: false,
+});
       const finalImgData = canvas.toDataURL("image/png", 1.0);
 
       document.body.removeChild(tempDiv);
