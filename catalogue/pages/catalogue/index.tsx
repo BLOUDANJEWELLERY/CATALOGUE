@@ -308,7 +308,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "160px";
+        tempImg.style.maxHeight = "170px";
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
         tempImg.style.marginBottom = "0px";
@@ -332,7 +332,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       weightContainer.style.width = "100%";
       weightContainer.style.justifyContent = "center"; // default center
       weightContainer.style.marginTop = "0px";
-      weightContainer.style.gap = "13px";
+      weightContainer.style.gap = "12px";
       tempDiv.appendChild(weightContainer);
 
       const adultWeightExists = item.sizes?.includes("Adult") && item.weightAdult;
