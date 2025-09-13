@@ -320,7 +320,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
       tempText.style.color = "#0b1a3d";
-      tempText.style.marginTop = "2px"; 
+      tempText.style.marginTop = "0px"; 
       tempText.style.marginBottom = "1px";
       tempText.style.fontSize = "28px";
       tempDiv.appendChild(tempText);
