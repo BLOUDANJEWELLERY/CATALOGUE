@@ -241,7 +241,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 10;
+  const margin = 8; // slightly reduced horizontal margin
 
   const accentColor = "#c7a332";
   const cardBg = "#fff";
@@ -288,8 +288,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
       // Offscreen card
       const tempDiv = document.createElement("div");
-      tempDiv.style.width = "230px";
-      tempDiv.style.height = "250px"; // reduced from 320px
+      tempDiv.style.width = "220px"; // slightly narrower
+      tempDiv.style.height = "280px"; // reduced height
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -297,7 +297,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.style.justifyContent = "flex-start";
       tempDiv.style.border = `2px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
-      tempDiv.style.padding = "10px 10px 1px 10px"; // bottom padding reduced
+      tempDiv.style.padding = "10px 10px 4px 10px"; // smaller bottom padding
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.style.top = "-9999px";
@@ -308,10 +308,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "100px";
+        tempImg.style.maxHeight = "170px"; // slightly smaller to fit card
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
-        tempImg.style.marginBottom = "4px"; // smaller margin to text
+        tempImg.style.marginBottom = "3px"; // reduced spacing
         tempDiv.appendChild(tempImg);
       }
 
@@ -320,8 +320,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
       tempText.style.color = "#0b1a3d";
-      tempText.style.marginTop = "4px"; // reduced margin
-      tempText.style.marginBottom = "2px"; // reduce bottom space
+      tempText.style.marginTop = "3px"; // reduced margin
+      tempText.style.marginBottom = "1px"; // reduced bottom spacing
       tempText.style.fontSize = "14px";
       tempDiv.appendChild(tempText);
 
@@ -331,7 +331,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         p.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
         p.style.fontSize = "12px";
         p.style.color = "#0b1a3d";
-        p.style.margin = "0"; // remove extra spacing
+        p.style.margin = "0"; // no extra spacing
         tempDiv.appendChild(p);
       };
 
@@ -346,17 +346,17 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         scale: 7,
         useCORS: true,
         // @ts-expect-error html2canvas accepts this at runtime but types don't include it
-imageSmoothingEnabled: false,
- });
+        imageSmoothingEnabled: false,
+      });
       const finalImgData = canvas.toDataURL("image/png", 1.0);
       document.body.removeChild(tempDiv);
 
       // PDF placement
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const x = margin + col * 105;
-      const y = 35 + row * 125; // slightly reduced from 130
-      doc.addImage(finalImgData, "PNG", x, y, 90, 125); // reduced height
+      const x = margin + col * 100; // tighter horizontal gap
+      const y = 35 + row * 120 + row * 5; // reduced row spacing + small vertical gap
+      doc.addImage(finalImgData, "PNG", x, y, 85, 120); // slightly smaller card
     }
 
     // Footer
