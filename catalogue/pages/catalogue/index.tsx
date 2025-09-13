@@ -345,9 +345,9 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const canvas = await html2canvas(tempDiv, {
         scale: 7,
         useCORS: true,
-        // @ts-expect-error
-        imageSmoothingEnabled: false,
-      });
+        // @ts-expect-error html2canvas accepts this at runtime but types don't include it
+imageSmoothingEnabled: false,
+ });
       const finalImgData = canvas.toDataURL("image/png", 1.0);
       document.body.removeChild(tempDiv);
 
