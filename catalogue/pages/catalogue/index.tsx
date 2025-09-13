@@ -243,9 +243,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 15;
 
-  const bgColor = "#0b1a3d"; // navy background
   const accentColor = "#c7a332"; // luxurious gold
-  const textColor = "#fff"; // white text
   const cardBg = "#fff"; // white card background
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
@@ -271,11 +269,11 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const item = pageItems[i];
       let imgDataUrl = "";
 
-      // Load image
+      // Load highest quality image
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
-            urlFor(item.image).width(400).auto("format").url()
+            urlFor(item.image).width(1200).auto("format").url()
           )}`;
           const res = await fetch(proxyUrl);
           const blob = await res.blob();
@@ -289,7 +287,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         }
       }
 
-      // Offscreen div for card
+      // Offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "200px";
       tempDiv.style.height = "300px";
@@ -306,7 +304,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.style.top = "-9999px";
       document.body.appendChild(tempDiv);
 
-      // Image (keep natural size, centered)
+      // Image
       if (imgDataUrl) {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
@@ -343,14 +341,16 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         if (item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
       }
 
-      // Convert to canvas (increase clarity)
-const canvas = await html2canvas(tempDiv, { 
-  backgroundColor: cardBg, 
-  scale: 6, // 🔥 higher scale = sharper images
-  useCORS: true // ensures images load crisply without tainting
-});
-const finalImgData = canvas.toDataURL("image/png", 1.0); // max quality
+      // Convert to canvas at super clarity
+      const canvas = await html2canvas(tempDiv, {
+        backgroundColor: cardBg,
+        scale: 7, // 🔥 ultra sharp
+        useCORS: true,
+        imageSmoothingEnabled: false,
+      });
+      const finalImgData = canvas.toDataURL("image/png", 1.0);
 
+      document.body.removeChild(tempDiv);
 
       // Place on PDF
       const col = i % 2;
@@ -381,7 +381,7 @@ const finalImgData = canvas.toDataURL("image/png", 1.0); // max quality
   doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
 };
 
-// Helper function
+// Helper
 function hexToRgb(hex: string): [number, number, number] {
   const match = hex.replace("#", "").match(/.{1,2}/g);
   if (!match) return [0, 0, 0];
