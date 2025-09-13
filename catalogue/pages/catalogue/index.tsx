@@ -308,7 +308,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "170px";
+        tempImg.style.maxHeight = "180px";
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
         tempImg.style.marginBottom = "0px";
