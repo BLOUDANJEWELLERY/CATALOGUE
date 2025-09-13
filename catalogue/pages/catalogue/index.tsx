@@ -321,9 +321,9 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.style.fontWeight = "700";
       tempText.style.color = "#0b1a3d";
       tempText.style.marginTop = "0px"; 
-      tempText.style.marginBottom = "2px";
+      tempText.style.marginBottom = "4px";
       tempText.style.fontSize = "35px";
-      tempText.style.lineHeight = "1"; // remove extra spacing
+      tempText.style.lineHeight = "0.8"; // remove extra spacing
       tempDiv.appendChild(tempText);
 
       // Sizes & weights
