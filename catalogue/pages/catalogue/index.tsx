@@ -311,7 +311,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         tempImg.style.maxHeight = "160px"; // slightly smaller
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
-        tempImg.style.marginBottom = "2px"; // minimal spacing
+        tempImg.style.marginBottom = "0px"; // minimal spacing
         tempDiv.appendChild(tempImg);
       }
 
