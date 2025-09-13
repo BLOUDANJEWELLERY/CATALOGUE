@@ -30,12 +30,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     let browser;
     try {
-      browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
-      });
+browser = await puppeteer.launch({
+  args: chromium.args,
+  defaultViewport: chromium.defaultViewport,
+  executablePath: chromium.executablePath, // <-- remove parentheses
+  headless: chromium.headless,
+});
     } catch (launchErr) {
       console.error("Error launching Puppeteer:", launchErr);
       return res.status(500).json({ error: "Failed to launch Puppeteer", details: launchErr });
