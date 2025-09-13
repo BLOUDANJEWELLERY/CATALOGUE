@@ -70,6 +70,7 @@ const containerRef = useRef<HTMLDivElement>(null);
 // Auto Model Number for Add New Item
 const nextModelNumber = items.length > 0 ? Math.max(...items.map(i => i.modelNumber)) + 1 : 1;
 
+const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Both");
 // Handle checkbox selection
 const handleSizeChange = (size: "Adult" | "Kids") => {
   setNewItemSizes((prev) =>
@@ -212,42 +213,53 @@ const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, itemId: string
 // Inside your component
 const [isLoading, setIsLoading] = useState(false);
 
-const handleDownloadPDFWithLoading = async () => {
+const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") => {
   setIsLoading(true);
   try {
-    await handleDownloadPDF(); // your existing PDF function
+    await handleDownloadPDF(filter); // pass the selected filter
   } catch (err) {
     console.error("Error generating PDF:", err);
+    alert("Failed to generate PDF. Check console for details.");
   } finally {
     setIsLoading(false);
   }
 };
 
-
-const handleDownloadPDF = async () => {
+const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF("p", "mm", "a4");
+
+  const filteredItems = items.filter((item) => {
+    if (filter === "Adult") return item.sizes?.includes("Adult");
+    if (filter === "Kids") return item.sizes?.includes("Kids");
+    if (filter === "Both")
+      return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
+    return false;
+  });
+
   const itemsPerPage = 4;
-  const pages = Math.ceil(items.length / itemsPerPage);
+  const pages = Math.ceil(filteredItems.length / itemsPerPage);
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 15;
 
-  // Colors
-  const bgColor = "#fdf6f0";
-  const accentColor = "#8b5e3c";
-  const textColor = "#7a4c2e";
-  const footerColor = "#8b5e3c";
+  const bgColor = "#0b1a3d"; // navy background
+  const accentColor = "#c7a332"; // luxurious gold
+  const textColor = "#fff"; // white text
+  const cardBg = "#fff"; // white card background
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
-    const pageItems = items.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage);
+    const pageItems = filteredItems.slice(
+      pageIndex * itemsPerPage,
+      (pageIndex + 1) * itemsPerPage
+    );
 
     // Header
     doc.setFillColor(...hexToRgb(accentColor));
     doc.rect(0, 0, pageWidth, 25, "F");
 
     doc.setFontSize(20);
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(...hexToRgb("#0b1a3d"));
     doc.setFont("helvetica", "bold");
     doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 12, { align: "center" });
 
@@ -259,6 +271,7 @@ const handleDownloadPDF = async () => {
       const item = pageItems[i];
       let imgDataUrl = "";
 
+      // Load image
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
@@ -272,15 +285,15 @@ const handleDownloadPDF = async () => {
             reader.readAsDataURL(blob);
           });
         } catch (err) {
-          console.error(`Failed to load image for Model #${item.modelNumber}`, err);
+          console.error(`Failed to load image for B${item.modelNumber}`, err);
         }
       }
 
-      // Offscreen div
+      // Offscreen div for card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "200px";
-      tempDiv.style.height = "250px";
-      tempDiv.style.background = bgColor;
+      tempDiv.style.height = "300px";
+      tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
       tempDiv.style.alignItems = "center";
@@ -293,28 +306,49 @@ const handleDownloadPDF = async () => {
       tempDiv.style.top = "-9999px";
       document.body.appendChild(tempDiv);
 
+      // Image (keep natural size, centered)
       if (imgDataUrl) {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
-        tempImg.style.width = "100%";
-        tempImg.style.maxHeight = "180px";
+        tempImg.style.maxWidth = "100%";
+        tempImg.style.maxHeight = "150px";
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
+        tempImg.style.marginBottom = "8px";
         tempDiv.appendChild(tempImg);
       }
 
+      // Model number
       const tempText = document.createElement("p");
-      tempText.innerText = `Model #${item.modelNumber}`;
+      tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
-      tempText.style.color = textColor;
+      tempText.style.color = "#0b1a3d";
       tempText.style.marginTop = "8px";
       tempText.style.fontSize = "14px";
       tempDiv.appendChild(tempText);
 
-      const canvas = await html2canvas(tempDiv, { backgroundColor: bgColor, scale: 2 });
+      // Sizes & weights
+      const addSizeText = (label: string, weight?: number) => {
+        const p = document.createElement("p");
+        p.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
+        p.style.fontSize = "12px";
+        p.style.color = "#0b1a3d";
+        tempDiv.appendChild(p);
+      };
+
+      if (filter === "Adult" && item.sizes?.includes("Adult")) addSizeText("Adult", item.weightAdult);
+      if (filter === "Kids" && item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
+      if (filter === "Both") {
+        if (item.sizes?.includes("Adult")) addSizeText("Adult", item.weightAdult);
+        if (item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
+      }
+
+      // Convert to canvas
+      const canvas = await html2canvas(tempDiv, { backgroundColor: cardBg, scale: 2 });
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
+      // Place on PDF
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 95;
@@ -322,41 +356,25 @@ const handleDownloadPDF = async () => {
       doc.addImage(finalImgData, "PNG", x, y, 75, 110);
     }
 
-    // Footer with page number inside diamond
-    const footerSize = 10; // diamond width/height
+    // Footer
+    const footerSize = 10;
     const cx = pageWidth / 2;
     const cy = pageHeight - 15;
 
-    doc.setFillColor(...hexToRgb(footerColor));
-    doc.setDrawColor(...hexToRgb(footerColor));
-
-    // Draw diamond
-    doc.lines(
-      [
-        [0, -footerSize / 2],
-        [footerSize / 2, 0],
-        [0, footerSize / 2],
-        [-footerSize / 2, 0],
-        [0, -footerSize / 2],
-      ],
-      cx,
-      cy
-    );
-    doc.setFillColor(...hexToRgb(footerColor));
-    doc.setDrawColor(...hexToRgb(footerColor));
+    doc.setFillColor(...hexToRgb(accentColor));
+    doc.setDrawColor(...hexToRgb(accentColor));
     doc.setLineWidth(0.5);
-    doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD"); // Fill & stroke
+    doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD");
 
-    // Page number
     doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(...hexToRgb("#0b1a3d"));
     doc.setFont("helvetica", "bold");
     doc.text(`${pageIndex + 1}`, cx, cy + 3, { align: "center" });
 
     if (pageIndex < pages - 1) doc.addPage();
   }
 
-  doc.save("BLOUDAN_BANGLES_CATALOGUE.pdf");
+  doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
 };
 
 // Helper function
@@ -375,88 +393,147 @@ const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties 
     left: 0,
     width: "100%",
     height: "100%",
-    background: "rgba(0,0,0,0.5)",
+    background: "rgba(0,0,0,0.6)", // deeper, more luxurious overlay
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
   },
   content: {
-    background: "#fffaf5",
-    borderRadius: "16px",
-    padding: "20px",
+    background: "#0b1a3d", // deep navy background
+    borderRadius: "20px",
+    padding: "25px",
     width: "90%",
     maxWidth: "500px",
+    boxShadow: "0 15px 40px rgba(0,0,0,0.4)", // elevated shadow for premium feel
+    color: "#fff", // text color inside modal
+    border: "2px solid #c7a332", // subtle golden frame
   },
 };
 
 return (
-  <div style={{ padding: "30px", background: "#fdf6f0", minHeight: "100vh" }}>
-    <h1 style={{ textAlign: "center", fontSize: "2.5rem", marginBottom: "20px", color: "#8b5e3c" }}>
-      Our Catalogue
-    </h1>
+<div style={{ padding: "30px", background: "#0b1a3d", minHeight: "100vh" }}>
+  <h1 style={{ textAlign: "center", fontSize: "2.5rem", marginBottom: "20px", color: "#c7a332" }}>
+    Our Catalogue
+  </h1>
+
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      marginBottom: "30px",
+      gap: "10px",
+    }}
+  >
+    <select
+      value={pdfFilter}
+      onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
+      style={{
+        padding: "10px",
+        fontSize: "1rem",
+        borderRadius: "8px",
+        border: "1px solid #c7a332",
+        background: "#fff",
+        color: "#0b1a3d",
+        fontWeight: 600,
+        cursor: "pointer",
+      }}
+    >
+      <option value="Adult">Adult Only</option>
+      <option value="Kids">Kids Only</option>
+      <option value="Both">Both</option>
+    </select>
 
     <button
-      onClick={handleDownloadPDFWithLoading}
+      onClick={async () => {
+        setIsLoading(true);
+        try {
+          await handleDownloadPDF(pdfFilter);
+        } finally {
+          setIsLoading(false);
+        }
+      }}
       disabled={isLoading}
       style={{
-        display: "block",
-        margin: "0 auto 30px",
         padding: "10px 20px",
         fontSize: "1rem",
-        background: isLoading ? "#a67c5c" : "#8b5e3c",
-        color: "#fff",
+        background: isLoading ? "#8c6b1d" : "#c7a332",
+        color: "#0b1a3d",
         border: "none",
         borderRadius: "8px",
         cursor: isLoading ? "not-allowed" : "pointer",
+        fontWeight: 600,
         transition: "background 0.3s",
       }}
     >
       {isLoading ? "Generating PDF..." : "Download PDF"}
     </button>
+  </div>
 
+  <div
+    ref={containerRef}
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+      gap: "15px",
+      padding: "10px",
+    }}
+  >
+    {/* Add Card */}
     <div
-      ref={containerRef}
+      onClick={() => setShowAddModal(true)}
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-        gap: "20px",
+        background: "#fff",
+        borderRadius: "20px",
+        padding: "10px",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+        minHeight: "250px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        cursor: "pointer",
+        textAlign: "center",
+        transition: "transform 0.2s, box-shadow 0.2s",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-5px)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 15px 30px rgba(0,0,0,0.25)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.2)";
       }}
     >
-      {/* Add Card */}
-      <div
-        onClick={() => setShowAddModal(true)}
-        style={{
-          background: "#fffaf5",
-          borderRadius: "16px",
-          padding: "10px",
-          boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-          minHeight: "250px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          cursor: "pointer",
-          textAlign: "center",
-        }}
-      >
-        <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e" }}>+ Add New Item</span>
-      </div>
+      <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#c7a332" }}>+ Add New Item</span>
+    </div>
 
-      {/* Existing Items */}
-      {items.map((item) => (
+    {/* Existing Items */}
+    {items
+      .slice()
+      .sort((a, b) => b.modelNumber - a.modelNumber)
+      .map((item) => (
         <div
           key={item._id}
           onClick={() => handleEditClick(item)}
           style={{
-            background: "#fffaf5",
-            borderRadius: "16px",
+            background: "#fff",
+            borderRadius: "20px",
             padding: "10px",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-            minHeight: "250px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+            minHeight: "280px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             cursor: "pointer",
+            transition: "transform 0.2s, box-shadow 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLDivElement).style.transform = "translateY(-5px)";
+            (e.currentTarget as HTMLDivElement).style.boxShadow = "0 15px 30px rgba(0,0,0,0.25)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+            (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.2)";
           }}
         >
           <div
@@ -464,22 +541,23 @@ return (
               width: "100%",
               paddingTop: "100%",
               position: "relative",
-              borderRadius: "12px",
+              borderRadius: "16px",
               overflow: "hidden",
-              background: "#f5f0eb",
+              background: "#0b1a3d",
             }}
           >
             {item.image && (
               <img
-                src={urlFor(item.image).width(400).url()}
-                alt={`Model ${item.modelNumber}`}
+                src={urlFor(item.image).width(500).url()}
+                alt={`B${item.modelNumber}`}
                 style={{
                   position: "absolute",
                   top: 0,
                   left: 0,
                   width: "100%",
                   height: "100%",
-                  objectFit: "contain",
+                  objectFit: "cover",
+                  borderRadius: "16px",
                 }}
               />
             )}
@@ -491,24 +569,76 @@ return (
                   left: 0,
                   width: "100%",
                   height: "100%",
-                  background: "rgba(255,255,255,0.6)",
+                  background: "rgba(0,0,0,0.4)",
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
                   fontWeight: 600,
-                  color: "#7a4c2e",
+                  color: "#c7a332",
                 }}
               >
                 Uploading...
               </div>
             )}
           </div>
-          <p style={{ fontSize: "1.2rem", fontWeight: 600, color: "#7a4c2e", marginTop: "10px" }}>
-            Model #{item.modelNumber}
+
+          <p
+            style={{
+              fontSize: "1.2rem",
+              fontWeight: 600,
+              color: "#0b1a3d",
+              marginTop: "12px",
+            }}
+          >
+            B{item.modelNumber}
           </p>
+
+          {/* Sizes */}
+          <div style={{ marginTop: "5px", display: "flex", gap: "8px" }}>
+            {item.sizes?.includes("Adult") && (
+              <span
+                style={{
+                  fontSize: "0.9rem",
+                  color: "#0b1a3d",
+                  background: "#c7a332",
+                  padding: "2px 6px",
+                  borderRadius: "6px",
+                  fontWeight: 600,
+                }}
+              >
+                Adult {item.weightAdult ? `- ${item.weightAdult}g` : ""}
+              </span>
+            )}
+            {item.sizes?.includes("Kids") && (
+              <span
+                style={{
+                  fontSize: "0.9rem",
+                  color: "#0b1a3d",
+                  background: "#c7a332",
+                  padding: "2px 6px",
+                  borderRadius: "6px",
+                  fontWeight: 600,
+                }}
+              >
+                Kids {item.weightKids ? `- ${item.weightKids}g` : ""}
+              </span>
+            )}
+          </div>
         </div>
       ))}
-    </div>
+  </div>
+
+  {/* Force 2 cards per row on mobile */}
+  <style jsx>{`
+    @media (max-width: 480px) {
+      div[ref] {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+  `}</style>
+
+
+
 
  {/* Add Product Modal */}
 {showAddModal && (
@@ -630,10 +760,15 @@ return (
       {(editImagePreview || currentEditImageUrl) && (
         <div style={{ marginBottom: "10px" }}>
           <img
-            src={editImagePreview || currentEditImageUrl}
-            alt="Preview"
-            style={{ width: "100%", maxHeight: "200px", objectFit: "contain", borderRadius: "12px" }}
-          />
+  src={editImagePreview || currentEditImageUrl || ""}
+  alt="Preview"
+  style={{
+    width: "100%",
+    maxHeight: "200px",
+    objectFit: "contain",
+    borderRadius: "12px",
+  }}
+/>
         </div>
       )}
 
