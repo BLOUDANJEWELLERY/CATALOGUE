@@ -1,6 +1,9 @@
-import { urlFor } from '../lib/sanity.client'; // or wherever your urlFor is
+import { urlFor, SanityImage } from '../lib/sanity.image'; // adjust path
 
-export function generateCatalogueHTML(items: any[], filter: "Adult" | "Kids" | "Both") {
+export function generateCatalogueHTML(
+  items: any[],
+  filter: "Adult" | "Kids" | "Both"
+) {
   const filteredItems = items.filter(item => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
     if (filter === "Kids") return item.sizes?.includes("Kids");
@@ -12,7 +15,8 @@ export function generateCatalogueHTML(items: any[], filter: "Adult" | "Kids" | "
     <html>
       <head>
         <style>
-          body { font-family: Helvetica, Arial, sans-serif; margin: 0; }
+          @page { margin: 0; }
+          body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
           .header, .footer {
             width: 100%;
             background: #c7a332;
@@ -20,13 +24,15 @@ export function generateCatalogueHTML(items: any[], filter: "Adult" | "Kids" | "
             text-align: center;
             padding: 6px 0;
           }
-          .footer { position: absolute; bottom: 0; left: 0; }
+          .header div, .footer div { margin: 2px 0; }
           .container {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-around;
-            margin-top: 10px;
-            margin-bottom: 35px; /* leave room for footer */
+            padding: 10px;
+            page-break-inside: avoid;
+            box-sizing: border-box;
+            min-height: calc(297mm - 40mm); /* A4 minus header/footer approx */
           }
           .card {
             width: 90mm;
@@ -39,6 +45,7 @@ export function generateCatalogueHTML(items: any[], filter: "Adult" | "Kids" | "
             display: flex;
             flex-direction: column;
             align-items: center;
+            page-break-inside: avoid;
           }
           .card img {
             max-height: 55%;
@@ -60,6 +67,11 @@ export function generateCatalogueHTML(items: any[], filter: "Adult" | "Kids" | "
             color: #0b1a3d;
             font-size: 14px;
           }
+          /* Force footer at bottom of each page */
+          .footer {
+            position: fixed;
+            bottom: 0;
+          }
         </style>
       </head>
       <body>
@@ -67,8 +79,9 @@ export function generateCatalogueHTML(items: any[], filter: "Adult" | "Kids" | "
           <div>BLOUDAN JEWELLERY</div>
           <div>BANGLES CATALOGUE</div>
         </div>
+
         <div class="container">
-          ${filteredItems.map(item => {
+          ${filteredItems.map((item, index) => {
             const showAdult = filter !== "Kids" && item.sizes?.includes("Adult");
             const showKids = filter !== "Adult" && item.sizes?.includes("Kids");
             let weightsHTML = '';
@@ -86,15 +99,21 @@ export function generateCatalogueHTML(items: any[], filter: "Adult" | "Kids" | "
                 <span>Kids - ${item.weightKids}g</span>
               </div>`;
             }
+
+            const imgUrl = item.image 
+              ? urlFor(item.image as SanityImage).width(1000).auto("format").url() 
+              : '';
+
             return `
               <div class="card">
-                <img src="${item.image ? urlFor(item.image).width(1000).auto("format").url() : ''}" />
+                <img src="${imgUrl}" />
                 <div class="model">B${item.modelNumber}</div>
                 ${weightsHTML}
               </div>
             `;
           }).join('')}
         </div>
+
         <div class="footer">
           <div>BLOUDAN JEWELLERY</div>
           <div>BANGLES CATALOGUE</div>
