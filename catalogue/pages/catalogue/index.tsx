@@ -228,6 +228,7 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF("p", "mm", "a4");
 
+  // Filter items based on the selected filter
   const filteredItems = items.filter((item) => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
     if (filter === "Kids") return item.sizes?.includes("Kids");
@@ -269,6 +270,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const item = pageItems[i];
       let imgDataUrl = "";
 
+      // Fetch image
       if (item.image) {
         try {
           const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
@@ -321,7 +323,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.style.fontWeight = "700";
       tempText.style.color = "#0b1a3d";
       tempText.style.marginTop = "-2px";
-      tempText.style.marginBottom = "12px"; // slightly closer to weights
+      tempText.style.marginBottom = "12px";
       tempText.style.fontSize = "35px";
       tempText.style.lineHeight = "0.8";
       tempDiv.appendChild(tempText);
@@ -330,19 +332,16 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const weightContainer = document.createElement("div");
       weightContainer.style.display = "flex";
       weightContainer.style.width = "100%";
-      weightContainer.style.justifyContent = "center"; // default center
+      weightContainer.style.justifyContent = "center"; // always center
       weightContainer.style.marginTop = "0px";
-      weightContainer.style.gap = "12px";
+      weightContainer.style.gap = "8px"; // small gap between weights
       tempDiv.appendChild(weightContainer);
 
-      const adultWeightExists = item.sizes?.includes("Adult") && item.weightAdult;
-      const kidsWeightExists = item.sizes?.includes("Kids") && item.weightKids;
+      // Determine which weights to show based on filter
+      const showAdult = filter === "Adult" || filter === "Both";
+      const showKids = filter === "Kids" || filter === "Both";
 
-      if (adultWeightExists && kidsWeightExists) {
-        weightContainer.style.justifyContent = "center";
-      }
-
-      if (adultWeightExists) {
+      if (showAdult && item.sizes?.includes("Adult") && item.weightAdult) {
         const p = document.createElement("p");
         p.innerText = `Adult - ${item.weightAdult}g`;
         p.style.fontSize = "12px";
@@ -351,7 +350,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         weightContainer.appendChild(p);
       }
 
-      if (kidsWeightExists) {
+      if (showKids && item.sizes?.includes("Kids") && item.weightKids) {
         const p = document.createElement("p");
         p.innerText = `Kids - ${item.weightKids}g`;
         p.style.fontSize = "12px";
@@ -360,6 +359,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         weightContainer.appendChild(p);
       }
 
+      // Render to canvas
       const canvas = await html2canvas(tempDiv, {
         scale: 7,
         useCORS: true,
@@ -377,11 +377,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       doc.addImage(finalImgData, "PNG", x, y, 85, 115);
     }
 
-    // Full-width footer
+    // Footer
     const footerHeight = 12;
     doc.setFillColor(...hexToRgb(accentColor));
     doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
-
     doc.setFontSize(12);
     doc.setTextColor(...hexToRgb("#0b1a3d"));
     doc.setFont("helvetica", "bold");
