@@ -3,27 +3,26 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import chromium from "chrome-aws-lambda";
 import puppeteer from "puppeteer-core";
 import { generateCatalogueHTML } from "../../utils/generateCatalogueHTML";
+import type { SanityImageSource } from "@sanity/image-url/lib/types/types"; // correct type for images
 
 type CatalogueItem = {
   modelNumber: string | number;
-  sizes?: string[];
+  sizes?: ("Adult" | "Kids")[];
   weightAdult?: number;
   weightKids?: number;
-  image?: any; // keep it generic for Sanity image
+  image?: SanityImageSource;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { items, filter } = req.body;
+    const { items, filter } = req.body as { items: CatalogueItem[]; filter?: "Adult" | "Kids" | "Both" };
 
     if (!items || !Array.isArray(items)) {
       return res.status(400).json({ error: "Invalid items array" });
     }
 
-    // Generate full HTML for catalogue
-    const htmlContent = generateCatalogueHTML(items as CatalogueItem[], filter || "Both");
+    const htmlContent = generateCatalogueHTML(items, filter || "Both");
 
-    // Launch Puppeteer with serverless-compatible Chrome
     const browser = await puppeteer.launch({
       args: chromium.args,
       executablePath: await chromium.executablePath,
@@ -32,19 +31,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const page = await browser.newPage();
 
-    // Set content and wait for all network requests to finish
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
-    // Ensure all images are loaded
     await page.evaluate(async () => {
-      const imgs = Array.from(document.images);
-      await Promise.all(imgs.map(img => {
-        if (img.complete) return;
-        return new Promise(resolve => { img.onload = img.onerror = resolve; });
-      }));
+      const imgs = Array.from(document.images) as HTMLImageElement[];
+      await Promise.all(
+        imgs.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise<void>(resolve => {
+            img.onload = img.onerror = () => resolve();
+          });
+        })
+      );
     });
 
-    // Generate PDF
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -53,14 +53,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     await browser.close();
 
-    // Send PDF as download
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=BLOUDAN_BANGLES_CATALOGUE.pdf`
-    );
+    res.setHeader("Content-Disposition", `attachment; filename=BLOUDAN_BANGLES_CATALOGUE.pdf`);
     res.send(pdfBuffer);
-
   } catch (error) {
     console.error("PDF generation failed:", error);
     res.status(500).json({ error: "Failed to generate PDF" });
