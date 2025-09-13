@@ -344,7 +344,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       }
 
       // Convert to canvas
-      const canvas = await html2canvas(tempDiv, { backgroundColor: cardBg, scale: 2 });
+      const canvas = await html2canvas(tempDiv, { backgroundColor: cardBg, scale: 6 });
       const finalImgData = canvas.toDataURL("image/png");
       document.body.removeChild(tempDiv);
 
