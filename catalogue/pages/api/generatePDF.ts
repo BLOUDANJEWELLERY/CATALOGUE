@@ -1,50 +1,63 @@
 // pages/api/generatePDF.ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import puppeteer from 'puppeteer';
-import { generateCatalogueHTML } from '../../utils/generateCatalogueHTML';
+import type { NextApiRequest, NextApiResponse } from "next";
+import puppeteer from "puppeteer";
+import { generateCatalogueHTML } from "../../utils/generateCatalogueHTML";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+type PdfRequestBody = {
+  items: any[]; // Replace `any` with a proper type if you have one
+  filter?: "Adult" | "Kids" | "Both";
+};
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   try {
-    // Accept filter and items from request body
-    const { items, filter } = req.body;
+    const { items, filter } = req.body as PdfRequestBody;
 
     if (!items || !Array.isArray(items)) {
-      return res.status(400).json({ error: 'Invalid items array' });
+      return res.status(400).json({ error: "Invalid items array" });
     }
 
-    const htmlContent = generateCatalogueHTML(items, filter || 'Both');
+    // Generate HTML from items
+    const htmlContent = generateCatalogueHTML(items, filter || "Both");
 
     // Launch Puppeteer
     const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const page = await browser.newPage();
 
     // Set HTML content
-    await page.setContent(htmlContent, {
-      waitUntil: 'networkidle0',
-    });
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
-    // Set PDF options (A4, portrait)
+    // Generate PDF
     const pdfBuffer = await page.pdf({
-      format: 'A4',
+      format: "A4",
       printBackground: true,
       margin: {
-        top: '10mm',
-        bottom: '10mm',
-        left: '8mm',
-        right: '8mm',
+        top: "10mm",
+        bottom: "10mm",
+        left: "8mm",
+        right: "8mm",
       },
     });
 
     await browser.close();
 
     // Send PDF as response
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=BLOUDAN_BANGLES_CATALOGUE.pdf');
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=BLOUDAN_BANGLES_CATALOGUE.pdf"
+    );
     res.send(pdfBuffer);
   } catch (error) {
-    console.error('PDF generation error:', error);
-    res.status(500).json({ error: 'Failed to generate PDF' });
+    console.error("PDF generation error:", error);
+    res.status(500).json({ error: "Failed to generate PDF" });
   }
 }
