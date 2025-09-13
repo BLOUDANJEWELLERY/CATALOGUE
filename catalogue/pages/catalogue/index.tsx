@@ -280,7 +280,7 @@ return (
       onClick={async () => {
         setIsLoading(true);
         try {
-          await handleDownloadPDF(pdfFilter);
+          await handleDownloadPDF();
         } finally {
           setIsLoading(false);
         }
