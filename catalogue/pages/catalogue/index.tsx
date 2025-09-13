@@ -321,7 +321,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.style.fontWeight = "700";
       tempText.style.color = "#0b1a3d";
       tempText.style.marginTop = "-1px"; 
-      tempText.style.marginBottom = "2px";
+      tempText.style.marginBottom = "8px";
       tempText.style.fontSize = "35px";
       tempText.style.lineHeight = "0.8"; // remove extra spacing
       tempDiv.appendChild(tempText);
@@ -332,7 +332,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         p.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
         p.style.fontSize = "12px";
         p.style.color = "#0b1a3d";
-        p.style.marginTop = "2px"; 
+        p.style.marginTop = "0px"; 
         tempDiv.appendChild(p);
       };
 
