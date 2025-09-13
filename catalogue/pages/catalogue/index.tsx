@@ -321,7 +321,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.style.fontWeight = "700";
       tempText.style.color = "#0b1a3d";
       tempText.style.marginTop = "-2px";
-      tempText.style.marginBottom = "6px"; // slightly closer to weights
+      tempText.style.marginBottom = "10px"; // slightly closer to weights
       tempText.style.fontSize = "35px";
       tempText.style.lineHeight = "0.8";
       tempDiv.appendChild(tempText);
@@ -332,14 +332,14 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       weightContainer.style.width = "100%";
       weightContainer.style.justifyContent = "center"; // default center
       weightContainer.style.marginTop = "0px";
-      weightContainer.style.gap = "1px";
+      weightContainer.style.gap = "5px";
       tempDiv.appendChild(weightContainer);
 
       const adultWeightExists = item.sizes?.includes("Adult") && item.weightAdult;
       const kidsWeightExists = item.sizes?.includes("Kids") && item.weightKids;
 
       if (adultWeightExists && kidsWeightExists) {
-        weightContainer.style.justifyContent = "space-between";
+        weightContainer.style.justifyContent = "center";
       }
 
       if (adultWeightExists) {
