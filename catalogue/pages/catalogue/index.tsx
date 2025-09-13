@@ -343,10 +343,14 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         if (item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
       }
 
-      // Convert to canvas
-      const canvas = await html2canvas(tempDiv, { backgroundColor: cardBg, scale: 6 });
-      const finalImgData = canvas.toDataURL("image/png");
-      document.body.removeChild(tempDiv);
+      // Convert to canvas (increase clarity)
+const canvas = await html2canvas(tempDiv, { 
+  backgroundColor: cardBg, 
+  scale: 6, // 🔥 higher scale = sharper images
+  useCORS: true // ensures images load crisply without tainting
+});
+const finalImgData = canvas.toDataURL("image/png", 1.0); // max quality
+
 
       // Place on PDF
       const col = i % 2;
