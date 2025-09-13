@@ -1,4 +1,4 @@
-import { urlFor } from '../lib/sanity'; // or wherever your urlFor is
+import { urlFor } from '../lib/sanity.client'; // or wherever your urlFor is
 
 export function generateCatalogueHTML(items: any[], filter: "Adult" | "Kids" | "Both") {
   const filteredItems = items.filter(item => {
