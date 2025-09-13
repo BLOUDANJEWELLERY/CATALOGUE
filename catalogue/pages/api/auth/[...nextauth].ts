@@ -25,7 +25,6 @@ export const authOptions: AuthOptions = {
 
         return {
           id: user.id,
-          name: user.name ?? "User",
           email: user.email,
         };
       },
