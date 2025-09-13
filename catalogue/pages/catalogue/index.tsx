@@ -289,7 +289,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // Offscreen card
       const tempDiv = document.createElement("div");
       tempDiv.style.width = "220px";
-      tempDiv.style.height = "260px"; // further reduced
+      tempDiv.style.height = "260px";
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -297,7 +297,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.style.justifyContent = "flex-start";
       tempDiv.style.border = `2px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
-      tempDiv.style.padding = "10px 10px 2px 10px"; // minimal bottom padding
+      tempDiv.style.padding = "10px 10px 2px 10px";
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.style.top = "-9999px";
@@ -308,10 +308,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "160px"; // slightly smaller
+        tempImg.style.maxHeight = "160px";
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
-        tempImg.style.marginBottom = "0px"; // minimal spacing
+        tempImg.style.marginBottom = "0px";
         tempDiv.appendChild(tempImg);
       }
 
@@ -320,27 +320,44 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
       tempText.style.color = "#0b1a3d";
-      tempText.style.marginTop = "-1px"; 
-      tempText.style.marginBottom = "8px";
+      tempText.style.marginTop = "-2px";
+      tempText.style.marginBottom = "4px"; // slightly closer to weights
       tempText.style.fontSize = "35px";
-      tempText.style.lineHeight = "0.8"; // remove extra spacing
+      tempText.style.lineHeight = "0.8";
       tempDiv.appendChild(tempText);
 
-      // Sizes & weights
-      const addSizeText = (label: string, weight?: number) => {
+      // Weights container
+      const weightContainer = document.createElement("div");
+      weightContainer.style.display = "flex";
+      weightContainer.style.width = "100%";
+      weightContainer.style.justifyContent = "center"; // default center
+      weightContainer.style.marginTop = "0px";
+      weightContainer.style.gap = "10px";
+      tempDiv.appendChild(weightContainer);
+
+      const adultWeightExists = item.sizes?.includes("Adult") && item.weightAdult;
+      const kidsWeightExists = item.sizes?.includes("Kids") && item.weightKids;
+
+      if (adultWeightExists && kidsWeightExists) {
+        weightContainer.style.justifyContent = "space-between";
+      }
+
+      if (adultWeightExists) {
         const p = document.createElement("p");
-        p.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
+        p.innerText = `Adult - ${item.weightAdult}g`;
         p.style.fontSize = "12px";
         p.style.color = "#0b1a3d";
-        p.style.marginTop = "0px"; 
-        tempDiv.appendChild(p);
-      };
+        p.style.margin = "0";
+        weightContainer.appendChild(p);
+      }
 
-      if (filter === "Adult" && item.sizes?.includes("Adult")) addSizeText("Adult", item.weightAdult);
-      if (filter === "Kids" && item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
-      if (filter === "Both") {
-        if (item.sizes?.includes("Adult")) addSizeText("Adult", item.weightAdult);
-        if (item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
+      if (kidsWeightExists) {
+        const p = document.createElement("p");
+        p.innerText = `Kids - ${item.weightKids}g`;
+        p.style.fontSize = "12px";
+        p.style.color = "#0b1a3d";
+        p.style.margin = "0";
+        weightContainer.appendChild(p);
       }
 
       const canvas = await html2canvas(tempDiv, {
@@ -356,14 +373,14 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 100;
-      const y = 35 + row * 115 + row * 5; // reduced row height, small vertical gap
-      doc.addImage(finalImgData, "PNG", x, y, 85, 115); // smaller cards
+      const y = 35 + row * 115 + row * 5;
+      doc.addImage(finalImgData, "PNG", x, y, 85, 115);
     }
 
     // Full-width footer
     const footerHeight = 12;
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F"); // full width
+    doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
 
     doc.setFontSize(12);
     doc.setTextColor(...hexToRgb("#0b1a3d"));
