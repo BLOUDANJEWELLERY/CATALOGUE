@@ -241,7 +241,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 8; // slightly reduced horizontal margin
+  const margin = 8;
 
   const accentColor = "#c7a332";
   const cardBg = "#fff";
@@ -288,8 +288,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
       // Offscreen card
       const tempDiv = document.createElement("div");
-      tempDiv.style.width = "220px"; // slightly narrower
-      tempDiv.style.height = "280px"; // reduced height
+      tempDiv.style.width = "220px";
+      tempDiv.style.height = "260px"; // further reduced
       tempDiv.style.background = cardBg;
       tempDiv.style.display = "flex";
       tempDiv.style.flexDirection = "column";
@@ -297,7 +297,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempDiv.style.justifyContent = "flex-start";
       tempDiv.style.border = `2px solid ${accentColor}`;
       tempDiv.style.borderRadius = "16px";
-      tempDiv.style.padding = "10px 10px 4px 10px"; // smaller bottom padding
+      tempDiv.style.padding = "10px 10px 2px 10px"; // minimal bottom padding
       tempDiv.style.position = "absolute";
       tempDiv.style.left = "-9999px";
       tempDiv.style.top = "-9999px";
@@ -308,10 +308,10 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         const tempImg = document.createElement("img");
         tempImg.src = imgDataUrl;
         tempImg.style.maxWidth = "100%";
-        tempImg.style.maxHeight = "170px"; // slightly smaller to fit card
+        tempImg.style.maxHeight = "160px"; // slightly smaller
         tempImg.style.objectFit = "contain";
         tempImg.style.borderRadius = "12px";
-        tempImg.style.marginBottom = "3px"; // reduced spacing
+        tempImg.style.marginBottom = "2px"; // minimal spacing
         tempDiv.appendChild(tempImg);
       }
 
@@ -320,8 +320,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.innerText = `B${item.modelNumber}`;
       tempText.style.fontWeight = "700";
       tempText.style.color = "#0b1a3d";
-      tempText.style.marginTop = "3px"; // reduced margin
-      tempText.style.marginBottom = "1px"; // reduced bottom spacing
+      tempText.style.marginTop = "2px"; 
+      tempText.style.marginBottom = "1px";
       tempText.style.fontSize = "14px";
       tempDiv.appendChild(tempText);
 
@@ -331,7 +331,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         p.innerText = `${label}${weight ? ` - ${weight}g` : ""}`;
         p.style.fontSize = "12px";
         p.style.color = "#0b1a3d";
-        p.style.margin = "0"; // no extra spacing
+        p.style.margin = "0"; 
         tempDiv.appendChild(p);
       };
 
@@ -354,25 +354,20 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       // PDF placement
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const x = margin + col * 100; // tighter horizontal gap
-      const y = 35 + row * 120 + row * 5; // reduced row spacing + small vertical gap
-      doc.addImage(finalImgData, "PNG", x, y, 85, 120); // slightly smaller card
+      const x = margin + col * 100;
+      const y = 35 + row * 115 + row * 5; // reduced row height, small vertical gap
+      doc.addImage(finalImgData, "PNG", x, y, 85, 115); // smaller cards
     }
 
-    // Footer
-    const footerSize = 10;
-    const cx = pageWidth / 2;
-    const cy = pageHeight - 15;
-
+    // Full-width footer
+    const footerHeight = 12;
     doc.setFillColor(...hexToRgb(accentColor));
-    doc.setDrawColor(...hexToRgb(accentColor));
-    doc.setLineWidth(0.5);
-    doc.rect(cx - footerSize / 2, cy - footerSize / 2, footerSize, footerSize, "FD");
+    doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F"); // full width
 
-    doc.setFontSize(10);
+    doc.setFontSize(12);
     doc.setTextColor(...hexToRgb("#0b1a3d"));
     doc.setFont("helvetica", "bold");
-    doc.text(`${pageIndex + 1}`, cx, cy + 3, { align: "center" });
+    doc.text(`Page ${pageIndex + 1}`, pageWidth / 2, pageHeight - 4, { align: "center" });
 
     if (pageIndex < pages - 1) doc.addPage();
   }
@@ -386,7 +381,6 @@ function hexToRgb(hex: string): [number, number, number] {
   if (!match) return [0, 0, 0];
   return match.map((x) => parseInt(x, 16)) as [number, number, number];
 }
-
 
 // Modal styles
 const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties } = {
