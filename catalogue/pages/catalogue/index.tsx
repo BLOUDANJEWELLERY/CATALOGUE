@@ -341,13 +341,13 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         if (item.sizes?.includes("Kids")) addSizeText("Kids", item.weightKids);
       }
 
-      // Convert to canvas at ultra clarity
-      const canvas = await html2canvas(tempDiv, {
-        scale: 7,
-        useCORS: true,
-        // @ts-expect-error
-        imageSmoothingEnabled: false,
-      });
+       // Convert to canvas at ultra clarity
+const canvas = await html2canvas(tempDiv, {
+  scale: 7,
+  useCORS: true,
+  // @ts-expect-error works at runtime but types don't include it
+  imageSmoothingEnabled: false,
+});
       const finalImgData = canvas.toDataURL("image/png", 1.0);
 
       document.body.removeChild(tempDiv);
