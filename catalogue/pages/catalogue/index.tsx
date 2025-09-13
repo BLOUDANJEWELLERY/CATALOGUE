@@ -210,6 +210,7 @@ const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, itemId: string
   }
 };
 
+const [isLoading, setIsLoading] = useState(false);
 
 const handleDownloadPDF = async () => {
   await generateCataloguePDF(items, "Both");
