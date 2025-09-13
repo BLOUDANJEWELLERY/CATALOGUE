@@ -1,6 +1,6 @@
 // lib/sanity.client.ts
 import { createClient } from "next-sanity";
-import imageUrlBuilder from "@sanity/image-url";
+import imageUrlBuilder, { SanityImageSource } from "@sanity/image-url";
 
 export const client = createClient({
   projectId: "lfss7ezq",
@@ -13,7 +13,7 @@ export const client = createClient({
 // Create a builder for images
 const builder = imageUrlBuilder(client);
 
-// Export urlFor so your PDF generator can use it
-export function urlFor(source: any) {
+// Strongly-typed urlFor
+export function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
