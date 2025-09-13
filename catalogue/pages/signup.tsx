@@ -1,152 +1,86 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
-import Link from "next/link";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { PrismaClient, User, Prisma } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
-type SignupResponse = {
-  message?: string;
-  userId?: string;
-  error?: string;
-};
+const prisma = new PrismaClient();
 
-export default function SignupPage() {
-  const router = useRouter();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-  const validateEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
+  const {
+    role,
+    firstName,
+    lastName,
+    email,
+    dob,
+    gender,
+    phoneNumber,
+    address1,
+    address2,
+    state,
+    country,
+    postalCode,
+    password,
+  } = req.body;
 
-  const handleSubmit = async () => {
-    setError("");
+  // ---------------- Validation ----------------
+  if (!role || (role !== "USER" && role !== "USER")) {
+    return res.status(400).json({ error: "Role must be buyer or seller" });
+  }
 
-    if (!firstName.trim()) return setError("First name is required");
-    if (!email.trim()) return setError("Email is required");
-    if (!validateEmail(email)) return setError("Enter a valid email address");
-    if (!password || !confirmPassword) return setError("Both password fields are required");
-    if (password !== confirmPassword) return setError("Passwords do not match");
+  if (!firstName?.trim() || !email?.trim() || !password) {
+    return res.status(400).json({ error: "First name, email, and password are required" });
+  }
 
-    setLoading(true);
-    try {
-      const res = await fetch("/api/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email, password }),
-      });
-
-      const data: SignupResponse = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Signup failed, try again");
-        return;
-      }
-
-      router.push("/login");
-    } catch (err) {
-      console.error("Signup error:", err);
-      setError("Signup failed, try again");
-    } finally {
-      setLoading(false);
+  // Optional phone number validation
+  let validPhone: string | null = null;
+  if (phoneNumber?.trim()) {
+    const phone = phoneNumber.trim();
+    const phoneRegex = /^\+\d{1,4}\d{6,14}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ error: "Phone number must include country code, e.g., +96512345678" });
     }
-  };
+    validPhone = phone;
+  }
 
-  return (
-    <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3] p-4">
-      <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">Sign Up</h1>
+  try {
+    // Check if email already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
 
-        {error && (
-          <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>
-        )}
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-        <div className="flex flex-col gap-4">
-          <input
-            type="text"
-            placeholder="First Name *"
-            value={firstName}
-            onChange={e => setFirstName(e.target.value)}
-            className="input"
-          />
-          <input
-            type="text"
-            placeholder="Last Name"
-            value={lastName}
-            onChange={e => setLastName(e.target.value)}
-            className="input"
-          />
-          <input
-            type="email"
-            placeholder="Email Address *"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="input"
-          />
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password *"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="input pr-12"
-            />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#3e2f25] hover:text-[#5a4436] transition"
-              onClick={() => setShowPassword(prev => !prev)}
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          </div>
-          <div className="relative">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirm Password *"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              className="input pr-12"
-            />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#3e2f25] hover:text-[#5a4436] transition"
-              onClick={() => setShowConfirmPassword(prev => !prev)}
-            >
-              {showConfirmPassword ? "Hide" : "Show"}
-            </button>
-          </div>
-        </div>
+    // Create user
+    const user: User = await prisma.user.create({
+      data: {
+        role,
+        firstName: firstName.trim(),
+        lastName: lastName?.trim() || null,
+        email: email.trim(),
+        dob: dob ? new Date(dob) : null,
+        gender: gender || null,
+        phoneNumber: validPhone, // optional
+        password: hashedPassword,
+        address1: address1?.trim() || null,
+        address2: address2?.trim() || null,
+        state: state?.trim() || null,
+        country: country?.trim() || null,
+        postalCode: postalCode?.trim() || null,
+      },
+    });
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="mt-6 w-full px-4 py-2 bg-[#3e2f25] text-[#fdf8f3] rounded-lg hover:bg-[#5a4436] transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? "Signing Up..." : "Sign Up"}
-        </button>
-
-        <p className="text-center text-sm mt-4">
-          Already have an account?{" "}
-          <Link href="/login" className="text-[#3e2f25] font-semibold underline">
-            Login
-          </Link>
-        </p>
-      </div>
-
-      <style jsx>{`
-        .input {
-          padding: 0.75rem;
-          border-radius: 0.75rem;
-          border: 1px solid #ccc;
-          width: 100%;
-          background-color: #fff;
-          color: #000;
-        }
-      `}</style>
-    </div>
-  );
+    return res.status(201).json({ message: "Signup successful", userId: user.id });
+  } catch (err: unknown) {
+    console.error("Signup error:", err);
+    let errorMessage = "Internal server error";
+    if ((err as Prisma.PrismaClientKnownRequestError).code === "P2002") {
+      errorMessage = "Email already exists";
+    }
+    return res.status(500).json({ error: errorMessage });
+  }
 }
