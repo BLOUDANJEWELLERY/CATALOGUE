@@ -322,7 +322,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.style.color = "#0b1a3d";
       tempText.style.marginTop = "2px"; 
       tempText.style.marginBottom = "1px";
-      tempText.style.fontSize = "14px";
+      tempText.style.fontSize = "28px";
       tempDiv.appendChild(tempText);
 
       // Sizes & weights
