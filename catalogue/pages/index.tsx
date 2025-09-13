@@ -429,6 +429,35 @@ const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties 
 };
 
 return (
+    <>
+      <Head>
+        {/* Page title */}
+        <title>BLOUDAN JEWELLERY | Luxury Bangles Collection</title>
+
+        {/* Favicon */}
+        <link rel="icon" href="/favicon.PNG" />
+
+        {/* App logo for mobile/Apple devices */}
+        <link rel="apple-touch-icon" href="/favicon.PNG" />
+
+        {/* Meta description for SEO */}
+        <meta
+          name="description"
+          content="Explore BLOUDAN JEWELLERY's premium bangles collection. Luxury, elegance, and craftsmanship in every piece."
+        />
+
+        {/* Open Graph for social sharing */}
+        <meta property="og:title" content="BLOUDAN JEWELLERY | Luxury Bangles Collection" />
+        <meta property="og:description" content="Luxury bangles and jewellery crafted to perfection." />
+        <meta property="og:image" content="/favicon.PNG" />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="BLOUDAN JEWELLERY | Luxury Bangles Collection" />
+        <meta name="twitter:description" content="Luxury bangles and jewellery crafted to perfection." />
+        <meta name="twitter:image" content="/favicon.PNG" />
+      </Head>
 <div style={{ padding: "30px", background: "#0b1a3d", minHeight: "100vh" }}>
   <h1 style={{ textAlign: "center", fontSize: "2.5rem", marginBottom: "20px", color: "#c7a332" }}>
     Our Catalogue
@@ -860,6 +889,7 @@ return (
   </div>
 )}
   </div>
+</>
 );
 
 }
