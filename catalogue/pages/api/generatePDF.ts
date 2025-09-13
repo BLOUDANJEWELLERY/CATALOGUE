@@ -2,10 +2,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import puppeteer from "puppeteer";
 import { generateCatalogueHTML } from "../../utils/generateCatalogueHTML";
-import type { SanityImageObject } from "@sanity/types";
+
+// Define a minimal Sanity image type
+type SanityImage = {
+  _type: "image";
+  asset: { _ref: string; _type: "reference" };
+};
 
 type CatalogueItem = {
-  image?: SanityImageObject;
+  image?: SanityImage;
   modelNumber: string | number;
   sizes?: ("Adult" | "Kids")[];
   weightAdult?: number;
