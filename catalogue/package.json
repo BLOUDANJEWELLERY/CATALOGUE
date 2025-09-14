@@ -39,6 +39,7 @@
     "@types/formidable": "^3.4.5",
     "@types/multer": "^2.0.0",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
