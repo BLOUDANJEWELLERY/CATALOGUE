@@ -279,27 +279,190 @@ const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, itemId: string
 const [isLoading, setIsLoading] = useState(false);
 
 const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") => {
-  if (!userEmail) return alert("Enter your email");
-
   setIsLoading(true);
   try {
-    const res = await fetch("/api/requestPDF", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: userEmail, filter }),
-    });
-
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || "Failed to request PDF");
-
-    alert(data.message);
+    await handleDownloadPDF(filter); // pass the selected filter
   } catch (err) {
-    console.error(err);
-    alert("Failed to request PDF. Check console.");
+    console.error("Error generating PDF:", err);
+    alert("Failed to generate PDF. Check console for details.");
   } finally {
     setIsLoading(false);
   }
 };
+
+const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
+  const doc = new jsPDF("p", "mm", "a4");
+
+  // Filter items based on the selected filter
+  const filteredItems = items.filter((item) => {
+    if (filter === "Adult") return item.sizes?.includes("Adult");
+    if (filter === "Kids") return item.sizes?.includes("Kids");
+    if (filter === "Both")
+      return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
+    return false;
+  });
+
+  const itemsPerPage = 4;
+  const pages = Math.ceil(filteredItems.length / itemsPerPage);
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 8;
+
+  const accentColor = "#c7a332";
+  const cardBg = "#fff";
+
+  for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
+    const pageItems = filteredItems.slice(
+      pageIndex * itemsPerPage,
+      (pageIndex + 1) * itemsPerPage
+    );
+
+    // Header
+    doc.setFillColor(...hexToRgb(accentColor));
+    doc.rect(0, 0, pageWidth, 25, "F");
+
+    doc.setFontSize(20);
+    doc.setTextColor(...hexToRgb("#0b1a3d"));
+    doc.setFont("helvetica", "bold");
+    doc.text("BLOUDAN JEWELLERY", pageWidth / 2, 12, { align: "center" });
+
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "normal");
+    doc.text("BANGLES CATALOGUE", pageWidth / 2, 20, { align: "center" });
+
+    for (let i = 0; i < pageItems.length; i++) {
+      const item = pageItems[i];
+      let imgDataUrl = "";
+
+      // Fetch image
+      if (item.image) {
+        try {
+          const proxyUrl = `/api/proxyImage?url=${encodeURIComponent(
+            urlFor(item.image).width(1200).auto("format").url()
+          )}`;
+          const res = await fetch(proxyUrl);
+          const blob = await res.blob();
+          imgDataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+        } catch (err) {
+          console.error(`Failed to load image for B${item.modelNumber}`, err);
+        }
+      }
+
+      // Offscreen card
+      const tempDiv = document.createElement("div");
+      tempDiv.style.width = "220px";
+      tempDiv.style.height = "260px";
+      tempDiv.style.background = cardBg;
+      tempDiv.style.display = "flex";
+      tempDiv.style.flexDirection = "column";
+      tempDiv.style.alignItems = "center";
+      tempDiv.style.justifyContent = "flex-start";
+      tempDiv.style.border = `2px solid ${accentColor}`;
+      tempDiv.style.borderRadius = "16px";
+      tempDiv.style.padding = "10px 10px 2px 10px";
+      tempDiv.style.position = "absolute";
+      tempDiv.style.left = "-9999px";
+      tempDiv.style.top = "-9999px";
+      document.body.appendChild(tempDiv);
+
+      // Image
+      if (imgDataUrl) {
+        const tempImg = document.createElement("img");
+        tempImg.src = imgDataUrl;
+        tempImg.style.maxWidth = "100%";
+        tempImg.style.maxHeight = "180px";
+        tempImg.style.objectFit = "contain";
+        tempImg.style.borderRadius = "12px";
+        tempImg.style.marginBottom = "0px";
+        tempDiv.appendChild(tempImg);
+      }
+
+      // Model number
+      const tempText = document.createElement("p");
+      tempText.innerText = `B${item.modelNumber}`;
+      tempText.style.fontWeight = "700";
+      tempText.style.color = "#0b1a3d";
+      tempText.style.marginTop = "-2px";
+      tempText.style.marginBottom = "12px";
+      tempText.style.fontSize = "35px";
+      tempText.style.lineHeight = "0.8";
+      tempDiv.appendChild(tempText);
+
+      // Weights container
+      const weightContainer = document.createElement("div");
+      weightContainer.style.display = "flex";
+      weightContainer.style.width = "100%";
+      weightContainer.style.justifyContent = "center"; // always center
+      weightContainer.style.marginTop = "0px";
+      weightContainer.style.gap = "8px"; // small gap between weights
+      tempDiv.appendChild(weightContainer);
+
+      // Determine which weights to show based on filter
+      const showAdult = filter === "Adult" || filter === "Both";
+      const showKids = filter === "Kids" || filter === "Both";
+
+      if (showAdult && item.sizes?.includes("Adult") && item.weightAdult) {
+        const p = document.createElement("p");
+        p.innerText = `Adult - ${item.weightAdult}g`;
+        p.style.fontSize = "12px";
+        p.style.color = "#0b1a3d";
+        p.style.margin = "0";
+        weightContainer.appendChild(p);
+      }
+
+      if (showKids && item.sizes?.includes("Kids") && item.weightKids) {
+        const p = document.createElement("p");
+        p.innerText = `Kids - ${item.weightKids}g`;
+        p.style.fontSize = "12px";
+        p.style.color = "#0b1a3d";
+        p.style.margin = "0";
+        weightContainer.appendChild(p);
+      }
+
+      // Render to canvas
+      const canvas = await html2canvas(tempDiv, {
+        scale: 7,
+        useCORS: true,
+        // @ts-expect-error html2canvas accepts this at runtime but types don't include it
+        imageSmoothingEnabled: false,
+      });
+      const finalImgData = canvas.toDataURL("image/png", 1.0);
+      document.body.removeChild(tempDiv);
+
+      // PDF placement
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = margin + col * 100;
+      const y = 35 + row * 115 + row * 5;
+      doc.addImage(finalImgData, "PNG", x, y, 85, 115);
+    }
+
+    // Footer
+    const footerHeight = 12;
+    doc.setFillColor(...hexToRgb(accentColor));
+    doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, "F");
+    doc.setFontSize(12);
+    doc.setTextColor(...hexToRgb("#0b1a3d"));
+    doc.setFont("helvetica", "bold");
+    doc.text(`Page ${pageIndex + 1}`, pageWidth / 2, pageHeight - 4, { align: "center" });
+
+    if (pageIndex < pages - 1) doc.addPage();
+  }
+
+  doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
+};
+
+// Helper
+function hexToRgb(hex: string): [number, number, number] {
+  const match = hex.replace("#", "").match(/.{1,2}/g);
+  if (!match) return [0, 0, 0];
+  return match.map((x) => parseInt(x, 16)) as [number, number, number];
+}
 
 
  const handleSignOut = async () => {
