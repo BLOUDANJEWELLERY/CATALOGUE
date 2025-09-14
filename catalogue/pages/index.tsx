@@ -504,6 +504,13 @@ const closeEditModal = () => {
   setEditWeightKids("");
 };
 
+useEffect(() => {
+  if (showAddModal || editingId) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+}, [showAddModal, editingId]);
 return (
     <>
       <Head>
@@ -656,8 +663,8 @@ return (
 
 {/* Add Product Modal */}
 {showAddModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-    <div className="bg-[#fdf8f3] rounded-2xl p-8 w-full max-w-md shadow-lg border-2 border-[#c7a332] flex flex-col gap-4">
+  <div className="fixed inset-0 backdrop-blur-sm bg-transparent flex justify-center items-center z-50">
+<div className="bg-[#fdf8f3] rounded-2xl p-8 w-full max-w-md shadow-lg border-2 border-[#c7a332] flex flex-col gap-4">
       
       <h2 className="text-2xl font-bold text-[#0b1a3d] text-center">
         Add New Catalogue Item
