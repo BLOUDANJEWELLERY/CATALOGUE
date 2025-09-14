@@ -198,10 +198,17 @@ const handleSaveNewItem = async () => {
   setIsUploading(true);
 
   try {
-    const formData = new FormData();
-    formData.append("file", newItemImage);
+    let finalFile = newItemImage;
+
+    // Crop if area is defined
+    if (croppedAreaPixels && newItemImagePreview) {
+      const croppedBlob = await getCroppedImg(newItemImagePreview, croppedAreaPixels);
+      finalFile = new File([croppedBlob], newItemImage.name, { type: "image/jpeg" });
+    }
 
     // Upload image
+    const formData = new FormData();
+    formData.append("file", finalFile);
     const uploadRes = await fetch("/api/uploadImage", { method: "POST", body: formData });
     const uploadData: { assetId: string } = await uploadRes.json();
 
@@ -219,6 +226,12 @@ const handleSaveNewItem = async () => {
 
     const data = await saveRes.json();
     if (!data.success) throw new Error(data.error || "Failed to save");
+
+    // Reset states and refresh
+    setShowAddModal(false);
+    setNewItemImage(null);
+    setNewItemImagePreview("");
+    setCroppedAreaPixels(null);
 
     window.location.reload();
   } catch (err) {
@@ -662,16 +675,20 @@ return (
         className="border-2 border-[#c7a332] rounded-lg p-2 w-full bg-white text-[#0b1a3d] cursor-pointer"
       />
 
-      {/* Image Preview */}
-      {newItemImagePreview && (
-        <div>
-          <img
-            src={newItemImagePreview}
-            alt="Preview"
-            className="w-full max-h-48 object-contain rounded-lg border border-[#c7a332]"
-          />
-        </div>
-      )}
+  {/* Image Preview & Crop */}
+{newItemImagePreview && (
+  <div className="relative w-full h-64 bg-black">
+    <Cropper
+      image={newItemImagePreview}
+      crop={crop}
+      zoom={zoom}
+      aspect={1} // ensures square
+      onCropChange={setCrop}
+      onZoomChange={setZoom}
+      onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
+    />
+  </div>
+)}
 
       {/* Size Selection */}
       <div className="flex gap-6">
