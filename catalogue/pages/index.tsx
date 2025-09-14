@@ -91,6 +91,11 @@ const containerRef = useRef<HTMLDivElement>(null);
 // Auto Model Number for Add New Item
 const nextModelNumber = items.length > 0 ? Math.max(...items.map(i => i.modelNumber)) + 1 : 1;
 
+const [crop, setCrop] = useState({ x: 0, y: 0 });
+const [zoom, setZoom] = useState(1);
+const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+
+
 const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Both");
 // Handle checkbox selection
 const handleSizeChange = (size: "Adult" | "Kids") => {
@@ -711,7 +716,7 @@ return (
   </div>
 )}
 
-{/* Edit Product Modal */}
+{/* Edit Product Modal with Cropper */}
 {editingId && (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
     <div className="bg-[#fdf8f3] rounded-2xl p-8 w-full max-w-md shadow-lg border-2 border-[#c7a332] flex flex-col gap-4">
@@ -720,14 +725,20 @@ return (
         Edit Catalogue Item
       </h2>
 
-      {/* Image Preview */}
-      <div>
-        <img
-          src={editImagePreview || currentEditImageUrl || ""}
-          alt="Product Preview"
-          className="w-full max-h-48 object-contain rounded-lg border-2 border-[#c7a332]"
-        />
-      </div>
+      {/* Image Cropper */}
+      {(editImagePreview || currentEditImageUrl) && (
+        <div className="relative w-full h-64 bg-[#0b1a3d] rounded-lg overflow-hidden border-2 border-[#c7a332]">
+          <Cropper
+            image={editImagePreview || currentEditImageUrl || ""}
+            crop={crop}
+            zoom={zoom}
+            aspect={1} // square crop
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={(_, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
+          />
+        </div>
+      )}
 
       {/* Image Upload */}
       <input
@@ -796,7 +807,7 @@ return (
         </button>
         <button
           onClick={closeEditModal}
-className="flex-1 px-4 py-2 rounded-lg font-semibold text-[#0b1a3d] border-2 border-[#c7a332] bg-white hover:bg-[#f0e6d9] transition"
+          className="flex-1 px-4 py-2 rounded-lg font-semibold text-[#0b1a3d] border-2 border-[#c7a332] bg-white hover:bg-[#f0e6d9] transition"
         >
           Cancel
         </button>
@@ -804,6 +815,7 @@ className="flex-1 px-4 py-2 rounded-lg font-semibold text-[#0b1a3d] border-2 bor
     </div>
   </div>
 )}
+
   </div>
 </>
 );
