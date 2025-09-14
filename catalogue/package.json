@@ -29,6 +29,7 @@
     "puppeteer-core": "^10.4.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-easy-crop": "^5.5.0",
     "session": "^0.1.0"
   },
   "devDependencies": {
