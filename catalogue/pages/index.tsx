@@ -473,114 +473,66 @@ return (
         <meta name="twitter:description" content="Luxury bangles and jewellery crafted to perfection." />
         <meta name="twitter:image" content="/favicon.PNG" />
       </Head>
-<div style={{ padding: "30px", background: "#0b1a3d", minHeight: "100vh" }}>
-  <h1 style={{ textAlign: "center", fontSize: "2.5rem", marginBottom: "20px", color: "#c7a332" }}>
-    Our Catalogue
-  </h1>
+<div className="min-h-screen p-8 bg-[#fdf8f3]">
+  {/* Header */}
+  <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <h1 className="text-4xl font-bold text-center md:text-left text-[#c7a332]">
+      Bloudan Catalogue
+    </h1>
 
-   <button
+    <div className="flex gap-4">
+      {/* Sign Out Button */}
+      <button
         onClick={handleSignOut}
-        style={{
-          padding: "8px 16px",
-          backgroundColor: "#c7a332",
-          color: "#0b1a3d",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer",
-          fontWeight: "bold",
-        }}
+        className="px-4 py-2 bg-[#c7a332] text-[#0b1a3d] font-bold rounded-lg hover:bg-[#b5942b] transition"
       >
         Sign Out
       </button>
 
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      marginBottom: "30px",
-      gap: "10px",
-    }}
-  >
-    <select
-      value={pdfFilter}
-      onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
-      style={{
-        padding: "10px",
-        fontSize: "1rem",
-        borderRadius: "8px",
-        border: "1px solid #c7a332",
-        background: "#fff",
-        color: "#0b1a3d",
-        fontWeight: 600,
-        cursor: "pointer",
-      }}
-    >
-      <option value="Adult">Adult Only</option>
-      <option value="Kids">Kids Only</option>
-      <option value="Both">Both</option>
-    </select>
+      {/* PDF Filter */}
+      <select
+        value={pdfFilter}
+        onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
+        className="px-4 py-2 border-2 border-[#c7a332] rounded-lg bg-white text-[#0b1a3d] font-semibold cursor-pointer"
+      >
+        <option value="Adult">Adult Only</option>
+        <option value="Kids">Kids Only</option>
+        <option value="Both">Both</option>
+      </select>
 
-    <button
-      onClick={async () => {
-        setIsLoading(true);
-        try {
-          await handleDownloadPDF(pdfFilter);
-        } finally {
-          setIsLoading(false);
-        }
-      }}
-      disabled={isLoading}
-      style={{
-        padding: "10px 20px",
-        fontSize: "1rem",
-        background: isLoading ? "#8c6b1d" : "#c7a332",
-        color: "#0b1a3d",
-        border: "none",
-        borderRadius: "8px",
-        cursor: isLoading ? "not-allowed" : "pointer",
-        fontWeight: 600,
-        transition: "background 0.3s",
-      }}
-    >
-      {isLoading ? "Generating PDF..." : "Download PDF"}
-    </button>
+      {/* Download PDF */}
+      <button
+        onClick={async () => {
+          setIsLoading(true);
+          try {
+            await handleDownloadPDF(pdfFilter);
+          } finally {
+            setIsLoading(false);
+          }
+        }}
+        disabled={isLoading}
+        className={`px-4 py-2 rounded-lg font-semibold transition ${
+          isLoading
+            ? "bg-[#8c6b1d] text-[#0b1a3d] cursor-not-allowed"
+            : "bg-[#c7a332] text-[#0b1a3d] hover:bg-[#b5942b]"
+        }`}
+      >
+        {isLoading ? "Generating PDF..." : "Download PDF"}
+      </button>
+    </div>
   </div>
 
+  {/* Grid of Cards */}
   <div
     ref={containerRef}
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-      gap: "15px",
-      padding: "10px",
-    }}
+    className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
   >
-    {/* Add Card */}
+    {/* Add New Item Card */}
     <div
       onClick={() => setShowAddModal(true)}
-      style={{
-        background: "#fff",
-        borderRadius: "20px",
-        padding: "10px",
-        boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-        minHeight: "250px",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        cursor: "pointer",
-        textAlign: "center",
-        transition: "transform 0.2s, box-shadow 0.2s",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-5px)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 15px 30px rgba(0,0,0,0.25)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.2)";
-      }}
+      className="flex justify-center items-center min-h-[250px] bg-white rounded-2xl shadow-lg cursor-pointer transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl"
     >
-      <span style={{ fontSize: "1.2rem", fontWeight: 600, color: "#c7a332" }}>+ Add New Item</span>
+      <span className="text-[#c7a332] font-semibold text-lg">+ Add New Item</span>
     </div>
 
     {/* Existing Items */}
@@ -591,111 +543,36 @@ return (
         <div
           key={item._id}
           onClick={() => handleEditClick(item)}
-          style={{
-            background: "#fff",
-            borderRadius: "20px",
-            padding: "10px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-            minHeight: "280px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            cursor: "pointer",
-            transition: "transform 0.2s, box-shadow 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLDivElement).style.transform = "translateY(-5px)";
-            (e.currentTarget as HTMLDivElement).style.boxShadow = "0 15px 30px rgba(0,0,0,0.25)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-            (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 25px rgba(0,0,0,0.2)";
-          }}
+          className="flex flex-col items-center cursor-pointer bg-white rounded-2xl shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl"
         >
-          <div
-            style={{
-              width: "100%",
-              paddingTop: "100%",
-              position: "relative",
-              borderRadius: "16px",
-              overflow: "hidden",
-              background: "#0b1a3d",
-            }}
-          >
+          {/* Image */}
+          <div className="relative w-full pt-[100%] rounded-xl overflow-hidden bg-[#0b1a3d]">
             {item.image && (
               <img
                 src={urlFor(item.image).width(500).url()}
                 alt={`B${item.modelNumber}`}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  borderRadius: "16px",
-                }}
+                className="absolute top-0 left-0 w-full h-full object-cover rounded-xl"
               />
             )}
             {uploadingId === item._id && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  background: "rgba(0,0,0,0.4)",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  fontWeight: 600,
-                  color: "#c7a332",
-                }}
-              >
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex justify-center items-center text-[#c7a332] font-semibold">
                 Uploading...
               </div>
             )}
           </div>
 
-          <p
-            style={{
-              fontSize: "1.2rem",
-              fontWeight: 600,
-              color: "#0b1a3d",
-              marginTop: "12px",
-            }}
-          >
-            B{item.modelNumber}
-          </p>
+          {/* Model Number */}
+          <p className="text-[#0b1a3d] font-semibold mt-3 text-lg">B{item.modelNumber}</p>
 
           {/* Sizes */}
-          <div style={{ marginTop: "5px", display: "flex", gap: "8px" }}>
+          <div className="flex gap-2 mt-2">
             {item.sizes?.includes("Adult") && (
-              <span
-                style={{
-                  fontSize: "0.9rem",
-                  color: "#0b1a3d",
-                  background: "#c7a332",
-                  padding: "2px 6px",
-                  borderRadius: "6px",
-                  fontWeight: 600,
-                }}
-              >
+              <span className="text-[#0b1a3d] bg-[#c7a332] px-2 py-1 rounded-md font-semibold text-sm">
                 Adult {item.weightAdult ? `- ${item.weightAdult}g` : ""}
               </span>
             )}
             {item.sizes?.includes("Kids") && (
-              <span
-                style={{
-                  fontSize: "0.9rem",
-                  color: "#0b1a3d",
-                  background: "#c7a332",
-                  padding: "2px 6px",
-                  borderRadius: "6px",
-                  fontWeight: 600,
-                }}
-              >
+              <span className="text-[#0b1a3d] bg-[#c7a332] px-2 py-1 rounded-md font-semibold text-sm">
                 Kids {item.weightKids ? `- ${item.weightKids}g` : ""}
               </span>
             )}
@@ -704,7 +581,6 @@ return (
       ))}
   </div>
 
-  {/* Force 2 cards per row on mobile */}
   <style jsx>{`
     @media (max-width: 480px) {
       div[ref] {
@@ -712,6 +588,7 @@ return (
       }
     }
   `}</style>
+
 
 
 
