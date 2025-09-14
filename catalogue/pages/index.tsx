@@ -103,7 +103,8 @@ const handleSizeChange = (size: "Adult" | "Kids") => {
 const handleEditClick = (item: CatalogueItem) => {
   setEditingId(item._id);
   setEditImage(null); // user can choose new image or keep old
-  setEditSizes(item.sizes || []);
+  setCurrentEditImageUrl(item.image ? urlFor(item.image).width(500).url() : "");
+setEditSizes(item.sizes || []);
   setEditWeightAdult(item.weightAdult?.toString() || "");
   setEditWeightKids(item.weightKids?.toString() || "");
 };
