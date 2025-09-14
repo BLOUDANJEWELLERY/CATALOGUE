@@ -1,6 +1,7 @@
 // pages/index.tsx:
 "use client";
-
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../api/auth/[...nextauth]";
 import { signOut } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import { useState, ChangeEvent, useRef } from "react";
