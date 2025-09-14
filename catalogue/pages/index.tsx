@@ -612,8 +612,8 @@ return (
 
 {/* Full-page overlay */}
 {isProcessing && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20">
-    <div className="w-12 h-12 border-4 border-[#c7a332] border-t-transparent rounded-full animate-spin"></div>
+  <div className="fixed inset-0 backdrop-blur-sm bg-[#fdf8f3]/40 z-[9999] flex items-center justify-center">
+    <div className="w-12 h-12 border-4 border-[#c7a332] border-t-[#0b1a3d] rounded-full animate-spin"></div>
   </div>
 )}
 
