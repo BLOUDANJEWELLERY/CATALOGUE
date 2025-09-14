@@ -9,6 +9,7 @@ export const authOptions: AuthOptions = {
   session: { strategy: "jwt" },
   providers: [
     CredentialsProvider({
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
