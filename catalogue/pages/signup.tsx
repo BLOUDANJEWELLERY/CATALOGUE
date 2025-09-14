@@ -58,33 +58,36 @@ const validatePhoneNumber = (phone: string) => {
 
   const handlePrev = () => setStep(prev => Math.max(prev - 1, 0));
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          email,
-          password,
-        }),
-      });
-      const data: { error?: string } = await res.json();
-      if (!res.ok) throw data;
-      router.push("/login");
-    } catch (err: unknown) {
-      if (typeof err === "object" && err !== null && "error" in err) {
-        setError((err as { error?: string }).error || "Signup failed, try again");
-      } else {
-        setError("Signup failed, try again");
-      }
-    } finally {
-      setLoading(false);
+const handleSubmit = async () => {
+  setLoading(true);
+  setError("");
+  try {
+    const res = await fetch("/api/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        email,
+        password,
+      }),
+    });
+
+    const data: { error?: string; debug?: string } = await res.json();
+    if (!res.ok) throw data;
+
+    router.push("/login");
+  } catch (err: unknown) {
+    if (typeof err === "object" && err !== null && "error" in err) {
+      const { error, debug } = err as { error?: string; debug?: string };
+      setError(`${error || "Signup failed"} ${debug ? " → " + debug : ""}`);
+    } else {
+      setError("Signup failed, try again");
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const stepContent = () => {
     switch (step) {
