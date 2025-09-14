@@ -1,5 +1,6 @@
 // pages/index.tsx:
 "use client";
+import { getCroppedImg } from "../utils/cropImage"; // adjust the path
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
 import { GetServerSidePropsContext, GetServerSideProps } from "next";
