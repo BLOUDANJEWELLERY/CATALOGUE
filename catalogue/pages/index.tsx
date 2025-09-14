@@ -426,7 +426,6 @@ function hexToRgb(hex: string): [number, number, number] {
   };
 
  
-// Modal styles
 const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties } = {
   overlay: {
     position: "fixed",
@@ -434,24 +433,24 @@ const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties 
     left: 0,
     width: "100%",
     height: "100%",
-    background: "rgba(0, 0, 0, 0.7)", // slightly darker overlay for elegance
+    background: "rgba(0,0,0,0.6)", // deep overlay like catalogue background
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
   },
   content: {
-    background: "#0b1a3d",           // deep navy background
+    background: "#0b1a3d",           // deep navy like product cards
     borderRadius: "20px",
-    padding: "30px",                 // slightly more padding for luxury
+    padding: "30px",
     width: "90%",
     maxWidth: "500px",
-    boxShadow: "0 20px 50px rgba(0,0,0,0.5)", // stronger shadow for premium feel
-    color: "#ffffff",                // text color inside modal
-    border: "2px solid #c7a332",    // subtle golden frame
+    boxShadow: "0 15px 40px rgba(0,0,0,0.4)", // elevated shadow
+    border: "2px solid #c7a332",    // golden accent frame
+    color: "#0b1a3d",                // base text color inside modal (you can override per element)
     display: "flex",
     flexDirection: "column",
-    gap: "20px",                     // spacing between content elements
+    gap: "20px",
   },
 };
 
