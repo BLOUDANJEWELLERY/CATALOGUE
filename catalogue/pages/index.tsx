@@ -433,21 +433,20 @@ const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties 
     left: 0,
     width: "100%",
     height: "100%",
-    background: "rgba(0,0,0,0.6)", // deep overlay like catalogue background
+    background: "rgba(0,0,0,0.5)", // subtle dark overlay
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
   },
   content: {
-    background: "#0b1a3d",           // deep navy like product cards
+    background: "#fdf8f3",           // catalogue page background
     borderRadius: "20px",
     padding: "30px",
     width: "90%",
     maxWidth: "500px",
-    boxShadow: "0 15px 40px rgba(0,0,0,0.4)", // elevated shadow
-    border: "2px solid #c7a332",    // golden accent frame
-    color: "#0b1a3d",                // base text color inside modal (you can override per element)
+    boxShadow: "0 15px 40px rgba(0,0,0,0.2)", // soft shadow
+    border: "2px solid #c7a332",    // golden accent border
     display: "flex",
     flexDirection: "column",
     gap: "20px",
