@@ -708,6 +708,15 @@ return (
         Edit Catalogue Item
       </h2>
 
+      {/* Image Preview */}
+      <div>
+        <img
+          src={editImagePreview || currentEditImageUrl || ""}
+          alt="Product Preview"
+          className="w-full max-h-48 object-contain rounded-lg border-2 border-[#c7a332]"
+        />
+      </div>
+
       {/* Image Upload */}
       <input
         type="file"
@@ -719,17 +728,6 @@ return (
         }}
         className="border-2 border-[#c7a332] rounded-lg p-2 w-full bg-white text-[#0b1a3d] cursor-pointer"
       />
-
-      {/* Image Preview */}
-      {(editImagePreview || currentEditImageUrl) && (
-        <div>
-          <img
-            src={editImagePreview || currentEditImageUrl || ""}
-            alt="Preview"
-            className="w-full max-h-48 object-contain rounded-lg border border-[#c7a332]"
-          />
-        </div>
-      )}
 
       {/* Size Selection */}
       <div className="flex gap-6">
