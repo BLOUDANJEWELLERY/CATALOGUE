@@ -1,5 +1,6 @@
 // pages/index.tsx:
 "use client";
+import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
 import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import { getServerSession } from "next-auth/next";
