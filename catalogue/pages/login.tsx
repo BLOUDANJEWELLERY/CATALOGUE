@@ -80,12 +80,12 @@ export default function LoginPage() {
             {loading ? "Logging In..." : "Login"}
           </button>
 
-          <p className="text-center text-sm mt-4 text-[#0b1a3d]">
-            Don't have an account?{" "}
-            <Link href="/signup" className="font-semibold underline text-[#c7a332]">
-              Sign Up
-            </Link>
-          </p>
+         <p className="text-center text-sm mt-4 text-[#0b1a3d]">
+  Don&apos;t have an account?{" "}
+  <Link href="/signup" className="font-semibold underline text-[#c7a332]">
+    Sign Up
+  </Link>
+</p>
         </div>
 
         <style jsx>{`
