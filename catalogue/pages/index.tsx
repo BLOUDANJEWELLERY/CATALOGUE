@@ -100,13 +100,14 @@ const handleSizeChange = (size: "Adult" | "Kids") => {
 };
 
 
-const handleEditClick = (item: CatalogueItem) => {
+const handleEditClick = (item: Product) => {
   setEditingId(item._id);
-  setEditImage(null); // user can choose new image or keep old
   setCurrentEditImageUrl(item.image ? urlFor(item.image).width(500).url() : "");
-setEditSizes(item.sizes || []);
-  setEditWeightAdult(item.weightAdult?.toString() || "");
-  setEditWeightKids(item.weightKids?.toString() || "");
+  setEditSizes(item.sizes || []);
+  setEditWeightAdult(item.weightAdult || "");
+  setEditWeightKids(item.weightKids || "");
+  setEditImage(null);          // important
+  setEditImagePreview(null);   // important
 };
 
 const handleEditSizeChange = (size: "Adult" | "Kids") => {
@@ -454,6 +455,16 @@ const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties 
   },
 };
 
+const closeEditModal = () => {
+  setEditingId(null);
+  setEditImage(null);
+  setEditImagePreview(null);
+  setCurrentEditImageUrl("");
+  setEditSizes([]);
+  setEditWeightAdult("");
+  setEditWeightKids("");
+};
+
 return (
     <>
       <Head>
@@ -784,8 +795,8 @@ return (
           {isUploading ? "Saving..." : "Save Changes"}
         </button>
         <button
-          onClick={() => setEditingId(null)}
-          className="flex-1 px-4 py-2 rounded-lg font-semibold text-[#0b1a3d] border-2 border-[#c7a332] bg-white hover:bg-[#f0e6d9] transition"
+          onClick={closeEditModal}
+className="flex-1 px-4 py-2 rounded-lg font-semibold text-[#0b1a3d] border-2 border-[#c7a332] bg-white hover:bg-[#f0e6d9] transition"
         >
           Cancel
         </button>
