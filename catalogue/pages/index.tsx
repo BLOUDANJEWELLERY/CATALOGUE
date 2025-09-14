@@ -104,10 +104,10 @@ const handleEditClick = (item: CatalogueItem) => {
   setEditingId(item._id);
   setCurrentEditImageUrl(item.image ? urlFor(item.image).width(500).url() : "");
   setEditSizes(item.sizes || []);
-  setEditWeightAdult(item.weightAdult || "");
-  setEditWeightKids(item.weightKids || "");
   setEditImage(null);          // important
   setEditImagePreview(null);   // important
+setEditWeightAdult(item.weightAdult?.toString() || "");
+  setEditWeightKids(item.weightKids?.toString() || "");
 };
 
 const handleEditSizeChange = (size: "Adult" | "Kids") => {
