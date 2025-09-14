@@ -25,7 +25,13 @@ interface CatalogueProps {
 }
 
 export const getServerSideProps: GetServerSideProps<CatalogueProps> = async () => {
-  const items: CatalogueItem[] = await client.fetch(
+    const session = await getServerSession(context.req, context.res, authOptions);
+
+  if (!session) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+
+const items: CatalogueItem[] = await client.fetch(
     `*[_type == "catalogueItem"] | order(modelNumber asc){
       _id,
       modelNumber,
