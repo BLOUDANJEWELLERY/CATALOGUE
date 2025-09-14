@@ -100,7 +100,7 @@ const handleSizeChange = (size: "Adult" | "Kids") => {
 };
 
 
-const handleEditClick = (item: Product) => {
+const handleEditClick = (item: CatalogueItem) => {
   setEditingId(item._id);
   setCurrentEditImageUrl(item.image ? urlFor(item.image).width(500).url() : "");
   setEditSizes(item.sizes || []);
