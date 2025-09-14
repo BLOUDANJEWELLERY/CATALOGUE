@@ -42,14 +42,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(201).json({ message: "Signup successful", userId: user.id });
   } catch (err: unknown) {
-    console.error("Signup error full dump:", err);
+    // Instead of console only, send full details to client for now
+    let details: string = "Unknown error";
+    if (err instanceof Error) {
+      details = err.message;
+    } else if (typeof err === "object") {
+      details = JSON.stringify(err);
+    }
 
+    // Also handle Prisma specific
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === "P2002") {
         return res.status(400).json({ error: "Email already exists" });
       }
     }
 
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({
+      error: "Internal server error",
+      debug: details, // ✅ show on screen
+    });
   }
 }
