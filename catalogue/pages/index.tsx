@@ -603,12 +603,16 @@ return (
 
 
 
- {/* Add Product Modal */}
+{/* Add Product Modal */}
 {showAddModal && (
-  <div style={modalStyles.overlay}>
-    <div style={modalStyles.content}>
-      <h2 style={{ color: "#7a4c2e" }}>Add New Catalogue Item</h2>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-[#fdf8f3] rounded-2xl p-8 w-full max-w-md shadow-lg border-2 border-[#c7a332] flex flex-col gap-4">
+      
+      <h2 className="text-2xl font-bold text-[#0b1a3d] text-center">
+        Add New Catalogue Item
+      </h2>
 
+      {/* Image Upload */}
       <input
         type="file"
         accept="image/*"
@@ -617,46 +621,50 @@ return (
           setNewItemImage(file);
           if (file) setNewItemImagePreview(URL.createObjectURL(file));
         }}
-        style={{ marginBottom: "10px" }}
+        className="border-2 border-[#c7a332] rounded-lg p-2 w-full bg-white text-[#0b1a3d] cursor-pointer"
       />
 
-      {/* Preview */}
+      {/* Image Preview */}
       {newItemImagePreview && (
-        <div style={{ marginBottom: "10px" }}>
+        <div>
           <img
             src={newItemImagePreview}
             alt="Preview"
-            style={{ width: "100%", maxHeight: "200px", objectFit: "contain", borderRadius: "12px" }}
+            className="w-full max-h-48 object-contain rounded-lg border border-[#c7a332]"
           />
         </div>
       )}
 
-      <div style={{ marginBottom: "10px" }}>
-        <label style={{ marginRight: "10px" }}>
+      {/* Size Selection */}
+      <div className="flex gap-6">
+        <label className="flex items-center gap-2 text-[#0b1a3d] font-semibold">
           <input
             type="checkbox"
             checked={newItemSizes.includes("Adult")}
             onChange={() => handleSizeChange("Adult")}
-          />{" "}
+            className="w-4 h-4 accent-[#c7a332]"
+          />
           Adult
         </label>
-        <label>
+        <label className="flex items-center gap-2 text-[#0b1a3d] font-semibold">
           <input
             type="checkbox"
             checked={newItemSizes.includes("Kids")}
             onChange={() => handleSizeChange("Kids")}
-          />{" "}
+            className="w-4 h-4 accent-[#c7a332]"
+          />
           Kids
         </label>
       </div>
 
+      {/* Weight Inputs */}
       {newItemSizes.includes("Adult") && (
         <input
           type="number"
           placeholder="Weight Adult (g)"
           value={newItemWeightAdult}
           onChange={(e) => setNewItemWeightAdult(e.target.value)}
-          style={{ marginBottom: "10px" }}
+          className="border-2 border-[#c7a332] rounded-lg p-2 w-full bg-white text-[#0b1a3d]"
         />
       )}
       {newItemSizes.includes("Kids") && (
@@ -665,35 +673,24 @@ return (
           placeholder="Weight Kids (g)"
           value={newItemWeightKids}
           onChange={(e) => setNewItemWeightKids(e.target.value)}
-          style={{ marginBottom: "10px" }}
+          className="border-2 border-[#c7a332] rounded-lg p-2 w-full bg-white text-[#0b1a3d]"
         />
       )}
 
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      {/* Buttons */}
+      <div className="flex justify-between gap-4 mt-4">
         <button
           onClick={handleSaveNewItem}
           disabled={isUploading}
-          style={{
-            padding: "8px 16px",
-            background: isUploading ? "#a67c5c" : "#8b5e3c",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            cursor: isUploading ? "not-allowed" : "pointer",
-          }}
+          className={`flex-1 px-4 py-2 rounded-lg font-semibold text-[#c7a332] border-2 border-[#0b1a3d] bg-[#0b1a3d] hover:bg-[#0a162d] transition ${
+            isUploading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           {isUploading ? "Saving..." : "Save Item"}
         </button>
         <button
           onClick={() => setShowAddModal(false)}
-          style={{
-            padding: "8px 16px",
-            background: "#ccc",
-            color: "#333",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-          }}
+          className="flex-1 px-4 py-2 rounded-lg font-semibold text-[#0b1a3d] border-2 border-[#c7a332] bg-white hover:bg-[#f0e6d9] transition"
         >
           Cancel
         </button>
