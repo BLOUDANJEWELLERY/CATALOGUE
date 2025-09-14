@@ -36,7 +36,7 @@ export default function LoginPage() {
       <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src="/favicon.png" alt="Bloudan Logo" className="h-20 w-auto" />
+          <img src="/favicon.PNG" alt="Bloudan Logo" className="h-20 w-auto" />
         </div>
 
         <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332]">
