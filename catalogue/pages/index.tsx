@@ -788,12 +788,6 @@ return (
   </button>
 </div>
 
-{/* Full-page overlay while saving */}
-{isUploading && (
-  <div className="fixed inset-0 backdrop-blur-sm bg-[#fdf8f3]/40 z-[9999] flex items-center justify-center">
-    <div className="w-12 h-12 border-4 border-[#c7a332] border-t-[#0b1a3d] rounded-full animate-spin"></div>
-  </div>
-)}
 
         <button
           onClick={() => setShowAddModal(false)}
@@ -805,6 +799,14 @@ return (
     </div>
   </div>
 )}
+
+{/* Full-page overlay while saving */}
+{isUploading && (
+  <div className="fixed inset-0 backdrop-blur-sm bg-[#fdf8f3]/40 z-[9999] flex items-center justify-center">
+    <div className="w-12 h-12 border-4 border-[#c7a332] border-t-[#0b1a3d] rounded-full animate-spin"></div>
+  </div>
+)}
+
 
 {/* Edit Product Modal with Cropper */}
 {editingId && (
@@ -904,12 +906,6 @@ return (
   </button>
 </div>
 
-{/* Full-page overlay while saving */}
-{isUploading && (
-  <div className="fixed inset-0 backdrop-blur-sm bg-[#fdf8f3]/40 z-[9999] flex items-center justify-center">
-    <div className="w-12 h-12 border-4 border-[#c7a332] border-t-[#0b1a3d] rounded-full animate-spin"></div>
-  </div>
-)}
         <button
           onClick={closeEditModal}
           className="flex-1 px-4 py-2 rounded-lg font-semibold text-[#0b1a3d] border-2 border-[#c7a332] bg-white hover:bg-[#f0e6d9] transition"
