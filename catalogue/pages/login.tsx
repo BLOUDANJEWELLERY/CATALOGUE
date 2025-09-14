@@ -34,16 +34,17 @@ export default function LoginPage() {
       </Head>
 
       <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
-
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <img src="/favicon.png" alt="Bloudan Logo" className="h-20 w-auto" />
         </div>
 
-        <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
+        <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332]">
           <h1 className="text-3xl font-bold mb-6 text-center text-[#0b1a3d]">Login</h1>
 
-          {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
+          {error && (
+            <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>
+          )}
 
           <div className="flex flex-col gap-4">
             <input
@@ -80,12 +81,12 @@ export default function LoginPage() {
             {loading ? "Logging In..." : "Login"}
           </button>
 
-         <p className="text-center text-sm mt-4 text-[#0b1a3d]">
-  Don&apos;t have an account?{" "}
-  <Link href="/signup" className="font-semibold underline text-[#c7a332]">
-    Sign Up
-  </Link>
-</p>
+          <p className="text-center text-sm mt-4 text-[#0b1a3d]">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="font-semibold underline text-[#c7a332]">
+              Sign Up
+            </Link>
+          </p>
         </div>
 
         <style jsx>{`
