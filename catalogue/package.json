@@ -25,6 +25,7 @@
     "next-auth": "^4.24.11",
     "next-sanity": "^10.0.16",
     "node-fetch": "^3.3.2",
+    "nodemailer": "^6.10.1",
     "puppeteer": "^24.20.0",
     "puppeteer-core": "^10.4.0",
     "react": "^19.1.0",
