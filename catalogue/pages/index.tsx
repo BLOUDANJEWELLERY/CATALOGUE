@@ -4,7 +4,6 @@ import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { signOut } from "next-auth/react";
-import { GetServerSideProps } from "next";
 import { useState, ChangeEvent, useRef } from "react";
 import { client } from "../lib/sanity.client";
 import { urlFor } from "../lib/sanity.image";
