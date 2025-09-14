@@ -786,7 +786,6 @@ return (
   >
     {isUploading ? "Saving..." : "Save Item"}
   </button>
-</div>
 
 
         <button
@@ -904,7 +903,6 @@ return (
   >
     {isUploading ? "Saving..." : "Save Changes"}
   </button>
-</div>
 
         <button
           onClick={closeEditModal}
