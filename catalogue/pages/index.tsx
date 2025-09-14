@@ -485,12 +485,12 @@ return (
 <div className="min-h-screen p-8 bg-[#fdf8f3]">
   {/* Header */}
   <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-    <h1 className="text-4xl font-bold text-center md:text-left text-[#c7a332]">
+    <h1 className="text-4xl font-bold text-[#c7a332] text-center md:text-left">
       Bloudan Catalogue
     </h1>
 
-    <div className="flex gap-4">
-      {/* Sign Out Button */}
+    {/* Controls: Sign Out, Filter, Download */}
+    <div className="flex flex-wrap gap-3 justify-center md:justify-start mt-2 md:mt-0">
       <button
         onClick={handleSignOut}
         className="px-4 py-2 bg-[#c7a332] text-[#0b1a3d] font-bold rounded-lg hover:bg-[#b5942b] transition"
@@ -498,7 +498,6 @@ return (
         Sign Out
       </button>
 
-      {/* PDF Filter */}
       <select
         value={pdfFilter}
         onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
@@ -509,7 +508,6 @@ return (
         <option value="Both">Both</option>
       </select>
 
-      {/* Download PDF */}
       <button
         onClick={async () => {
           setIsLoading(true);
@@ -552,15 +550,15 @@ return (
         <div
           key={item._id}
           onClick={() => handleEditClick(item)}
-          className="flex flex-col items-center cursor-pointer bg-white rounded-2xl shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl"
+          className="flex flex-col items-center cursor-pointer bg-white rounded-2xl shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl overflow-hidden"
         >
           {/* Image */}
-          <div className="relative w-full pt-[100%] rounded-xl overflow-hidden bg-[#0b1a3d]">
+          <div className="relative w-full pt-[100%] rounded-t-xl bg-[#0b1a3d] overflow-hidden">
             {item.image && (
               <img
                 src={urlFor(item.image).width(500).url()}
                 alt={`B${item.modelNumber}`}
-                className="absolute top-0 left-0 w-full h-full object-cover rounded-xl"
+                className="absolute top-0 left-0 w-full h-full object-cover"
               />
             )}
             {uploadingId === item._id && (
@@ -573,8 +571,8 @@ return (
           {/* Model Number */}
           <p className="text-[#0b1a3d] font-semibold mt-3 text-lg">B{item.modelNumber}</p>
 
-          {/* Sizes */}
-          <div className="flex gap-2 mt-2">
+          {/* Sizes + Weights */}
+          <div className="flex flex-wrap justify-center gap-2 mt-2 px-2 pb-3">
             {item.sizes?.includes("Adult") && (
               <span className="text-[#0b1a3d] bg-[#c7a332] px-2 py-1 rounded-md font-semibold text-sm">
                 Adult {item.weightAdult ? `- ${item.weightAdult}g` : ""}
@@ -590,6 +588,7 @@ return (
       ))}
   </div>
 
+  {/* Force 2 cards per row on small screens */}
   <style jsx>{`
     @media (max-width: 480px) {
       div[ref] {
@@ -597,7 +596,6 @@ return (
       }
     }
   `}</style>
-
 
 
 
