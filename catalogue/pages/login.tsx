@@ -9,7 +9,7 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     const res = await signIn("credentials", { email, password, redirect: false });
-    if (res?.ok) router.push("/dashboard");
+    if (res?.ok) router.push("/");
   };
 
   return (
