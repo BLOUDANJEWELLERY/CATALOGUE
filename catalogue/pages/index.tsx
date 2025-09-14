@@ -1,5 +1,6 @@
 // pages/index.tsx:
 "use client";
+import type { Area } from "react-easy-crop";
 import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
@@ -91,10 +92,10 @@ const containerRef = useRef<HTMLDivElement>(null);
 // Auto Model Number for Add New Item
 const nextModelNumber = items.length > 0 ? Math.max(...items.map(i => i.modelNumber)) + 1 : 1;
 
-const [crop, setCrop] = useState({ x: 0, y: 0 });
-const [zoom, setZoom] = useState(1);
-const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
 
+const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+const [zoom, setZoom] = useState<number>(1);
+const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
 const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Both");
 // Handle checkbox selection
