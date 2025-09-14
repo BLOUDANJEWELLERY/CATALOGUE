@@ -484,49 +484,50 @@ return (
       </Head>
 <div className="min-h-screen p-8 bg-[#fdf8f3]">
   {/* Header */}
-  <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-    <h1 className="text-4xl font-bold text-[#c7a332] text-center md:text-left">
-      Bloudan Catalogue
-    </h1>
+  <h1 className="text-4xl font-bold text-[#c7a332] text-center mb-6">
+    Bloudan Catalogue
+  </h1>
 
-    {/* Controls: Sign Out, Filter, Download */}
-    <div className="flex flex-wrap gap-3 justify-center md:justify-start mt-2 md:mt-0">
-      <button
-        onClick={handleSignOut}
-        className="px-4 py-2 bg-[#c7a332] text-[#0b1a3d] font-bold rounded-lg hover:bg-[#b5942b] transition"
-      >
-        Sign Out
-      </button>
+  {/* Sign Out button */}
+  <div className="flex justify-center mb-4">
+    <button
+      onClick={handleSignOut}
+      className="px-4 py-2 bg-[#c7a332] text-[#0b1a3d] font-bold rounded-lg hover:bg-[#b5942b] transition"
+    >
+      Sign Out
+    </button>
+  </div>
 
-      <select
-        value={pdfFilter}
-        onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
-        className="px-4 py-2 border-2 border-[#c7a332] rounded-lg bg-white text-[#0b1a3d] font-semibold cursor-pointer"
-      >
-        <option value="Adult">Adult Only</option>
-        <option value="Kids">Kids Only</option>
-        <option value="Both">Both</option>
-      </select>
+  {/* Controls Row: Filter + Download */}
+  <div className="flex justify-center gap-3 mb-8 flex-wrap">
+    <select
+      value={pdfFilter}
+      onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
+      className="px-4 py-2 border-2 border-[#c7a332] rounded-lg bg-white text-[#0b1a3d] font-semibold cursor-pointer"
+    >
+      <option value="Adult">Adult Only</option>
+      <option value="Kids">Kids Only</option>
+      <option value="Both">Both</option>
+    </select>
 
-      <button
-        onClick={async () => {
-          setIsLoading(true);
-          try {
-            await handleDownloadPDF(pdfFilter);
-          } finally {
-            setIsLoading(false);
-          }
-        }}
-        disabled={isLoading}
-        className={`px-4 py-2 rounded-lg font-semibold transition ${
-          isLoading
-            ? "bg-[#8c6b1d] text-[#0b1a3d] cursor-not-allowed"
-            : "bg-[#c7a332] text-[#0b1a3d] hover:bg-[#b5942b]"
-        }`}
-      >
-        {isLoading ? "Generating PDF..." : "Download PDF"}
-      </button>
-    </div>
+    <button
+      onClick={async () => {
+        setIsLoading(true);
+        try {
+          await handleDownloadPDF(pdfFilter);
+        } finally {
+          setIsLoading(false);
+        }
+      }}
+      disabled={isLoading}
+      className={`px-4 py-2 rounded-lg font-semibold transition ${
+        isLoading
+          ? "bg-[#8c6b1d] text-[#0b1a3d] cursor-not-allowed"
+          : "bg-[#c7a332] text-[#0b1a3d] hover:bg-[#b5942b]"
+      }`}
+    >
+      {isLoading ? "Generating PDF..." : "Download PDF"}
+    </button>
   </div>
 
   {/* Grid of Cards */}
@@ -596,6 +597,7 @@ return (
       }
     }
   `}</style>
+
 
 
 
