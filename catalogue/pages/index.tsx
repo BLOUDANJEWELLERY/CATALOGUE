@@ -1,4 +1,7 @@
 // pages/index.tsx:
+"use client";
+
+import { signOut } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import { useState, ChangeEvent, useRef } from "react";
 import { client } from "../lib/sanity.client";
@@ -402,6 +405,12 @@ function hexToRgb(hex: string): [number, number, number] {
   return match.map((x) => parseInt(x, 16)) as [number, number, number];
 }
 
+
+ const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/" }); // redirects to homepage
+  };
+
+ 
 // Modal styles
 const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties } = {
   overlay: {
@@ -462,6 +471,21 @@ return (
   <h1 style={{ textAlign: "center", fontSize: "2.5rem", marginBottom: "20px", color: "#c7a332" }}>
     Our Catalogue
   </h1>
+
+   <button
+        onClick={handleSignOut}
+        style={{
+          padding: "8px 16px",
+          backgroundColor: "#c7a332",
+          color: "#0b1a3d",
+          border: "none",
+          borderRadius: "6px",
+          cursor: "pointer",
+          fontWeight: "bold",
+        }}
+      >
+        Sign Out
+      </button>
 
   <div
     style={{
