@@ -1,5 +1,6 @@
 // pages/index.tsx:
 "use client";
+import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { signOut } from "next-auth/react";
@@ -25,14 +26,17 @@ interface CatalogueProps {
   items: CatalogueItem[];
 }
 
-export const getServerSideProps: GetServerSideProps<CatalogueProps> = async () => {
-    const session = await getServerSession(context.req, context.res, authOptions);
+
+export const getServerSideProps: GetServerSideProps = async (context: GetServerSidePropsContext) => {
+  // 1. Check session
+  const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session) {
     return { redirect: { destination: "/login", permanent: false } };
   }
 
-const items: CatalogueItem[] = await client.fetch(
+  // 2. Fetch catalogue items
+  const items = await client.fetch(
     `*[_type == "catalogueItem"] | order(modelNumber asc){
       _id,
       modelNumber,
@@ -43,7 +47,12 @@ const items: CatalogueItem[] = await client.fetch(
     }`
   );
 
-  return { props: { items } };
+  return {
+    props: {
+      session,
+      items,
+    },
+  };
 };
 
 export default function Catalogue({ items }: CatalogueProps) {
