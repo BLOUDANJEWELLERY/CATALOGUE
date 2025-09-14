@@ -94,10 +94,13 @@ const containerRef = useRef<HTMLDivElement>(null);
 // Auto Model Number for Add New Item
 const nextModelNumber = items.length > 0 ? Math.max(...items.map(i => i.modelNumber)) + 1 : 1;
 
-
 const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 const [zoom, setZoom] = useState<number>(1);
 const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
+// Component-level state
+const [isProcessing, setIsProcessing] = useState(false); // tracks sign out or PDF download
+
 
 const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Both");
 // Handle checkbox selection
@@ -512,6 +515,17 @@ useEffect(() => {
   }
 }, [showAddModal, editingId]);
 
+
+// Lock scroll while processing
+useEffect(() => {
+  if (isProcessing) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+}, [isProcessing]);
+
+
 return (
     <>
       <Head>
@@ -548,47 +562,60 @@ return (
     Bloudan Catalogue
   </h1>
 
-  {/* Sign Out button */}
-  <div className="flex justify-center mb-4">
-    <button
-      onClick={handleSignOut}
-      className="px-4 py-2 bg-[#c7a332] text-[#0b1a3d] font-bold rounded-lg hover:bg-[#b5942b] transition"
-    >
-      Sign Out
-    </button>
-  </div>
 
-  {/* Controls Row: Filter + Download */}
-  <div className="flex justify-center gap-3 mb-8 flex-wrap">
-    <select
-      value={pdfFilter}
-      onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
-      className="px-4 py-2 border-2 border-[#c7a332] rounded-lg bg-white text-[#0b1a3d] font-semibold cursor-pointer"
-    >
-      <option value="Adult">Adult Only</option>
-      <option value="Kids">Kids Only</option>
-      <option value="Both">Both</option>
-    </select>
+<div className="flex justify-center mb-4">
+  <button
+    onClick={async () => {
+      setIsProcessing(true);
+      try {
+        await handleSignOut();
+      } finally {
+        setIsProcessing(false);
+      }
+    }}
+    className="px-4 py-2 bg-[#c7a332] text-[#0b1a3d] font-bold rounded-lg hover:bg-[#b5942b] transition"
+  >
+    Sign Out
+  </button>
+</div>
 
-    <button
-      onClick={async () => {
-        setIsLoading(true);
-        try {
-          await handleDownloadPDF(pdfFilter);
-        } finally {
-          setIsLoading(false);
-        }
-      }}
-      disabled={isLoading}
-      className={`px-4 py-2 rounded-lg font-semibold transition ${
-        isLoading
-          ? "bg-[#8c6b1d] text-[#0b1a3d] cursor-not-allowed"
-          : "bg-[#c7a332] text-[#0b1a3d] hover:bg-[#b5942b]"
-      }`}
-    >
-      {isLoading ? "Generating PDF..." : "Download PDF"}
-    </button>
+<div className="flex justify-center gap-3 mb-8 flex-wrap">
+  <select
+    value={pdfFilter}
+    onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
+    className="px-4 py-2 border-2 border-[#c7a332] rounded-lg bg-white text-[#0b1a3d] font-semibold cursor-pointer"
+  >
+    <option value="Adult">Adult Only</option>
+    <option value="Kids">Kids Only</option>
+    <option value="Both">Both</option>
+  </select>
+
+  <button
+    onClick={async () => {
+      setIsProcessing(true);
+      try {
+        await handleDownloadPDF(pdfFilter);
+      } finally {
+        setIsProcessing(false);
+      }
+    }}
+    disabled={isProcessing}
+    className={`px-4 py-2 rounded-lg font-semibold transition ${
+      isProcessing
+        ? "bg-[#8c6b1d] text-[#0b1a3d] cursor-not-allowed"
+        : "bg-[#c7a332] text-[#0b1a3d] hover:bg-[#b5942b]"
+    }`}
+  >
+    {isProcessing ? "Processing..." : "Download PDF"}
+  </button>
+</div>
+
+{/* Full-page overlay */}
+{isProcessing && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/20">
+    <div className="w-12 h-12 border-4 border-[#c7a332] border-t-transparent rounded-full animate-spin"></div>
   </div>
+)}
 
   {/* Grid of Cards */}
   <div
