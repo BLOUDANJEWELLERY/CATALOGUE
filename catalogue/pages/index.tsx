@@ -123,6 +123,7 @@ const handleEditSizeChange = (size: "Adult" | "Kids") => {
 
 
 const handleSaveEdit = async (itemId: string) => {
+  // Validations
   if (editSizes.length === 0) return alert("Select at least one size");
   if (editSizes.includes("Adult") && !editWeightAdult) return alert("Enter Adult weight");
   if (editSizes.includes("Kids") && !editWeightKids) return alert("Enter Kids weight");
@@ -132,14 +133,26 @@ const handleSaveEdit = async (itemId: string) => {
   try {
     let assetIdToSend: string | undefined;
 
+    // If user selected a new image, crop it first
     if (editImage) {
+      let finalImageFile = editImage;
+
+      if (croppedAreaPixels) {
+        const croppedBlob = await getCroppedImg(
+          editImagePreview || currentEditImageUrl || "",
+          croppedAreaPixels
+        );
+        finalImageFile = new File([croppedBlob], editImage.name, { type: "image/jpeg" });
+      }
+
       const formData = new FormData();
-      formData.append("file", editImage);
+      formData.append("file", finalImageFile);
       const uploadRes = await fetch("/api/uploadImage", { method: "POST", body: formData });
       const uploadData = await uploadRes.json();
       assetIdToSend = uploadData.assetId;
     }
 
+    // Update item details
     const updateRes = await fetch(`/api/updateItem/${itemId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -154,13 +167,18 @@ const handleSaveEdit = async (itemId: string) => {
     const data = await updateRes.json();
     if (!data.success) throw new Error(data.error || "Failed to save");
 
+    // Reset modal states
+    setEditingId(null);
+    setEditImage(null);
+    setEditImagePreview("");
+    setCroppedAreaPixels(null);
+
     window.location.reload();
   } catch (err) {
     console.error(err);
     alert("Failed to update item");
   } finally {
     setIsUploading(false);
-    setEditingId(null);
   }
 };
 
