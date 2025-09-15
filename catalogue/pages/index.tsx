@@ -456,28 +456,34 @@ document.body.removeChild(tempDiv);
     if (pageIndex < pages - 1) doc.addPage();
   }
 
-// Convert to ArrayBuffer
+// Convert to Blob (safer for Safari than raw ArrayBuffer)
 const pdfArrayBuffer = doc.output("arraybuffer");
+const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
 
-// Send raw PDF binary to backend
-await fetch("/api/uploadPdf", {
+// Upload to backend
+const uploadRes = await fetch("/api/uploadPdf", {
   method: "POST",
   headers: {
     "Content-Type": "application/pdf",
   },
-  body: pdfArrayBuffer,
+  body: pdfBlob,
 });
 
-// Optional: show success message
-alert("Latest PDF has been saved. You can now download it from the catalogue link.");
+const result = await uploadRes.json();
 
-// Trigger download
-const link = document.createElement("a");
-link.href = "/latest.pdf"; // public path on your server
-link.download = "BLOUDAN_BANGLES_CATALOGUE.pdf";
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
+if (result.success) {
+  // ✅ Download after successful save
+  const link = document.createElement("a");
+  link.href = result.url; // "/latest.pdf"
+  link.download = "BLOUDAN_BANGLES_CATALOGUE.pdf";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  alert("Latest PDF has been saved and is ready for download.");
+} else {
+  alert("Failed to save PDF. Try again.");
+}
 
 };
 
