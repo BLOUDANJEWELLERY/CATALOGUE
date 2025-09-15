@@ -102,6 +102,7 @@ const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 // Component-level state
 const [isProcessing, setIsProcessing] = useState(false); // tracks sign out or PDF download
 
+const [toastMessage, setToastMessage] = useState("");
 
 const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Both");
 // Handle checkbox selection
@@ -458,26 +459,42 @@ document.body.removeChild(tempDiv);
 
 // After creating your jsPDF `doc` and adding all content
 
-// Convert PDF to Blob (safe for Safari/iOS)
 const pdfArrayBuffer = doc.output("arraybuffer");
 const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
 
-// Create a temporary link and trigger download
-const link = document.createElement("a");
-link.href = URL.createObjectURL(pdfBlob);
-link.download = `BLOUDAN_BANGLES_CATALOGUE.pdf`;
-
-// Append to DOM, click, then remove
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
-
-// Optional: revoke the object URL after some time to free memory
-setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-
-// Optional: alert user
-alert("PDF has been generated and saved to your device!");
-
+// Modern Android & desktop
+if ("showSaveFilePicker" in window) {
+  // File System Access API (Chrome/Edge Android)
+  try {
+    const handle = await (window as any).showSaveFilePicker({
+      suggestedName: "BLOUDAN_BANGLES_CATALOGUE.pdf",
+      types: [
+        { description: "PDF Files", accept: { "application/pdf": [".pdf"] } },
+      ],
+    });
+    const writable = await handle.createWritable();
+    await writable.write(pdfBlob);
+    await writable.close();
+    showToast({ message: "PDF has been saved to your device!", type: "success" });
+  } catch (err) {
+    console.error("Save cancelled or failed", err);
+    showToast({ message: "PDF save cancelled.", type: "error" });
+  }
+} else if ("msSaveOrOpenBlob" in navigator) {
+  // IE/old Edge fallback
+  (navigator as any).msSaveOrOpenBlob(pdfBlob, "BLOUDAN_BANGLES_CATALOGUE.pdf");
+  showToast({ message: "PDF has been saved to your device!", type: "success" });
+} else {
+  // Fallback for browsers without save API
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(pdfBlob);
+  link.download = "BLOUDAN_BANGLES_CATALOGUE.pdf";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  showToast({ message: "PDF download triggered!", type: "success" });
+}
 };
 
 // Helper
@@ -583,7 +600,7 @@ return (
   <h1 className="text-4xl font-bold text-[#0b1a3d] text-center mb-6">
     Bloudan Catalogue
   </h1>
-
+{toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage("")} />}
 <div className="flex justify-center mb-4">
   <button
     onClick={async () => {
