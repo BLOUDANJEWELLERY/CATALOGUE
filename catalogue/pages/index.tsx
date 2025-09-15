@@ -291,6 +291,8 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
   }
 };
 
+This is my pdf function, tell me what to change with what:
+
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF("p", "mm", "a4");
 
@@ -425,27 +427,23 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         weightContainer.appendChild(p);
       }
 
-// Render to canvas with reasonable scale
-const canvas = await html2canvas(tempDiv, {
-  scale: 3,                // lower scale to reduce file size
-  useCORS: true,
-  imageSmoothingEnabled: true, // smooth edges for scaled-down canvas
-});
-
-// Convert canvas to high-quality JPEG instead of PNG
-const finalImgData = canvas.toDataURL("image/jpeg", 0.95);
-
-// Clean up temporary div
+      // Render to canvas
+      const canvas = await html2canvas(tempDiv, {
+        scale: 3,
+        useCORS: true,
+        // @ts-expect-error html2canvas accepts this at runtime but types don't include it
+        imageSmoothingEnabled: false,
+      });
+      const finalImgData = canvas.toDataURL("image/jpeg", 0.95); // JPEG 95%, visually identical
 document.body.removeChild(tempDiv);
 
-// PDF placement
-const col = i % 2;
-const row = Math.floor(i / 2);
-const x = margin + col * 100;
-const y = 35 + row * 115 + row * 5;
-
-// Add image to PDF as JPEG
-doc.addImage(finalImgData, "JPEG", x, y, 85, 115);
+      // PDF placement
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = margin + col * 100;
+      const y = 35 + row * 115 + row * 5;
+      doc.addImage(finalImgData, "PNG", x, y, 85, 115);
+    }
 
     // Footer
     const footerHeight = 12;
@@ -469,7 +467,6 @@ function hexToRgb(hex: string): [number, number, number] {
   if (!match) return [0, 0, 0];
   return match.map((x) => parseInt(x, 16)) as [number, number, number];
 }
-
 
  const handleSignOut = async () => {
     await signOut({ callbackUrl: "/" }); // redirects to homepage
