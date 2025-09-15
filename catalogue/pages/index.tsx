@@ -454,7 +454,22 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     if (pageIndex < pages - 1) doc.addPage();
   }
 
-  doc.save(`BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
+  // Generate blob instead of auto-saving
+const pdfBlob = doc.output("blob");
+
+// Create a temporary download link
+const blobUrl = URL.createObjectURL(pdfBlob);
+const link = document.createElement("a");
+link.href = blobUrl;
+link.download = `BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`;
+
+// Trigger download (works on Android, Desktop)
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+
+// Cleanup
+URL.revokeObjectURL(blobUrl);
 };
 
 // Helper
