@@ -564,6 +564,9 @@ return (
     Bloudan Catalogue
   </h1>
 
+<a href="/latest.pdf" download="BLOUDAN_BANGLES_CATALOGUE.pdf">
+  Download Latest Catalogue
+</a>
 
 <div className="flex justify-center mb-4">
   <button
