@@ -428,12 +428,12 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
       // Render to canvas
       const canvas = await html2canvas(tempDiv, {
-        scale: 3,
+        scale: 4,
         useCORS: true,
         // @ts-expect-error html2canvas accepts this at runtime but types don't include it
         imageSmoothingEnabled: false,
       });
-      const finalImgData = canvas.toDataURL("image/jpeg", 0.95); // JPEG 95%, visually identical
+      const finalImgData = canvas.toDataURL("image/jpeg", 1); // JPEG 95%, visually identical
 document.body.removeChild(tempDiv);
 
       // PDF placement
