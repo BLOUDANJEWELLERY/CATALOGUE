@@ -1,5 +1,6 @@
 // pages/index.tsx:
 "use client";
+import { saveAs } from "file-saver";
 import { getCroppedImg } from "../utils/cropImage"; // adjust the path
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
@@ -454,22 +455,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
     if (pageIndex < pages - 1) doc.addPage();
   }
 
-  // Generate blob instead of auto-saving
 const pdfBlob = doc.output("blob");
-
-// Create a temporary download link
-const blobUrl = URL.createObjectURL(pdfBlob);
-const link = document.createElement("a");
-link.href = blobUrl;
-link.download = `BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`;
-
-// Trigger download (works on Android, Desktop)
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
-
-// Cleanup
-URL.revokeObjectURL(blobUrl);
+saveAs(pdfBlob, `BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
 };
 
 // Helper
