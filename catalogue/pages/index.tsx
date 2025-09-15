@@ -558,7 +558,7 @@ return (
       </Head>
 <div className="min-h-screen p-8 bg-[#fdf8f3]">
   {/* Header */}
-  <h1 className="text-4xl font-bold text-[#c7a332] text-center mb-6">
+  <h1 className="text-4xl font-bold text-[#0b1a3d] text-center mb-6">
     Bloudan Catalogue
   </h1>
 
