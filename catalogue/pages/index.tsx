@@ -455,17 +455,17 @@ document.body.removeChild(tempDiv);
     if (pageIndex < pages - 1) doc.addPage();
   }
 
-// After creating your jsPDF `doc` and adding all content
-// Convert PDF to Blob
+ // Convert PDF to Blob
   const pdfArrayBuffer = doc.output("arraybuffer");
   const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
 
-  // Check if File System Access API is available (Chrome/Edge Android)
-  const win = window as unknown as {
-    showSaveFilePicker?: any;
-  };
+  // Type guard for File System Access API
+  const hasFileSystemAccess = (win: any): win is Window & { showSaveFilePicker: Function } =>
+    typeof win.showSaveFilePicker === "function";
 
-  if (typeof win.showSaveFilePicker === "function") {
+  const win = window;
+
+  if (hasFileSystemAccess(win)) {
     try {
       const handle = await win.showSaveFilePicker({
         suggestedName: "BLOUDAN_BANGLES_CATALOGUE.pdf",
@@ -485,11 +485,14 @@ document.body.removeChild(tempDiv);
       alert("PDF save cancelled or failed.");
     }
   } else if ("msSaveOrOpenBlob" in navigator) {
-    // IE/old Edge fallback
-    (navigator as any).msSaveOrOpenBlob(pdfBlob, "BLOUDAN_BANGLES_CATALOGUE.pdf");
+    // IE / old Edge fallback
+    (navigator as unknown as { msSaveOrOpenBlob: (blob: Blob, name: string) => void }).msSaveOrOpenBlob(
+      pdfBlob,
+      "BLOUDAN_BANGLES_CATALOGUE.pdf"
+    );
     alert("PDF has been saved to your device!");
   } else {
-    // Fallback for other browsers (desktop, iOS)
+    // Fallback: link click (desktop, iOS, Android)
     const link = document.createElement("a");
     link.href = URL.createObjectURL(pdfBlob);
     link.download = "BLOUDAN_BANGLES_CATALOGUE.pdf";
