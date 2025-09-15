@@ -291,7 +291,6 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
   }
 };
 
-This is my pdf function, tell me what to change with what:
 
 const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
   const doc = new jsPDF("p", "mm", "a4");
