@@ -455,9 +455,21 @@ document.body.removeChild(tempDiv);
 
     if (pageIndex < pages - 1) doc.addPage();
   }
+// Create binary-safe PDF blob
+const pdfArrayBuffer = doc.output("arraybuffer");
+const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
 
-const pdfBlob = doc.output("blob");
-saveAs(pdfBlob, `BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
+// Send to backend for saving as latest.pdf
+const formData = new FormData();
+formData.append("file", pdfBlob, `BLOUDAN_BANGLES_CATALOGUE_${filter}.pdf`);
+
+await fetch("/api/uploadPdf", {
+  method: "POST",
+  body: formData,
+});
+
+// Optional: show success message
+alert("Latest PDF has been saved. You can now download it from the catalogue link.");
 };
 
 // Helper
