@@ -657,8 +657,12 @@ return (
           </div>
 
           {/* Model Number */}
-          <p className="text-[#0b1a3d] font-semibold mt-3 text-lg">B{item.modelNumber}</p>
-
+          <p
+  className="text-[#0b1a3d] font-semibold mt-3"
+  style={{ fontSize: '28px' }}
+>
+  B{item.modelNumber}
+</p>
           {/* Sizes + Weights */}
           <div className="flex flex-wrap justify-center gap-2 mt-2 px-2 pb-3">
             {item.sizes?.includes("Adult") && (
