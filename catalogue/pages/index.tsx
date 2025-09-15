@@ -428,7 +428,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
       // Render to canvas
       const canvas = await html2canvas(tempDiv, {
-        scale: 4,
+        scale: 3,
         useCORS: true,
         // @ts-expect-error html2canvas accepts this at runtime but types don't include it
         imageSmoothingEnabled: false,
