@@ -37,6 +37,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/file-saver": "^2.0.7",
     "@types/formidable": "^3.4.5",
     "@types/multer": "^2.0.0",
     "@types/node": "^20",
