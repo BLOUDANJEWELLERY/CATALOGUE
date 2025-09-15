@@ -456,34 +456,27 @@ document.body.removeChild(tempDiv);
     if (pageIndex < pages - 1) doc.addPage();
   }
 
-// Convert to Blob (safer for Safari than raw ArrayBuffer)
+// After creating your jsPDF `doc` and adding all content
+
+// Convert PDF to Blob (safe for Safari/iOS)
 const pdfArrayBuffer = doc.output("arraybuffer");
 const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
 
-// Upload to backend
-const uploadRes = await fetch("/api/uploadPdf", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/pdf",
-  },
-  body: pdfBlob,
-});
+// Create a temporary link and trigger download
+const link = document.createElement("a");
+link.href = URL.createObjectURL(pdfBlob);
+link.download = `BLOUDAN_BANGLES_CATALOGUE.pdf`;
 
-const result = await uploadRes.json();
+// Append to DOM, click, then remove
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
 
-if (result.success) {
-  // ✅ Download after successful save
-  const link = document.createElement("a");
-  link.href = result.url; // "/latest.pdf"
-  link.download = "BLOUDAN_BANGLES_CATALOGUE.pdf";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+// Optional: revoke the object URL after some time to free memory
+setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 
-  alert("Latest PDF has been saved and is ready for download.");
-} else {
-  alert("Failed to save PDF. Try again.");
-}
+// Optional: alert user
+alert("PDF has been generated and saved to your device!");
 
 };
 
