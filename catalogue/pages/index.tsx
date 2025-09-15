@@ -432,9 +432,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         // @ts-expect-error html2canvas accepts this at runtime but types don't include it
         imageSmoothingEnabled: false,
       });
-      const finalImgData = canvas.toDataURL("image/jpeg", 0.95);
-doc.addImage(finalImgData, "JPEG", x, y, 85, 115);
-
+      
       // PDF placement
       const col = i % 2;
       const row = Math.floor(i / 2);
@@ -442,6 +440,8 @@ doc.addImage(finalImgData, "JPEG", x, y, 85, 115);
       const y = 35 + row * 115 + row * 5;
       doc.addImage(finalImgData, "PNG", x, y, 85, 115);
     }
+const finalImgData = canvas.toDataURL("image/jpeg", 0.95);
+doc.addImage(finalImgData, "JPEG", x, y, 85, 115);
 
     // Footer
     const footerHeight = 12;
