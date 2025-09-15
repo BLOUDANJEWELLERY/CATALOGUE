@@ -425,22 +425,26 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         weightContainer.appendChild(p);
       }
 
-      // Render to canvas
-      const canvas = await html2canvas(tempDiv, {
-        scale: 3,
-        useCORS: true,
-        // @ts-expect-error html2canvas accepts this at runtime but types don't include it
-        imageSmoothingEnabled: false,
-      });
-      
-      // PDF placement
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const x = margin + col * 100;
-      const y = 35 + row * 115 + row * 5;
-      doc.addImage(finalImgData, "PNG", x, y, 85, 115);
-    }
+// Render to canvas with reasonable scale
+const canvas = await html2canvas(tempDiv, {
+  scale: 3,                // lower scale to reduce file size
+  useCORS: true,
+  imageSmoothingEnabled: true, // smooth edges for scaled-down canvas
+});
+
+// Convert canvas to high-quality JPEG instead of PNG
 const finalImgData = canvas.toDataURL("image/jpeg", 0.95);
+
+// Clean up temporary div
+document.body.removeChild(tempDiv);
+
+// PDF placement
+const col = i % 2;
+const row = Math.floor(i / 2);
+const x = margin + col * 100;
+const y = 35 + row * 115 + row * 5;
+
+// Add image to PDF as JPEG
 doc.addImage(finalImgData, "JPEG", x, y, 85, 115);
 
     // Footer
