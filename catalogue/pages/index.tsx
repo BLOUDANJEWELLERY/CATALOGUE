@@ -470,6 +470,15 @@ await fetch("/api/uploadPdf", {
 
 // Optional: show success message
 alert("Latest PDF has been saved. You can now download it from the catalogue link.");
+
+// After uploading
+const link = document.createElement("a");
+link.href = "/latest.pdf"; // public path on your server
+link.download = "BLOUDAN_BANGLES_CATALOGUE.pdf";
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+
 };
 
 // Helper
