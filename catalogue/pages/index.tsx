@@ -618,7 +618,7 @@ return (
 
   <button
     onClick={async () => {
-      setIsProcessing(false);
+      setIsProcessing(true);
       try {
         await handleDownloadPDF(pdfFilter);
       } finally {
