@@ -627,7 +627,7 @@ return (
       onClick={() => setShowAddModal(true)}
       className="flex justify-center items-center min-h-[250px] bg-white rounded-2xl shadow-lg cursor-pointer transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl"
     >
-      <span className="text-[#c7a332] font-semibold text-lg">+ Add New Item</span>
+      <span className="text-[#0b1a3d] font-semibold text-lg">+ Add New Item</span>
     </div>
 
     {/* Existing Items */}
