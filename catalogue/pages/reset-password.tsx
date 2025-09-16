@@ -1,7 +1,7 @@
 // pages/reset-password.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 export default function ResetPasswordPage() {
@@ -14,6 +14,27 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [validToken, setValidToken] = useState<boolean | null>(null); // null = checking
+
+  // Check token validity on page load
+  useEffect(() => {
+    if (!token) return setValidToken(false);
+
+    const checkToken = async () => {
+      try {
+        const res = await fetch("/api/auth/check-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+        if (res.ok) setValidToken(true);
+        else setValidToken(false);
+      } catch {
+        setValidToken(false);
+      }
+    };
+    checkToken();
+  }, [token]);
 
   const handleReset = async () => {
     setError("");
@@ -28,11 +49,8 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({ token, password }),
       });
       const data = await res.json();
-      if (res.ok) {
-        setSuccess(data.message || "Password reset successfully!");
-      } else {
-        setError(data.error || "Failed to reset password");
-      }
+      if (res.ok) setSuccess(data.message || "Password reset successfully!");
+      else setError(data.error || "Failed to reset password");
     } catch (err) {
       console.error(err);
       setError("Failed to reset password");
@@ -40,6 +58,36 @@ export default function ResetPasswordPage() {
       setLoading(false);
     }
   };
+
+  if (validToken === null) {
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3]">
+        <p className="text-[#0b1a3d]">Checking token...</p>
+      </div>
+    );
+  }
+
+  if (!validToken) {
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
+        <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332] text-center">
+          <h1 className="text-3xl font-bold mb-6 text-[#0b1a3d]">
+            Invalid or Expired Link
+          </h1>
+          <p className="mb-6 text-red-700">
+            This link has either been used or expired. Please request a new
+            password reset.
+          </p>
+          <button
+            onClick={() => router.push("/forgot-password")}
+            className="px-4 py-2 bg-[#c7a332] text-[#fffdfb] rounded-lg hover:bg-[#b8972a]"
+          >
+            Request New Link
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
