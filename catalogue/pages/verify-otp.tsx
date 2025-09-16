@@ -37,10 +37,7 @@ export default function VerifyOtpPage() {
       const newOtp = [...otp];
       newOtp[idx] = val;
       setOtp(newOtp);
-
-      if (val && idx < 5) {
-        inputsRef.current[idx + 1]?.focus();
-      }
+      if (val && idx < 5) inputsRef.current[idx + 1]?.focus();
     }
   };
 
@@ -97,9 +94,8 @@ export default function VerifyOtpPage() {
         body: JSON.stringify({ email }),
       });
 
-      if (res.ok) {
-        setMessage("A new OTP has been sent to your email.");
-      } else {
+      if (res.ok) setMessage("A new OTP has been sent to your email.");
+      else {
         const data = await res.json();
         setError(data.error || "Failed to resend OTP");
       }
@@ -121,9 +117,8 @@ export default function VerifyOtpPage() {
         body: JSON.stringify({ email }),
       });
 
-      if (res.ok) {
-        router.push("/signup");
-      } else {
+      if (res.ok) router.push("/signup");
+      else {
         const data = await res.json();
         setError(data.error || "Failed to cancel signup");
       }
@@ -151,22 +146,23 @@ export default function VerifyOtpPage() {
         {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4">{error}</p>}
         {message && <p className="bg-[#e6ffe5] text-green-700 p-3 rounded mb-4">{message}</p>}
 
-   <div className="flex justify-center gap-x-3 mb-6">
-  {otp.map((digit, idx) => (
-    <input
-      key={idx}
-      ref={(el: HTMLInputElement | null) => { inputsRef.current[idx] = el }}
-      type="text"
-      inputMode="numeric"
-      pattern="\d*"
-      maxLength={1}
-      value={digit}
-      onChange={(e) => handleChange(e.target.value, idx)}
-      onKeyDown={(e) => handleKeyDown(e, idx)}
-      className="w-12 h-14 text-center text-xl border-2 border-[#d4b996] rounded-lg focus:border-[#c7a332] focus:outline-none"
-    />
-  ))}
-</div>
+        {/* OTP Inputs */}
+        <div className="flex justify-center gap-x-4 mb-6">
+          {otp.map((digit, idx) => (
+            <input
+              key={idx}
+              ref={(el: HTMLInputElement | null) => { inputsRef.current[idx] = el }}
+              type="text"
+              inputMode="numeric"
+              pattern="\d*"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleChange(e.target.value, idx)}
+              onKeyDown={(e) => handleKeyDown(e, idx)}
+              className="w-14 h-14 text-center text-xl border-2 border-[#d4b996] rounded-lg focus:border-[#c7a332] focus:outline-none box-border"
+            />
+          ))}
+        </div>
 
         <p className="text-sm text-[#0b1a3d] mb-4">
           Time left: <span className="font-semibold">{formatTime(timeLeft)}</span>
@@ -180,6 +176,7 @@ export default function VerifyOtpPage() {
           {loading ? "Verifying..." : "Verify & Create Account"}
         </button>
 
+        {/* Resend & Cancel */}
         <div className="flex justify-between mt-4">
           <button
             onClick={handleResend}
@@ -192,7 +189,7 @@ export default function VerifyOtpPage() {
           <button
             onClick={handleCancel}
             disabled={loading}
-            className="text-sm text-red-600 hover:underline"
+            className="text-sm bg-red-100 text-red-600 px-3 py-1 rounded-full hover:bg-red-200 transition"
           >
             Cancel Signup
           </button>
