@@ -108,6 +108,32 @@ export default function VerifyOtpPage() {
     }
   };
 
+  const handleCancel = async () => {
+    if (!email) return;
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/auth/cancel-signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (res.ok) {
+        router.push("/signup");
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to cancel signup");
+      }
+    } catch {
+      setError("Failed to cancel signup");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -125,20 +151,22 @@ export default function VerifyOtpPage() {
         {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4">{error}</p>}
         {message && <p className="bg-[#e6ffe5] text-green-700 p-3 rounded mb-4">{message}</p>}
 
-        <div className="flex justify-between mb-6">
-          {otp.map((digit, idx) => (
-            <input
-              key={idx}
-              ref={(el: HTMLInputElement | null) => { inputsRef.current[idx] = el }}
-              type="text"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(e.target.value, idx)}
-              onKeyDown={(e) => handleKeyDown(e, idx)}
-              className="w-12 h-14 text-center text-xl border-2 border-[#d4b996] rounded-lg focus:border-[#c7a332] focus:outline-none"
-            />
-          ))}
-        </div>
+   <div className="flex justify-center gap-x-3 mb-6">
+  {otp.map((digit, idx) => (
+    <input
+      key={idx}
+      ref={(el: HTMLInputElement | null) => { inputsRef.current[idx] = el }}
+      type="text"
+      inputMode="numeric"
+      pattern="\d*"
+      maxLength={1}
+      value={digit}
+      onChange={(e) => handleChange(e.target.value, idx)}
+      onKeyDown={(e) => handleKeyDown(e, idx)}
+      className="w-12 h-14 text-center text-xl border-2 border-[#d4b996] rounded-lg focus:border-[#c7a332] focus:outline-none"
+    />
+  ))}
+</div>
 
         <p className="text-sm text-[#0b1a3d] mb-4">
           Time left: <span className="font-semibold">{formatTime(timeLeft)}</span>
@@ -152,13 +180,21 @@ export default function VerifyOtpPage() {
           {loading ? "Verifying..." : "Verify & Create Account"}
         </button>
 
-        <div className="mt-4">
+        <div className="flex justify-between mt-4">
           <button
             onClick={handleResend}
             disabled={resendCooldown > 0}
             className="text-sm text-[#c7a332] hover:underline disabled:opacity-50"
           >
             {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : "Resend OTP"}
+          </button>
+
+          <button
+            onClick={handleCancel}
+            disabled={loading}
+            className="text-sm text-red-600 hover:underline"
+          >
+            Cancel Signup
           </button>
         </div>
       </div>
