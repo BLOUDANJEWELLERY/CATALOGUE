@@ -147,7 +147,7 @@ export default function VerifyOtpPage() {
     {message && <p className="bg-[#e6ffe5] text-green-700 p-3 rounded mb-4">{message}</p>}
 
     {/* OTP Inputs */}
-    <div className="flex justify-between w-full max-w-[280px] mx-auto mb-6">
+    <div className="flex justify-between w-full max-w-[250px] mx-auto mb-6">
       {otp.map((digit, idx) => (
         <input
           key={idx}
@@ -159,7 +159,7 @@ export default function VerifyOtpPage() {
           value={digit}
           onChange={(e) => handleChange(e.target.value, idx)}
           onKeyDown={(e) => handleKeyDown(e, idx)}
-          className="flex-1 mx-1 h-14 text-center text-xl border-2 border-[#d4b996] rounded-lg focus:border-[#c7a332] focus:outline-none box-border"
+          className="w-10 h-14 text-center text-xl border-2 border-[#d4b996] rounded-lg focus:border-[#c7a332] focus:outline-none box-border"
         />
       ))}
     </div>
