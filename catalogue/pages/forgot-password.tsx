@@ -65,8 +65,9 @@ export default function ForgotPasswordPage() {
             Reset Your Password
           </h1>
           <p className="text-[#0b1a3d] text-lg mb-8">
-            Enter your email below and we'll send you a secure link to reset your password.
-          </p>
+            Enter your email below and we&apos;ll send you a secure link to reset your password.
+
+</p>
 
           {!message ? (
             <div className="flex flex-col gap-5">
