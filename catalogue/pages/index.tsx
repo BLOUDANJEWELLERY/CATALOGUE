@@ -625,23 +625,23 @@ return (
     Bloudan Catalogue
   </h1>
 
+
 <button
   onClick={async () => {
+    const email = prompt("Enter your email for password reset:");
+    if (!email) return;
+
     try {
-      const res = await fetch("/api/test-email", {
+      const res = await fetch("/api/auth/forgot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to: "waleedsheeraz06@gmail.com" }), // put your email here
+        body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (res.ok && data.success) {
-        alert("Test email sent successfully!");
-      } else {
-        alert("Failed to send email: " + (data.error || "Unknown error"));
-      }
+      alert(data.message || "Check your email for a reset link!");
     } catch (err) {
       console.error(err);
-      alert("Error sending email");
+      alert("Error sending reset email");
     }
   }}
   style={{
@@ -653,7 +653,7 @@ return (
     cursor: "pointer",
   }}
 >
-  Send Test Email
+  Forgot Password
 </button>
 
 
