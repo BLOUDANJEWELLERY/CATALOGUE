@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   });
 
   // Delete temp OTP
-  await prisma.PendingUser.delete({ where: { id: tempSignup.id } });
+  await prisma.pendingUser.delete({ where: { id: tempSignup.id } });
 
   res.status(200).json({ message: "Account created successfully!" });
 }
