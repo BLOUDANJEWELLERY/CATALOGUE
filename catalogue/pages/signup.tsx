@@ -24,13 +24,15 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    if (!firstName.trim() || !email.trim() || !password) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!firstName.trim() || !normalizedEmail || !password) {
       setError("First name, email, and password are required");
       setLoading(false);
       return;
     }
 
-    if (!validateEmail(email)) {
+    if (!validateEmail(normalizedEmail)) {
       setError("Enter a valid email address");
       setLoading(false);
       return;
@@ -40,7 +42,12 @@ export default function SignupPage() {
       const res = await fetch("/api/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email, password }),
+        body: JSON.stringify({ 
+          firstName, 
+          lastName, 
+          email: normalizedEmail, // store lowercase in DB
+          password 
+        }),
       });
 
       const data: { error?: string } = await res.json();
@@ -95,7 +102,7 @@ export default function SignupPage() {
               type="email"
               placeholder="Email *"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value.toLowerCase())} // lowercase while typing
               className="input"
             />
             <div className="relative">
