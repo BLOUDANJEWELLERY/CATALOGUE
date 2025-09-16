@@ -28,3 +28,14 @@ model PasswordResetToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+
+model PendingUser {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName    String
+  lastName     String?
+  email        String   @unique
+  password     String
+  otp          String
+  otpExpiresAt DateTime
+  createdAt    DateTime @default(now())
+}
