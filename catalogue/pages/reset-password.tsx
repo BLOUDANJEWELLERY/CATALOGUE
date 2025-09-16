@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
@@ -14,9 +15,8 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [validToken, setValidToken] = useState<boolean | null>(null); // null = checking
+  const [validToken, setValidToken] = useState<boolean | null>(null);
 
-  // Check token validity on page load
   useEffect(() => {
     if (!token) return setValidToken(false);
 
@@ -27,8 +27,7 @@ export default function ResetPasswordPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token }),
         });
-        if (res.ok) setValidToken(true);
-        else setValidToken(false);
+        setValidToken(res.ok);
       } catch {
         setValidToken(false);
       }
@@ -51,8 +50,7 @@ export default function ResetPasswordPage() {
       const data = await res.json();
       if (res.ok) setSuccess(data.message || "Password reset successfully!");
       else setError(data.error || "Failed to reset password");
-    } catch (err) {
-      console.error(err);
+    } catch {
       setError("Failed to reset password");
     } finally {
       setLoading(false);
@@ -62,7 +60,7 @@ export default function ResetPasswordPage() {
   if (validToken === null) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-[#fdf8f3]">
-        <p className="text-[#0b1a3d]">Checking token...</p>
+        <p className="text-[#0b1a3d] text-lg font-semibold">Checking link validity...</p>
       </div>
     );
   }
@@ -70,47 +68,79 @@ export default function ResetPasswordPage() {
   if (!validToken) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
-        <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332] text-center">
-          <h1 className="text-3xl font-bold mb-6 text-[#0b1a3d]">
+        <div className="w-full max-w-lg bg-[#fffdfb] p-10 rounded-3xl shadow-2xl border-2 border-[#c7a332] text-center">
+          <motion.h1
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="text-4xl font-bold mb-6 text-[#0b1a3d]"
+          >
             Invalid or Expired Link
-          </h1>
-          <p className="mb-6 text-red-700">
-            This link has either been used or expired. Please request a new
-            password reset.
-          </p>
-          <button
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mb-8 text-red-700 text-lg"
+          >
+            This link has either been used or has expired. Please request a new password reset link.
+          </motion.p>
+          <motion.button
+            whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(199,163,50,0.7)" }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => router.push("/forgot-password")}
-            className="px-4 py-2 bg-[#c7a332] text-[#fffdfb] rounded-lg hover:bg-[#b8972a]"
+            className="px-6 py-3 bg-[#c7a332] text-[#fffdfb] font-semibold rounded-lg hover:bg-[#b8972a] transition-shadow duration-300"
           >
             Request New Link
-          </button>
+          </motion.button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
-      <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332]">
-        <h1 className="text-3xl font-bold mb-6 text-center text-[#0b1a3d]">
-          Reset Password
-        </h1>
+    <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-6">
+      <div className="w-full max-w-lg bg-[#fffdfb] p-10 rounded-3xl shadow-2xl border-2 border-[#c7a332]">
+        <motion.h1
+          initial={{ y: -30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="text-4xl font-bold mb-6 text-center text-[#0b1a3d]"
+        >
+          Reset Your Password
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-[#0b1a3d] mb-8 text-center"
+        >
+          Enter a new password below to secure your account.
+        </motion.p>
 
         {error && (
-          <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center"
+          >
             {error}
-          </p>
+          </motion.div>
         )}
 
         {success ? (
           <div className="text-center">
-            <p className="mb-4">{success}</p>
-            <button
+            <p className="mb-6 text-[#0b1a3d] text-lg">{success}</p>
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(199,163,50,0.7)" }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => router.push("/login")}
-              className="px-4 py-2 bg-[#0b1a3d] text-[#c7a332] rounded-lg hover:bg-[#0a162d]"
+              className="px-6 py-3 bg-[#0b1a3d] text-[#c7a332] font-semibold rounded-lg hover:bg-[#0a162d] transition-shadow duration-300"
             >
               Return to Login
-            </button>
+            </motion.button>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -128,32 +158,12 @@ export default function ResetPasswordPage() {
               onChange={(e) => setConfirm(e.target.value)}
               className="input"
             />
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02, boxShadow: "0 0 15px rgba(199,163,50,0.5)" }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleReset}
               disabled={loading}
-              className="w-full px-4 py-2 bg-[#c7a332] text-[#fffdfb] font-semibold rounded-lg hover:bg-[#b8972a] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-[#c7a332] text-[#fffdfb] font-semibold rounded-lg hover:bg-[#b8972a] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
             >
               {loading ? "Resetting..." : "Reset Password"}
-            </button>
-          </div>
-        )}
-      </div>
-
-      <style jsx>{`
-        .input {
-          padding: 0.75rem;
-          border-radius: 0.75rem;
-          border: 1px solid #d4b996;
-          width: 100%;
-          background-color: #fdf8f3;
-          color: #0b1a3d;
-        }
-        .input:focus {
-          border-color: #c7a332;
-          outline: none;
-          box-shadow: 0 0 0 2px rgba(199, 163, 50, 0.2);
-        }
-      `}</style>
-    </div>
-  );
-}
+            </motion.button
