@@ -102,6 +102,7 @@ const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 // Component-level state
 const [isProcessing, setIsProcessing] = useState(false); // tracks sign out or PDF download
 const [isGenerating, setIsGenerating] = useState(false); // tracks sign out or PDF download
+const [progress, setProgress] = useState(0);
 
 const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Both");
 // Handle checkbox selection
@@ -665,12 +666,12 @@ return (
     try {
       await handleDownloadPDFWithProgress(pdfFilter, setProgress);
     } finally {
-      setIsProcessing(false);
+      setIsGenerating(false);
     }
   }}
   disabled={isGenerating}
   className={`px-4 py-2 rounded-lg font-semibold transition ${
-    isProcessing
+    isGenerating
       ? "bg-[#8c6b1d] text-[#0b1a3d] cursor-not-allowed"
       : "bg-[#c7a332] text-[#0b1a3d] hover:bg-[#b5942b]"
   }`}
