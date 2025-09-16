@@ -734,6 +734,8 @@ return (
       image={newItemImagePreview}
       crop={crop}
       zoom={zoom}
+rotation={rotation}       // <-- allow rotating
+    onRotationChange={setRotation} // <-- update rotation
       aspect={1} // ensures square
       onCropChange={setCrop}
       onZoomChange={setZoom}
