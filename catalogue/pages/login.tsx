@@ -18,7 +18,15 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setLoading(true);
     setError("");
-    const res = await signIn("credentials", { email, password, redirect: false });
+
+    // normalize email to lowercase before sending
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const res = await signIn("credentials", { 
+      email: normalizedEmail, 
+      password, 
+      redirect: false 
+    });
 
     if (res?.error) setError("Invalid email or password");
     else if (res?.ok) router.push("/");
@@ -30,7 +38,10 @@ export default function LoginPage() {
     <>
       <Head>
         <title>Login | Bloudan Jewellery</title>
-        <meta name="description" content="Login to access Bloudan Jewellery catalogue" />
+        <meta
+          name="description"
+          content="Login to access Bloudan Jewellery catalogue"
+        />
       </Head>
 
       <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
@@ -40,10 +51,14 @@ export default function LoginPage() {
         </div>
 
         <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332]">
-          <h1 className="text-3xl font-bold mb-6 text-center text-[#0b1a3d]">Login</h1>
+          <h1 className="text-3xl font-bold mb-6 text-center text-[#0b1a3d]">
+            Login
+          </h1>
 
           {error && (
-            <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>
+            <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">
+              {error}
+            </p>
           )}
 
           <div className="flex flex-col gap-4">
@@ -51,7 +66,7 @@ export default function LoginPage() {
               type="email"
               placeholder="Email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value.toLowerCase())} // force lowercase as user types
               className="input"
             />
 
@@ -60,13 +75,13 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 className="input pr-12"
               />
               <button
                 type="button"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#0b1a3d] hover:text-[#c7a332] transition"
-                onClick={() => setShowPassword(prev => !prev)}
+                onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
@@ -83,7 +98,10 @@ export default function LoginPage() {
 
           <p className="text-center text-sm mt-4 text-[#0b1a3d]">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="font-semibold underline text-[#c7a332]">
+            <Link
+              href="/signup"
+              className="font-semibold underline text-[#c7a332]"
+            >
               Sign Up
             </Link>
           </p>
