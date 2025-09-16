@@ -280,7 +280,7 @@ const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, itemId: string
 // Inside your component
 const [isLoading, setIsLoading] = useState(false);
 
-const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") => {
+{/*const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") => {
   setIsLoading(true);
   try {
     await handleDownloadPDF(filter); // pass the selected filter
@@ -290,7 +290,7 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
   } finally {
     setIsLoading(false);
   }
-};
+};*/}
 
 
 const handleDownloadPDFWithProgress = async (
