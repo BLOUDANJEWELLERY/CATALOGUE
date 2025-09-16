@@ -512,7 +512,6 @@ const handleDownloadPDFWithProgress = async (
       pdfBlob,
       "BLOUDAN_BANGLES_CATALOGUE.pdf"
     );
-    alert("PDF has been saved to your device!");
     return;
   }
 
