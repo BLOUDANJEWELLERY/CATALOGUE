@@ -1,6 +1,6 @@
 // pages/login.tsx
 "use client";
-
+import Image from "next/image";
 import Head from "next/head";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
@@ -46,9 +46,16 @@ export default function LoginPage() {
 
       <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <img src="/favicon.PNG" alt="Bloudan Logo" className="h-20 w-auto" />
-        </div>
+       <div className="flex justify-center mb-6">
+  <Image
+    src="/favicon.PNG"
+    alt="Bloudan Logo"
+    width={80}
+    height={80}
+    className="h-20 w-auto"
+    priority
+  />
+</div>
 
         <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332]">
           <h1 className="text-3xl font-bold mb-6 text-center text-[#0b1a3d]">
