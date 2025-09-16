@@ -625,38 +625,6 @@ return (
     Bloudan Catalogue
   </h1>
 
-
-<button
-  onClick={async () => {
-    const email = prompt("Enter your email for password reset:");
-    if (!email) return;
-
-    try {
-      const res = await fetch("/api/auth/forgot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      alert(data.message || "Check your email for a reset link!");
-    } catch (err) {
-      console.error(err);
-      alert("Error sending reset email");
-    }
-  }}
-  style={{
-    padding: "10px 20px",
-    backgroundColor: "#c7a332",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-  }}
->
-  Forgot Password
-</button>
-
-
 <div className="flex justify-center mb-4">
   <button
     onClick={async () => {
