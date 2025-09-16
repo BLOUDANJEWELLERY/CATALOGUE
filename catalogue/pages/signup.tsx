@@ -1,7 +1,7 @@
 // pages/signup.tsx
 "use client";
 
-import Head from 'next/head';
+import Head from "next/head";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -39,21 +39,21 @@ export default function SignupPage() {
     }
 
     try {
-      const res = await fetch("/api/signup", {
+      const res = await fetch("/api/auth/signup-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          firstName, 
-          lastName, 
-          email: normalizedEmail, // store lowercase in DB
-          password 
+        body: JSON.stringify({
+          name: firstName + " " + lastName,
+          email: normalizedEmail,
+          password,
         }),
       });
 
-      const data: { error?: string } = await res.json();
+      const data: { error?: string; message?: string } = await res.json();
       if (!res.ok) throw data;
 
-      router.push("/login");
+      // ✅ Redirect to OTP verification page
+      router.push(`/verify-otp?email=${encodeURIComponent(normalizedEmail)}`);
     } catch (err: unknown) {
       if (typeof err === "object" && err !== null && "error" in err) {
         setError((err as { error?: string }).error || "Signup failed");
@@ -69,7 +69,10 @@ export default function SignupPage() {
     <>
       <Head>
         <title>Sign Up | Bloudan Jewellery</title>
-        <meta name="description" content="Create your account to explore Bloudan Jewellery catalogue." />
+        <meta
+          name="description"
+          content="Create your account to explore Bloudan Jewellery catalogue."
+        />
       </Head>
 
       <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
@@ -79,30 +82,36 @@ export default function SignupPage() {
         </div>
 
         <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332]">
-          <h1 className="text-3xl font-bold mb-6 text-center text-[#0b1a3d]">Sign Up</h1>
+          <h1 className="text-3xl font-bold mb-6 text-center text-[#0b1a3d]">
+            Sign Up
+          </h1>
 
-          {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
+          {error && (
+            <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4 text-center">
+              {error}
+            </p>
+          )}
 
           <div className="flex flex-col gap-4">
             <input
               type="text"
               placeholder="First Name *"
               value={firstName}
-              onChange={e => setFirstName(e.target.value)}
+              onChange={(e) => setFirstName(e.target.value)}
               className="input"
             />
             <input
               type="text"
               placeholder="Last Name"
               value={lastName}
-              onChange={e => setLastName(e.target.value)}
+              onChange={(e) => setLastName(e.target.value)}
               className="input"
             />
             <input
               type="email"
               placeholder="Email *"
               value={email}
-              onChange={e => setEmail(e.target.value.toLowerCase())} // lowercase while typing
+              onChange={(e) => setEmail(e.target.value.toLowerCase())}
               className="input"
             />
             <div className="relative">
@@ -110,13 +119,13 @@ export default function SignupPage() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Password *"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 className="input pr-12"
               />
               <button
                 type="button"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#0b1a3d] hover:text-[#c7a332] transition"
-                onClick={() => setShowPassword(prev => !prev)}
+                onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
@@ -128,12 +137,15 @@ export default function SignupPage() {
             disabled={loading}
             className="w-full mt-6 px-4 py-2 bg-[#0b1a3d] text-[#c7a332] font-semibold rounded-lg hover:bg-[#0a162d] transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Signing Up..." : "Sign Up"}
+            {loading ? "Sending OTP..." : "Sign Up"}
           </button>
 
           <p className="text-center text-sm mt-4 text-[#0b1a3d]">
             Already have an account?{" "}
-            <Link href="/login" className="font-semibold underline text-[#c7a332]">
+            <Link
+              href="/login"
+              className="font-semibold underline text-[#c7a332]"
+            >
               Login
             </Link>
           </p>
