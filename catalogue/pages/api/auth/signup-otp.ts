@@ -1,4 +1,3 @@
-// pages/api/auth/signup-otp.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 import { sendEmail } from "../../../lib/mailer";
@@ -12,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "First name, email, and password are required" });
   }
 
-  // Check if email already exists in permanent users
+  // Check if email already exists
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) return res.status(400).json({ error: "Email already in use" });
 
@@ -21,9 +20,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Generate OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
-  // Remove any old pending entry for the same email
+  // Remove old pending user for same email
   await prisma.pendingUser.deleteMany({ where: { email } });
 
   // Save pending user
