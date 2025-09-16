@@ -6,26 +6,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "POST") return res.status(405).end();
 
   const { email, otp } = req.body;
-  if (!email || !otp) return res.status(400).json({ error: "Email and OTP required" });
+  if (!email || !otp) {
+    return res.status(400).json({ error: "Email and OTP are required" });
+  }
 
-  const tempSignup = await prisma.signupOtp.findFirst({
-    where: { email, otp, expiresAt: { gte: new Date() } },
+  // Find pending user with valid OTP
+  const pendingUser = await prisma.pendingUser.findFirst({
+    where: {
+      email,
+      otp,
+      otpExpiresAt: { gte: new Date() }, // OTP not expired
+    },
   });
 
-  if (!tempSignup) return res.status(400).json({ error: "Invalid or expired OTP" });
+  if (!pendingUser) {
+    return res.status(400).json({ error: "Invalid or expired OTP" });
+  }
 
   // Create actual user
   await prisma.user.create({
     data: {
-      email: tempSignup.email,
-      password: tempSignup.hashedPassword,
-      name: tempSignup.name,
+      firstName: pendingUser.firstName,
+      lastName: pendingUser.lastName,
+      email: pendingUser.email,
+      password: pendingUser.password, // already hashed
       isVerified: true,
     },
   });
 
-  // Delete temp OTP
-  await prisma.pendingUser.delete({ where: { id: tempSignup.id } });
+  // Delete pending user entry
+  await prisma.pendingUser.delete({
+    where: { id: pendingUser.id },
+  });
 
-  res.status(200).json({ message: "Account created successfully!" });
+  return res.status(200).json({ message: "Account created successfully!" });
 }
