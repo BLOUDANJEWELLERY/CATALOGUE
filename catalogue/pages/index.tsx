@@ -647,15 +647,18 @@ return (
           onClick={() => handleEditClick(item)}
           className="flex flex-col items-center cursor-pointer bg-white rounded-2xl shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl overflow-hidden"
         >
-        {/* Image */}
+{/* Image */}
 <div className="relative w-full pt-[100%] rounded-t-xl bg-[#0b1a3d] overflow-hidden">
   {item.image && (
     <Image
       src={urlFor(item.image).width(500).url()}
       alt={`B${item.modelNumber}`}
       fill
-      sizes="(max-width: 768px) 100vw, 500px"
       className="object-cover"
+      sizes="(max-width: 768px) 100vw, 500px"
+      placeholder="blur"
+      blurDataURL={urlFor(item.image).width(20).blur(50).url()} 
+      // Tiny blurred version of image
     />
   )}
   {uploadingId === item._id && (
