@@ -624,6 +624,39 @@ return (
   <h1 className="text-4xl font-bold text-[#0b1a3d] text-center mb-6">
     Bloudan Catalogue
   </h1>
+
+<button
+  onClick={async () => {
+    try {
+      const res = await fetch("/api/test-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: "waleedsheeraz06@gmail.com" }), // put your email here
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert("Test email sent successfully!");
+      } else {
+        alert("Failed to send email: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error sending email");
+    }
+  }}
+  style={{
+    padding: "10px 20px",
+    backgroundColor: "#c7a332",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+  }}
+>
+  Send Test Email
+</button>
+
+
 <div className="flex justify-center mb-4">
   <button
     onClick={async () => {
