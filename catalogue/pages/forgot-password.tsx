@@ -39,71 +39,55 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "400px",
-        margin: "80px auto",
-        padding: "30px",
-        border: "1px solid #ddd",
-        borderRadius: "12px",
-        textAlign: "center",
-        fontFamily: "sans-serif",
-      }}
-    >
-      <h1 style={{ marginBottom: "20px" }}>Reset Password</h1>
+    <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
+      <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332] text-center">
+        <h1 className="text-3xl font-bold mb-6 text-[#0b1a3d]">Reset Password</h1>
 
-      {!message && (
-        <>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px",
-              marginBottom: "15px",
-              borderRadius: "6px",
-              border: "1px solid #ccc",
-            }}
-          />
-          <button
-            onClick={handleReset}
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "10px",
-              backgroundColor: "#c7a332",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-          >
-            {loading ? "Sending..." : "Send Reset Link"}
-          </button>
-        </>
-      )}
+        {!message ? (
+          <div className="flex flex-col gap-4">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value.toLowerCase())}
+              className="input"
+            />
+            <button
+              onClick={handleReset}
+              disabled={loading}
+              className="w-full px-4 py-2 bg-[#c7a332] text-[#fffdfb] font-semibold rounded-lg hover:bg-[#b8972a] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Sending..." : "Send Reset Link"}
+            </button>
+          </div>
+        ) : (
+          <div className="mt-4">
+            <p className="text-[#0b1a3d]">{message}</p>
+            <button
+              onClick={() => router.push("/login")}
+              className="mt-4 px-4 py-2 bg-[#0b1a3d] text-[#c7a332] rounded-lg hover:bg-[#0a162d]"
+            >
+              Return to Login
+            </button>
+          </div>
+        )}
+      </div>
 
-      {message && (
-        <div style={{ marginTop: "20px" }}>
-          <p>{message}</p>
-          <button
-            onClick={() => router.push("/login")}
-            style={{
-              marginTop: "15px",
-              padding: "8px 20px",
-              backgroundColor: "#0b1a3d",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-          >
-            Return to Login
-          </button>
-        </div>
-      )}
+      <style jsx>{`
+        .input {
+          padding: 0.75rem;
+          border-radius: 0.75rem;
+          border: 1px solid #d4b996;
+          width: 100%;
+          background-color: #fdf8f3;
+          color: #0b1a3d;
+        }
+        .input:focus {
+          border-color: #c7a332;
+          outline: none;
+          box-shadow: 0 0 0 2px rgba(199, 163, 50, 0.2);
+        }
+      `}</style>
     </div>
   );
 }
