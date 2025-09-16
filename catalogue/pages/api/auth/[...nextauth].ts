@@ -1,3 +1,4 @@
+// pages/auth/[...nextauth].ts
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
@@ -17,7 +18,12 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials) return null;
 
-        const user = await prisma.user.findUnique({ where: { email: credentials.email } });
+        // ✅ Normalize email before DB lookup
+        const normalizedEmail = credentials.email.trim().toLowerCase();
+
+        const user = await prisma.user.findUnique({
+          where: { email: normalizedEmail },
+        });
         if (!user) return null;
 
         const isValid = await bcrypt.compare(credentials.password, user.password);
