@@ -10,7 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  let { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, password } = req.body;
+  let { email } = req.body; // only `email` needs let
 
   // Normalize email
   email = email?.trim().toLowerCase();
@@ -22,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Check if email already exists (case-insensitive now)
+    // Check if email already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
