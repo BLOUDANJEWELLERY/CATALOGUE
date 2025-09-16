@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     <div style="max-width: 600px; margin: 0 auto; background-color: #fffdfb; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); border: 2px solid #c7a332; overflow: hidden;">
       
       <div style="background-color: #c7a332; padding: 20px; text-align: center;">
-        <h1 style="color: #fffdfb; margin: 0; font-size: 28px;">Bloudan Jewellery</h1>
+        <h1 style="color: #fffdfb; margin: 0; font-size: 28px;">Bloudan Catalogue</h1>
       </div>
       
       <div style="padding: 30px; text-align: center; color: #0b1a3d;">
