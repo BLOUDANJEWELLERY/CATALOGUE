@@ -83,7 +83,7 @@ const [editWeightAdult, setEditWeightAdult] = useState<string>("");
 const [editWeightKids, setEditWeightKids] = useState<string>("");
 
 // General
-const [uploadingId, setUploadingId] = useState<string | null>(null);
+const [uploadingId] = useState<string | null>(null);
 const containerRef = useRef<HTMLDivElement>(null);
 
 const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
