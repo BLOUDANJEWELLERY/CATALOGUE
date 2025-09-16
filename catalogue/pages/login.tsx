@@ -86,6 +86,17 @@ export default function LoginPage() {
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
+
+{/* Forgot Password Link */}
+  <div className="text-right">
+    <Link
+      href="/forgot-password"
+      className="text-sm font-semibold text-[#c7a332] hover:underline"
+    >
+      Forgot Password?
+    </Link>
+  </div>
+
           </div>
 
           <button
