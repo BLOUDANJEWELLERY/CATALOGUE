@@ -455,17 +455,26 @@ document.body.removeChild(tempDiv);
     if (pageIndex < pages - 1) doc.addPage();
   }
 
- // Convert PDF to Blob
+  // Convert PDF to Blob
   const pdfArrayBuffer = doc.output("arraybuffer");
   const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
 
-  // Type guard for File System Access API
-  const hasFileSystemAccess = (win: any): win is Window & { showSaveFilePicker: Function } =>
-    typeof win.showSaveFilePicker === "function";
+  // Define an interface for File System Access API
+  interface WindowWithFSAccess extends Window {
+    showSaveFilePicker?: (options?: {
+      suggestedName?: string;
+      types?: Array<{
+        description: string;
+        accept: Record<string, string[]>;
+      }>;
+    }) => Promise<{
+      createWritable: () => Promise<WritableStreamDefaultWriter>;
+    }>;
+  }
 
-  const win = window;
+  const win = window as WindowWithFSAccess;
 
-  if (hasFileSystemAccess(win)) {
+  if (typeof win.showSaveFilePicker === "function") {
     try {
       const handle = await win.showSaveFilePicker({
         suggestedName: "BLOUDAN_BANGLES_CATALOGUE.pdf",
@@ -480,28 +489,35 @@ document.body.removeChild(tempDiv);
       await writable.write(pdfBlob);
       await writable.close();
       alert("PDF has been saved to your device!");
+      return;
     } catch (err) {
       console.error("Save cancelled or failed", err);
       alert("PDF save cancelled or failed.");
+      return;
     }
-  } else if ("msSaveOrOpenBlob" in navigator) {
-    // IE / old Edge fallback
+  }
+
+  // Edge / IE fallback
+  if ("msSaveOrOpenBlob" in navigator) {
     (navigator as unknown as { msSaveOrOpenBlob: (blob: Blob, name: string) => void }).msSaveOrOpenBlob(
       pdfBlob,
       "BLOUDAN_BANGLES_CATALOGUE.pdf"
     );
     alert("PDF has been saved to your device!");
-  } else {
-    // Fallback: link click (desktop, iOS, Android)
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(pdfBlob);
-    link.download = "BLOUDAN_BANGLES_CATALOGUE.pdf";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-    alert("PDF download triggered!");
+    return;
   }
+
+  // Fallback: link click (desktop, iOS, Android)
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(pdfBlob);
+  link.download = "BLOUDAN_BANGLES_CATALOGUE.pdf";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+
+  alert("PDF download triggered!");
+
 
 };
 
