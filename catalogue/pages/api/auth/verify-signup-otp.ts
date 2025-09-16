@@ -30,7 +30,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       lastName: pendingUser.lastName,
       email: pendingUser.email,
       password: pendingUser.password, // already hashed
-      isVerified: true,
     },
   });
 
