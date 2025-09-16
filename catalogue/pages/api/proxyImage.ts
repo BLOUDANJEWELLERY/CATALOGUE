@@ -1,3 +1,4 @@
+// pages/proxyImage.ts:
 import type { NextApiRequest, NextApiResponse } from "next";
 import fetch from "node-fetch";
 
@@ -15,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.setHeader("Content-Type", mimeType);
     res.send(Buffer.from(buffer));
-  } catch (err) {
-    res.status(500).end("Failed to fetch image");
-  }
+ } catch {
+  res.status(500).end("Failed to fetch image");
+}
 }
