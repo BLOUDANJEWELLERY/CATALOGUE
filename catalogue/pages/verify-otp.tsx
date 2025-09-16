@@ -147,8 +147,8 @@ export default function VerifyOtpPage() {
         {message && <p className="bg-[#e6ffe5] text-green-700 p-3 rounded mb-4">{message}</p>}
 
         {/* OTP Inputs */}
-        <div className="flex justify-center gap-x-4 mb-6">
-          {otp.map((digit, idx) => (
+        <div className="flex justify-between mb-6">
+{otp.map((digit, idx) => (
             <input
               key={idx}
               ref={(el: HTMLInputElement | null) => { inputsRef.current[idx] = el }}
