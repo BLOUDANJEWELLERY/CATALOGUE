@@ -657,8 +657,8 @@ return (
       className="object-cover"
       sizes="(max-width: 768px) 100vw, 500px"
       placeholder="blur"
-      blurDataURL={urlFor(item.image).width(20).blur(50).url()} 
-      // Tiny blurred version of image
+      blurDataURL={urlFor(item.image).width(20).blur(50).url()}
+      unoptimized // ✅ bypass Next.js image optimization
     />
   )}
   {uploadingId === item._id && (
