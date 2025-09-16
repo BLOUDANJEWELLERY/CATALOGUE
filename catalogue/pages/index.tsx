@@ -101,6 +101,7 @@ const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
 // Component-level state
 const [isProcessing, setIsProcessing] = useState(false); // tracks sign out or PDF download
+const [isGenerating, setIsGenerating] = useState(false); // tracks sign out or PDF download
 
 const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Both");
 // Handle checkbox selection
@@ -291,10 +292,12 @@ const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") =
 };
 
 
-const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
+const handleDownloadPDFWithProgress = async (
+  filter: "Adult" | "Kids" | "Both",
+  setProgress: (p: number) => void
+) => {
   const doc = new jsPDF("p", "mm", "a4");
 
-  // Filter items based on the selected filter
   const filteredItems = items.filter((item) => {
     if (filter === "Adult") return item.sizes?.includes("Adult");
     if (filter === "Kids") return item.sizes?.includes("Kids");
@@ -305,6 +308,7 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const itemsPerPage = 4;
   const pages = Math.ceil(filteredItems.length / itemsPerPage);
+  const totalItems = filteredItems.length;
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -312,6 +316,8 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
 
   const accentColor = "#c7a332";
   const cardBg = "#fff";
+
+  let processedItems = 0;
 
   for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
     const pageItems = filteredItems.slice(
@@ -394,16 +400,15 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
       tempText.style.lineHeight = "0.8";
       tempDiv.appendChild(tempText);
 
-      // Weights container
+      // Weight container
       const weightContainer = document.createElement("div");
       weightContainer.style.display = "flex";
       weightContainer.style.width = "100%";
-      weightContainer.style.justifyContent = "center"; // always center
+      weightContainer.style.justifyContent = "center";
       weightContainer.style.marginTop = "0px";
-      weightContainer.style.gap = "8px"; // small gap between weights
+      weightContainer.style.gap = "8px";
       tempDiv.appendChild(weightContainer);
 
-      // Determine which weights to show based on filter
       const showAdult = filter === "Adult" || filter === "Both";
       const showKids = filter === "Kids" || filter === "Both";
 
@@ -432,15 +437,18 @@ const handleDownloadPDF = async (filter: "Adult" | "Kids" | "Both") => {
         // @ts-expect-error html2canvas accepts this at runtime but types don't include it
         imageSmoothingEnabled: false,
       });
-      const finalImgData = canvas.toDataURL("image/jpeg", 1); // JPEG 95%, visually identical
-document.body.removeChild(tempDiv);
+      const finalImgData = canvas.toDataURL("image/jpeg", 1);
+      document.body.removeChild(tempDiv);
 
-      // PDF placement
       const col = i % 2;
       const row = Math.floor(i / 2);
       const x = margin + col * 100;
       const y = 35 + row * 115 + row * 5;
       doc.addImage(finalImgData, "PNG", x, y, 85, 115);
+
+      // Update progress
+      processedItems++;
+      setProgress((processedItems / totalItems) * 100);
     }
 
     // Footer
@@ -455,7 +463,7 @@ document.body.removeChild(tempDiv);
     if (pageIndex < pages - 1) doc.addPage();
   }
 
-  // Convert PDF to Blob
+    // Convert PDF to Blob
   const pdfArrayBuffer = doc.output("arraybuffer");
   const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
 
@@ -515,10 +523,7 @@ document.body.removeChild(tempDiv);
   link.click();
   document.body.removeChild(link);
   setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-
   alert("PDF download triggered!");
-
-
 };
 
 // Helper
@@ -652,25 +657,42 @@ return (
     <option value="Both">Both</option>
   </select>
 
-  <button
-    onClick={async () => {
-      setIsProcessing(true);
-      try {
-        await handleDownloadPDF(pdfFilter);
-      } finally {
-        setIsProcessing(false);
-      }
-    }}
-    disabled={isProcessing}
-    className={`px-4 py-2 rounded-lg font-semibold transition ${
-      isProcessing
-        ? "bg-[#8c6b1d] text-[#0b1a3d] cursor-not-allowed"
-        : "bg-[#c7a332] text-[#0b1a3d] hover:bg-[#b5942b]"
-    }`}
-  >
-    {isProcessing ? "Processing..." : "Download PDF"}
-  </button>
+{/* Download Button */}
+<button
+  onClick={async () => {
+    setIsGenerating(true);
+    setProgress(0); // reset progress
+    try {
+      await handleDownloadPDFWithProgress(pdfFilter, setProgress);
+    } finally {
+      setIsProcessing(false);
+    }
+  }}
+  disabled={isGenerating}
+  className={`px-4 py-2 rounded-lg font-semibold transition ${
+    isProcessing
+      ? "bg-[#8c6b1d] text-[#0b1a3d] cursor-not-allowed"
+      : "bg-[#c7a332] text-[#0b1a3d] hover:bg-[#b5942b]"
+  }`}
+>
+  {isGenerating ? "Processing..." : "Download PDF"}
+</button>
 </div>
+
+{/* Full-page overlay */}
+{isGenerating && (
+  <div className="fixed inset-0 backdrop-blur-sm bg-[#fdf8f3]/40 z-[9999] flex flex-col items-center justify-center gap-4">
+    <div className="w-16 h-16 border-4 border-[#c7a332] border-t-[#0b1a3d] rounded-full animate-spin"></div>
+    <p className="text-[#0b1a3d] font-semibold text-lg">Generating PDF...</p>
+    <div className="w-64 h-4 bg-[#fffdfb] border border-[#c7a332] rounded-full overflow-hidden">
+      <div
+        className="h-full bg-[#c7a332] transition-all duration-300"
+        style={{ width: `${progress}%` }}
+      ></div>
+    </div>
+    <p className="text-[#0b1a3d] font-medium">{progress.toFixed(0)}%</p>
+  </div>
+)}
 
 {/* Full-page overlay */}
 {isProcessing && (
