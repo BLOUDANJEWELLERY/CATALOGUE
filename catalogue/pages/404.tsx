@@ -1,4 +1,3 @@
-// pages/404.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -8,15 +7,23 @@ import { useEffect, useState } from "react";
 export default function Luxurious404Page() {
   const router = useRouter();
   const [sparkles, setSparkles] = useState<number[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure this runs only on client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Generate sparkles continuously
   useEffect(() => {
+    if (!mounted) return;
     const interval = setInterval(() => {
-      setSparkles((prev) => [...prev, Math.random()]);
-      if (sparkles.length > 50) setSparkles((prev) => prev.slice(10));
+      setSparkles((prev) => [...prev, Math.random()].slice(-50));
     }, 200);
     return () => clearInterval(interval);
-  }, [sparkles]);
+  }, [mounted]);
+
+  if (!mounted) return null; // Prevent server-side rendering issues
 
   return (
     <div className="min-h-screen relative flex flex-col justify-center items-center bg-[#fdf8f3] overflow-hidden">
