@@ -1,6 +1,5 @@
 // pages/api/auth/signup-otp.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import crypto from "crypto";
 import { prisma } from "../../../lib/prisma";
 import { sendEmail } from "../../../lib/mailer";
 import bcrypt from "bcryptjs";
@@ -8,21 +7,35 @@ import bcrypt from "bcryptjs";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const { email, password, name } = req.body;
-  if (!email || !password || !name) return res.status(400).json({ error: "All fields required" });
+  const { firstName, lastName, email, password } = req.body;
+  if (!firstName || !email || !password) {
+    return res.status(400).json({ error: "First name, email, and password are required" });
+  }
 
+  // Check if email already exists in permanent users
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) return res.status(400).json({ error: "Email already in use" });
 
+  // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Generate OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-  // Save temp signup
+  // Remove any old pending entry for the same email
+  await prisma.pendingUser.deleteMany({ where: { email } });
+
+  // Save pending user
   await prisma.pendingUser.create({
-    data: { email, hashedPassword, name, otp, expiresAt },
+    data: {
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      otp,
+      otpExpiresAt,
+    },
   });
 
   // Send OTP email
@@ -32,11 +45,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     <h1 style="color:#c7a332;">${otp}</h1>
     <p>It expires in 10 minutes.</p>
   `;
+
   try {
     await sendEmail(email, "Verify Your Email OTP", html);
     res.status(200).json({ message: "OTP sent to email" });
   } catch (err) {
-    console.error(err);
+    console.error("Email send error:", err);
     res.status(500).json({ error: "Failed to send OTP" });
   }
 }
