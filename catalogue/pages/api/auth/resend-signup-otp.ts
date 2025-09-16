@@ -14,11 +14,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Generate new OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
   await prisma.pendingUser.update({
     where: { email },
-    data: { otp, expiresAt },
+    data: { otp, otpExpiresAt },
   });
 
   // Send OTP email
