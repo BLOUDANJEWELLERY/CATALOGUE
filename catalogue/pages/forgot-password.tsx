@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
 
       if (res.ok) {
         setMessage(
-          "A reset link has been sent to your email. It will expire in 10 minutes."
+          "A reset link has been sent to your email. It will expire in 1 hour."
         );
       } else {
         setMessage(data.error || "Failed to send reset link");
