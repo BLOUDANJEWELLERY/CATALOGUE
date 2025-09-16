@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
   // Save temp signup
-  await prisma.PendingUser.create({
+  await prisma.pendingUser.create({
     data: { email, hashedPassword, name, otp, expiresAt },
   });
 
