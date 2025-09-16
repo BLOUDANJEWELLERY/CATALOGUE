@@ -199,7 +199,7 @@ const handleSaveNewItem = async () => {
 
     // Crop if area is defined
     if (croppedAreaPixels && newItemImagePreview) {
-      const croppedBlob = await getCroppedImg(newItemImagePreview, croppedAreaPixels);
+      const croppedBlob = await getCroppedImg(newItemImagePreview, croppedAreaPixels, rotation);
       finalFile = new File([croppedBlob], newItemImage.name, { type: "image/jpeg" });
     }
 
