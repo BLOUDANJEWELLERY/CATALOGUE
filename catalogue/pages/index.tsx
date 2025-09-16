@@ -523,7 +523,6 @@ const handleDownloadPDFWithProgress = async (
   link.click();
   document.body.removeChild(link);
   setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-  alert("PDF download triggered!");
 };
 
 // Helper
