@@ -13,7 +13,7 @@ export default function VerifyOtpPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes = 600 seconds
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
   const [resendCooldown, setResendCooldown] = useState(0);
 
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
@@ -25,7 +25,7 @@ export default function VerifyOtpPage() {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  // Cooldown for resend
+  // Resend cooldown
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const cd = setInterval(() => setResendCooldown((c) => c - 1), 1000);
@@ -44,7 +44,7 @@ export default function VerifyOtpPage() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent, idx: number) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, idx: number) => {
     if (e.key === "Backspace" && !otp[idx] && idx > 0) {
       inputsRef.current[idx - 1]?.focus();
     }
@@ -86,12 +86,12 @@ export default function VerifyOtpPage() {
 
   const handleResend = async () => {
     if (!email) return;
-    setResendCooldown(60); // 60s cooldown
+    setResendCooldown(60);
     setError("");
     setMessage("Sending new OTP...");
 
     try {
-      const res = await fetch("/api/auth/resend-otp", {
+      const res = await fetch("/api/auth/resend-signup-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -108,7 +108,6 @@ export default function VerifyOtpPage() {
     }
   };
 
-  // Format time
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -117,7 +116,6 @@ export default function VerifyOtpPage() {
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
-      {/* Card */}
       <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332] text-center">
         <h1 className="text-3xl font-bold mb-4 text-[#0b1a3d]">Verify Email</h1>
         <p className="mb-6 text-[#0b1a3d]">
@@ -127,12 +125,11 @@ export default function VerifyOtpPage() {
         {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4">{error}</p>}
         {message && <p className="bg-[#e6ffe5] text-green-700 p-3 rounded mb-4">{message}</p>}
 
-        {/* OTP Inputs */}
         <div className="flex justify-between mb-6">
           {otp.map((digit, idx) => (
             <input
               key={idx}
-              ref={(el) => (inputsRef.current[idx] = el)}
+              ref={(el: HTMLInputElement | null) => { inputsRef.current[idx] = el }}
               type="text"
               maxLength={1}
               value={digit}
@@ -143,12 +140,10 @@ export default function VerifyOtpPage() {
           ))}
         </div>
 
-        {/* Timer */}
         <p className="text-sm text-[#0b1a3d] mb-4">
           Time left: <span className="font-semibold">{formatTime(timeLeft)}</span>
         </p>
 
-        {/* Verify button */}
         <button
           onClick={handleVerify}
           disabled={loading || timeLeft <= 0}
@@ -157,16 +152,13 @@ export default function VerifyOtpPage() {
           {loading ? "Verifying..." : "Verify & Create Account"}
         </button>
 
-        {/* Resend OTP */}
         <div className="mt-4">
           <button
             onClick={handleResend}
             disabled={resendCooldown > 0}
             className="text-sm text-[#c7a332] hover:underline disabled:opacity-50"
           >
-            {resendCooldown > 0
-              ? `Resend OTP in ${resendCooldown}s`
-              : "Resend OTP"}
+            {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : "Resend OTP"}
           </button>
         </div>
       </div>
