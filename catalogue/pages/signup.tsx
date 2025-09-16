@@ -1,6 +1,6 @@
 // pages/signup.tsx
 "use client";
-
+import Image from "next/image";
 import Head from "next/head";
 import { useState } from "react";
 import { useRouter } from "next/router";
@@ -78,9 +78,16 @@ const handleSubmit = async () => {
 
       <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <img src="/favicon.png" alt="Bloudan Logo" className="h-20 w-auto" />
-        </div>
+<div className="flex justify-center mb-6">
+  <Image
+    src="/favicon.png"
+    alt="Bloudan Logo"
+    width={80}   // roughly matches h-20
+    height={80}
+    className="w-auto h-20"
+    priority
+  />
+</div>
 
         <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332]">
           <h1 className="text-3xl font-bold mb-6 text-center text-[#0b1a3d]">
