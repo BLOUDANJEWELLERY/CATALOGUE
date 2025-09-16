@@ -1,6 +1,6 @@
 // pages/index.tsx:
 "use client";
-import { saveAs } from "file-saver";
+import Image from "next/image";
 import { getCroppedImg } from "../utils/cropImage"; // adjust the path
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
@@ -59,12 +59,6 @@ export const getServerSideProps: GetServerSideProps = async (context: GetServerS
 };
 
 export default function Catalogue({ items }: CatalogueProps) {
-  // Add a "blank" item for the new item form
-  const itemsWithBlank: (CatalogueItem & { _id: string })[] = [
-    ...items,
-    { _id: "blank", modelNumber: 0, image: null, sizes: [], weightAdult: undefined, weightKids: undefined },
-  ];
-
 
 // Modal visibility
 const [showAddModal, setShowAddModal] = useState(false);
@@ -91,9 +85,6 @@ const [editWeightKids, setEditWeightKids] = useState<string>("");
 // General
 const [uploadingId, setUploadingId] = useState<string | null>(null);
 const containerRef = useRef<HTMLDivElement>(null);
-
-// Auto Model Number for Add New Item
-const nextModelNumber = items.length > 0 ? Math.max(...items.map(i => i.modelNumber)) + 1 : 1;
 
 const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 const [zoom, setZoom] = useState<number>(1);
@@ -246,52 +237,6 @@ const handleSaveNewItem = async () => {
     setIsUploading(false);
   }
 };
-
-// Handle existing item image update
-const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, itemId: string) => {
-  if (!e.target.files?.length) return;
-  const file = e.target.files[0];
-  setUploadingId(itemId);
-
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const uploadRes = await fetch("/api/uploadImage", { method: "POST", body: formData });
-    const uploadData: { assetId: string } = await uploadRes.json();
-    if (!uploadRes.ok) throw new Error("Upload failed");
-
-    const updateRes = await fetch(`/api/updateItem/${itemId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assetId: uploadData.assetId }),
-    });
-    if (!updateRes.ok) throw new Error("Failed to update item");
-
-    window.location.reload();
-  } catch (err) {
-    console.error(err);
-    setUploadingId(null);
-    alert("Failed to update item");
-  }
-};
-
-
-// Inside your component
-const [isLoading, setIsLoading] = useState(false);
-
-{/*const handleDownloadPDFWithLoading = async (filter: "Adult" | "Kids" | "Both") => {
-  setIsLoading(true);
-  try {
-    await handleDownloadPDF(filter); // pass the selected filter
-  } catch (err) {
-    console.error("Error generating PDF:", err);
-    alert("Failed to generate PDF. Check console for details.");
-  } finally {
-    setIsLoading(false);
-  }
-};*/}
-
 
 const handleDownloadPDFWithProgress = async (
   filter: "Adult" | "Kids" | "Both",
@@ -536,34 +481,6 @@ function hexToRgb(hex: string): [number, number, number] {
     await signOut({ callbackUrl: "/" }); // redirects to homepage
   };
 
- 
-const modalStyles: { overlay: React.CSSProperties; content: React.CSSProperties } = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    background: "rgba(0,0,0,0.5)", // subtle dark overlay
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  content: {
-    background: "#fdf8f3",           // catalogue page background
-    borderRadius: "20px",
-    padding: "30px",
-    width: "90%",
-    maxWidth: "500px",
-    boxShadow: "0 15px 40px rgba(0,0,0,0.2)", // soft shadow
-    border: "2px solid #c7a332",    // golden accent border
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-  },
-};
-
 const closeEditModal = () => {
   setEditingId(null);
   setEditImage(null);
@@ -730,21 +647,23 @@ return (
           onClick={() => handleEditClick(item)}
           className="flex flex-col items-center cursor-pointer bg-white rounded-2xl shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl overflow-hidden"
         >
-          {/* Image */}
-          <div className="relative w-full pt-[100%] rounded-t-xl bg-[#0b1a3d] overflow-hidden">
-            {item.image && (
-              <img
-                src={urlFor(item.image).width(500).url()}
-                alt={`B${item.modelNumber}`}
-                className="absolute top-0 left-0 w-full h-full object-cover"
-              />
-            )}
-            {uploadingId === item._id && (
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex justify-center items-center text-[#c7a332] font-semibold">
-                Uploading...
-              </div>
-            )}
-          </div>
+        {/* Image */}
+<div className="relative w-full pt-[100%] rounded-t-xl bg-[#0b1a3d] overflow-hidden">
+  {item.image && (
+    <Image
+      src={urlFor(item.image).width(500).url()}
+      alt={`B${item.modelNumber}`}
+      fill
+      sizes="(max-width: 768px) 100vw, 500px"
+      className="object-cover"
+    />
+  )}
+  {uploadingId === item._id && (
+    <div className="absolute inset-0 bg-black bg-opacity-40 flex justify-center items-center text-[#c7a332] font-semibold">
+      Uploading...
+    </div>
+  )}
+</div>
 
           {/* Model Number */}
           <p
