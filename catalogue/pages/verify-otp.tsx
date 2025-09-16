@@ -136,65 +136,65 @@ export default function VerifyOtpPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
-      <div className="w-full max-w-md bg-[#fffdfb] p-8 rounded-2xl shadow-lg border-2 border-[#c7a332] text-center">
-        <h1 className="text-3xl font-bold mb-4 text-[#0b1a3d]">Verify Email</h1>
-        <p className="mb-6 text-[#0b1a3d]">
-          Enter the 6-digit OTP sent to <span className="font-semibold">{email}</span>
-        </p>
+<div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf8f3] p-4">
+  <div className="w-full max-w-md bg-[#fffdfb] p-6 sm:p-8 rounded-2xl shadow-lg border-2 border-[#c7a332] text-center">
+    <h1 className="text-3xl font-bold mb-4 text-[#0b1a3d]">Verify Email</h1>
+    <p className="mb-6 text-[#0b1a3d]">
+      Enter the 6-digit OTP sent to <span className="font-semibold">{email}</span>
+    </p>
 
-        {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4">{error}</p>}
-        {message && <p className="bg-[#e6ffe5] text-green-700 p-3 rounded mb-4">{message}</p>}
+    {error && <p className="bg-[#ffe5e5] text-red-700 p-3 rounded mb-4">{error}</p>}
+    {message && <p className="bg-[#e6ffe5] text-green-700 p-3 rounded mb-4">{message}</p>}
 
-{/* OTP Inputs */}
-<div className="flex justify-between mb-6 w-full max-w-[250px] mx-auto">
-  {otp.map((digit, idx) => (
-    <input
-      key={idx}
-      ref={(el: HTMLInputElement | null) => { inputsRef.current[idx] = el }}
-      type="text"
-      inputMode="numeric"
-      pattern="\d*"
-      maxLength={1}
-      value={digit}
-      onChange={(e) => handleChange(e.target.value, idx)}
-      onKeyDown={(e) => handleKeyDown(e, idx)}
-      className="flex-1 mx-1 h-14 text-center text-xl border-2 border-[#d4b996] rounded-lg focus:border-[#c7a332] focus:outline-none box-border"
-    />
-  ))}
-</div>
-
-        <p className="text-sm text-[#0b1a3d] mb-4">
-          Time left: <span className="font-semibold">{formatTime(timeLeft)}</span>
-        </p>
-
-        <button
-          onClick={handleVerify}
-          disabled={loading || timeLeft <= 0}
-          className="w-full px-4 py-2 bg-[#0b1a3d] text-[#c7a332] font-semibold rounded-lg hover:bg-[#0a162d] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? "Verifying..." : "Verify & Create Account"}
-        </button>
-
-        {/* Resend & Cancel */}
-        <div className="flex justify-between mt-4">
-          <button
-            onClick={handleResend}
-            disabled={resendCooldown > 0}
-            className="text-sm text-[#c7a332] hover:underline disabled:opacity-50"
-          >
-            {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : "Resend OTP"}
-          </button>
-
-          <button
-            onClick={handleCancel}
-            disabled={loading}
-            className="text-sm bg-red-100 text-red-600 px-3 py-1 rounded-full hover:bg-red-200 transition"
-          >
-            Cancel Signup
-          </button>
-        </div>
-      </div>
+    {/* OTP Inputs */}
+    <div className="flex justify-between w-full max-w-[280px] mx-auto mb-6">
+      {otp.map((digit, idx) => (
+        <input
+          key={idx}
+          ref={(el: HTMLInputElement | null) => { inputsRef.current[idx] = el }}
+          type="text"
+          inputMode="numeric"
+          pattern="\d*"
+          maxLength={1}
+          value={digit}
+          onChange={(e) => handleChange(e.target.value, idx)}
+          onKeyDown={(e) => handleKeyDown(e, idx)}
+          className="flex-1 mx-1 h-14 text-center text-xl border-2 border-[#d4b996] rounded-lg focus:border-[#c7a332] focus:outline-none box-border"
+        />
+      ))}
     </div>
+
+    <p className="text-sm text-[#0b1a3d] mb-4">
+      Time left: <span className="font-semibold">{formatTime(timeLeft)}</span>
+    </p>
+
+    <button
+      onClick={handleVerify}
+      disabled={loading || timeLeft <= 0}
+      className="w-full px-4 py-2 bg-[#0b1a3d] text-[#c7a332] font-semibold rounded-lg hover:bg-[#0a162d] disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {loading ? "Verifying..." : "Verify & Create Account"}
+    </button>
+
+    {/* Resend & Cancel */}
+    <div className="flex justify-between mt-4">
+      <button
+        onClick={handleResend}
+        disabled={resendCooldown > 0}
+        className="text-sm text-[#c7a332] hover:underline disabled:opacity-50"
+      >
+        {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : "Resend OTP"}
+      </button>
+
+      <button
+        onClick={handleCancel}
+        disabled={loading}
+        className="text-sm bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 transition font-medium"
+      >
+        Cancel Signup
+      </button>
+    </div>
+  </div>
+</div>
   );
 }
