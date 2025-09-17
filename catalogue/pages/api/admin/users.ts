@@ -9,7 +9,7 @@ type UserType = {
   id: string;
   email: string;
   name: string;
-  role: "user" | "admin";
+  role: string;
   createdAt: string;
 };
 
