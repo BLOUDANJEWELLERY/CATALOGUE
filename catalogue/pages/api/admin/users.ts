@@ -21,10 +21,6 @@ export default async function handler(
 ) {
   const session = await getSession({ req });
 
-  if (!session || session.user.role !== "admin") {
-    return res.status(403).json({ success: false, error: "Unauthorized" });
-  }
-
   try {
     // GET users
 // GET users
