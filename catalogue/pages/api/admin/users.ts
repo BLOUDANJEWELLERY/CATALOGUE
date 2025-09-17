@@ -27,21 +27,23 @@ export default async function handler(
 
   try {
     // GET users
-    if (req.method === "GET") {
-      const users = await prisma.user.findMany({
-        select: { id: true, email: true, role: true, createdAt: true, firstName: true, lastName: true },
-      });
+// GET users
+if (req.method === "GET") {
+  const dbUsers = await prisma.user.findMany({
+    select: { id: true, firstName: true, lastName: true, email: true, role: true, createdAt: true },
+  });
 
-      const mappedUsers = users.map(u => ({
-        id: u.id,
-        email: u.email,
-        role: u.role as "user" | "admin",
-        createdAt: u.createdAt.toISOString(),
-        name: `${u.firstName} ${u.lastName || ""}`.trim(),
-      }));
+  // Map to frontend-compatible UserType
+  const users = dbUsers.map(u => ({
+    id: u.id,
+    email: u.email,
+    name: u.lastName ? `${u.firstName} ${u.lastName}` : u.firstName,
+    role: u.role as "user" | "admin",
+    createdAt: u.createdAt.toISOString(),
+  }));
 
-      return res.status(200).json({ success: true, users });
-    }
+  return res.status(200).json({ success: true, users });
+}
 
     // PATCH role
     if (req.method === "PATCH") {
