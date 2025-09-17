@@ -18,21 +18,30 @@ export const getServerSideProps: GetServerSideProps = async (
   return { props: {} };
 };
 
+type User = {
+  id: string;
+  email: string;
+  name?: string | null;
+  role: "user" | "admin";
+  createdAt: string;
+};
+
 export default function UserManagementPage() {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]); // ✅ typed
 
   useEffect(() => {
     fetch("/api/admin/users")
       .then((res) => res.json())
-      .then((data) => setUsers(data));
+      .then((data: User[]) => setUsers(data));
   }, []);
 
-  const changeRole = async (id: string, role: string) => {
+  const changeRole = async (id: string, role: "user" | "admin") => {
     await fetch("/api/admin/users", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, role }),
     });
+
     setUsers((prev) =>
       prev.map((u) => (u.id === id ? { ...u, role } : u))
     );
@@ -40,11 +49,13 @@ export default function UserManagementPage() {
 
   const deleteUser = async (id: string) => {
     if (!confirm("Are you sure?")) return;
+
     await fetch("/api/admin/users", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
+
     setUsers((prev) => prev.filter((u) => u.id !== id));
   };
 
@@ -69,7 +80,7 @@ export default function UserManagementPage() {
               <td>
                 <select
                   value={u.role}
-                  onChange={(e) => changeRole(u.id, e.target.value)}
+                  onChange={(e) => changeRole(u.id, e.target.value as "user" | "admin")}
                 >
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
