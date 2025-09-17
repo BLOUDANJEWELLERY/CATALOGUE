@@ -1,7 +1,9 @@
 // pages/api/admin/users.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
-import { getSession } from "next-auth/react";
+//import { getSession } from "next-auth/react";
+import { authOptions } from "../auth/[...nextauth]"; // adjust path
+
 
 type UserType = {
   id: string;
@@ -19,7 +21,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<GetUsersResponse | PatchUserResponse | DeleteUserResponse>
 ) {
-  const session = await getSession({ req });
+  const session = await getServerSession(req, res, authOptions);
+
 console.log("Cookies:", req.cookies);
   if (!session || session.user.role !== "admin") {
     return res.status(403).json({ success: false, error: "Unauthorized" });
