@@ -21,44 +21,60 @@ export const getServerSideProps: GetServerSideProps = async (
 type User = {
   id: string;
   email: string;
-  name?: string | null;
+  name: string;
   role: "user" | "admin";
   createdAt: string;
 };
 
 export default function UserManagementPage() {
-  const [users, setUsers] = useState<User[]>([]); // ✅ typed
+  const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     fetch("/api/admin/users")
-      .then((res) => res.json())
-      .then((data: User[]) => setUsers(data));
+      .then(res => res.json())
+      .then((data: User[]) => setUsers(data))
+      .catch(err => console.error("Failed to load users:", err));
   }, []);
 
-const changeRole = async (id: string, role: "user" | "admin") => {
-  const res = await fetch("/api/admin/users", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id, role }),
-  });
-  const updatedUser: User = await res.json();
+  const changeRole = async (id: string, role: "user" | "admin") => {
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, role }),
+      });
 
-  setUsers(prev => prev.map(u => (u.id === id ? updatedUser : u)));
-};
+      if (!res.ok) throw new Error("Failed to update role");
 
-const deleteUser = async (id: string) => {
-  if (!confirm("Are you sure?")) return;
+      const updatedUser: User = await res.json();
+      setUsers(prev => prev.map(u => (u.id === id ? updatedUser : u)));
+    } catch (err) {
+      console.error(err);
+      alert("Role change failed");
+    }
+  };
 
-  const res = await fetch("/api/admin/users", {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
-  });
-  const result = await res.json();
-  if (result.success) {
-    setUsers(prev => prev.filter(u => u.id !== id));
-  }
-};
+  const deleteUser = async (id: string) => {
+    if (!confirm("Are you sure?")) return;
+
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        setUsers(prev => prev.filter(u => u.id !== id));
+      } else {
+        throw new Error("Delete failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed");
+    }
+  };
 
   return (
     <div style={{ padding: "20px" }}>
