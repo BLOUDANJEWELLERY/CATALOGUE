@@ -17,7 +17,14 @@ export default async function handler(
   try {
     if (req.method === "GET") {
       const users = await prisma.user.findMany({
-        select: { id: true, email: true, name: true, role: true, createdAt: true },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          createdAt: true,
+        },
       });
       return res.status(200).json(users);
     }
