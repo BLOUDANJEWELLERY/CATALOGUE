@@ -32,6 +32,13 @@ type User = {
 export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+useEffect(() => {
+  getSession().then(session => {
+    if (session?.user?.id) setCurrentUserId(session.user.id);
+  });
+}, []);
 
   // Fetch users on mount
  useEffect(() => {
@@ -195,7 +202,8 @@ export default function UserManagementPage() {
                   {u.role.charAt(0).toUpperCase() + u.role.slice(1)}
                 </span>
               </p>
-
+{u.id !== currentUserId && (
+      
               <div
                 style={{
                   marginTop: "12px",
@@ -297,6 +305,7 @@ export default function UserManagementPage() {
                   ❌ Delete
                 </button>
               </div>
+)}
             </div>
           ))}
         </div>
