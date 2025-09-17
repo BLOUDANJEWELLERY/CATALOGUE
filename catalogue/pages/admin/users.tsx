@@ -88,7 +88,44 @@ export default function UserManagementPage() {
     }
   };
 
-  if (loading) return <p>Loading users...</p>;
+   if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          background: "#fdfaf5", // page background
+          flexDirection: "column",
+          color: "#3b3b58", // deep blue
+          fontSize: "1.5rem",
+          fontWeight: "bold",
+        }}
+      >
+        <p>Loading users...</p>
+        <div
+          style={{
+            marginTop: "20px",
+            width: "60px",
+            height: "60px",
+            border: "6px solid #d4af37", // golden border
+            borderTop: "6px solid #3b3b58", // blue spinner segment
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <style>
+          {`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
+        </style>
+      </div>
+    );
+  }
 
   return (
  <>
