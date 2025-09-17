@@ -43,7 +43,6 @@ export default function UserManagementPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, role }),
       });
-
       if (!res.ok) throw new Error("Failed to update role");
 
       const updatedUser: User = await res.json();
