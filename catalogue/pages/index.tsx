@@ -86,7 +86,6 @@ const [editWeightKids, setEditWeightKids] = useState<string>("");
 const [uploadingId] = useState<string | null>(null);
 const containerRef = useRef<HTMLDivElement>(null);
 
-const [rotation, setRotation] = useState(0);
 const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 const [zoom, setZoom] = useState<number>(1);
 const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -199,7 +198,7 @@ const handleSaveNewItem = async () => {
 
     // Crop if area is defined
     if (croppedAreaPixels && newItemImagePreview) {
-      const croppedBlob = await getCroppedImg(newItemImagePreview, croppedAreaPixels, rotation);
+      const croppedBlob = await getCroppedImg(newItemImagePreview, croppedAreaPixels);
       finalFile = new File([croppedBlob], newItemImage.name, { type: "image/jpeg" });
     }
 
@@ -734,8 +733,6 @@ return (
       image={newItemImagePreview}
       crop={crop}
       zoom={zoom}
-rotation={rotation}       // <-- allow rotating
-    onRotationChange={setRotation} // <-- update rotation
       aspect={1} // ensures square
       onCropChange={setCrop}
       onZoomChange={setZoom}
@@ -839,26 +836,17 @@ rotation={rotation}       // <-- allow rotating
       {(editImagePreview || currentEditImageUrl) && (
         <div className="relative w-full h-64 bg-[#0b1a3d] rounded-lg overflow-hidden border-2 border-[#c7a332]">
           <Cropper
-  image={editImagePreview || currentEditImageUrl || ""}
-  crop={crop}
-  zoom={zoom}
-  rotation={rotation}               // add this
-  aspect={1}
-  onCropChange={setCrop}
-  onZoomChange={setZoom}
-  onRotationChange={setRotation}    // add this
-  onCropComplete={(_, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
-/>
+            image={editImagePreview || currentEditImageUrl || ""}
+            crop={crop}
+            zoom={zoom}
+            aspect={1} // square crop
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={(_, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
+          />
         </div>
       )}
-<input
-  type="range"
-  min={0}
-  max={360}
-  value={rotation}
-  onChange={(e) => setRotation(Number(e.target.value))}
-  className="w-full mt-2"
-/>
+
       {/* Image Upload */}
       <input
         type="file"
