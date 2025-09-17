@@ -4,24 +4,27 @@ import { prisma } from "../../../lib/prisma";
 import { getSession } from "next-auth/react";
 
 type UserResponse = {
-  id: string;
-  email: string;
-  name: string;
-  role: "user" | "admin";
-  createdAt: string;
+  success: true;
+  users: {
+    id: string;
+    email: string;
+    name: string;
+    role: "user" | "admin";
+    createdAt: string;
+  }[];
+} | {
+  success: false;
+  error: string;
 };
-
-type ApiResponse =
-  | { success: true; user?: UserResponse }
-  | { success: false; error: string };
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse>
+  res: NextApiResponse<UserResponse>
 ) {
   const session = await getSession({ req });
+
   if (!session || session.user.role !== "admin") {
-    return res.status(403).json({ success: false, error: "Forbidden" });
+    return res.status(403).json({ success: false, error: "Unauthorized" });
   }
 
   try {
@@ -30,61 +33,64 @@ export default async function handler(
         select: {
           id: true,
           email: true,
-          firstName: true,
-          lastName: true,
           role: true,
           createdAt: true,
+          // Prisma has firstName + lastName
+          firstName: true,
+          lastName: true,
         },
       });
 
-      const formattedUsers: UserResponse[] = users.map(u => ({
+      // Combine firstName + lastName
+      const mappedUsers = users.map(u => ({
         id: u.id,
         email: u.email,
-        name: `${u.firstName}${u.lastName ? " " + u.lastName : ""}`,
         role: u.role as "user" | "admin",
         createdAt: u.createdAt.toISOString(),
+        name: `${u.firstName} ${u.lastName || ""}`.trim(),
       }));
 
-      return res.status(200).json({ success: true, user: undefined, ...formattedUsers });
+      return res.status(200).json({ success: true, users: mappedUsers });
     }
 
+    // PATCH for role change
     if (req.method === "PATCH") {
       const { id, role } = req.body as { id: string; role: "user" | "admin" };
-      if (!id || !role) {
-        return res.status(400).json({ success: false, error: "Missing id or role" });
-      }
-
-      const updated = await prisma.user.update({
+      const updatedUser = await prisma.user.update({
         where: { id },
         data: { role },
-        select: { id: true, email: true, firstName: true, lastName: true, role: true, createdAt: true },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          firstName: true,
+          lastName: true,
+        },
       });
-
-      const formatted: UserResponse = {
-        id: updated.id,
-        email: updated.email,
-        name: `${updated.firstName}${updated.lastName ? " " + updated.lastName : ""}`,
-        role: updated.role as "user" | "admin",
-        createdAt: updated.createdAt.toISOString(),
-      };
-
-      return res.status(200).json({ success: true, user: formatted });
+      return res.status(200).json({
+        success: true,
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          role: updatedUser.role as "user" | "admin",
+          createdAt: updatedUser.createdAt.toISOString(),
+          name: `${updatedUser.firstName} ${updatedUser.lastName || ""}`.trim(),
+        },
+      });
     }
 
+    // DELETE user
     if (req.method === "DELETE") {
       const { id } = req.body as { id: string };
-      if (!id) {
-        return res.status(400).json({ success: false, error: "Missing id" });
-      }
-
       await prisma.user.delete({ where: { id } });
       return res.status(200).json({ success: true });
     }
 
     res.setHeader("Allow", ["GET", "PATCH", "DELETE"]);
     return res.status(405).json({ success: false, error: "Method not allowed" });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ success: false, error: (err as Error).message });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, error: (error as Error).message });
   }
 }
