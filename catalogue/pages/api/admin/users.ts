@@ -6,9 +6,11 @@ export default async function handler(req, res) {
   const session = await getSession({ req });
 
   // Only admin can access
-  if (!session || session.user.role !== "admin") {
-    return res.status(403).json({ error: "Not authorized" });
-  }
+ if (!session || session.user?.role !== "admin") {
+  return {
+    redirect: { destination: "/", permanent: false },
+  };
+}
 
   if (req.method === "GET") {
     const users = await prisma.user.findMany({
