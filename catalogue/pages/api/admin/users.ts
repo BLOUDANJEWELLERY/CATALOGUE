@@ -1,7 +1,7 @@
 // pages/api/admin/users.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
-import { getServerSession } from "next-auth/react";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]"; // adjust path
 
 
