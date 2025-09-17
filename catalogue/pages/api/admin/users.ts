@@ -1,37 +1,30 @@
 // pages/api/admin/users.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "next-auth/react";
 import { prisma } from "../../../lib/prisma";
+import { getSession } from "next-auth/react";
 
-type Data =
-  | { success: boolean; message?: string }
-  | {
-      id: string;
-      email: string;
-      name: string;
-      role: "user" | "admin";
-      createdAt: string;
-    }[]
-  | {
-      id: string;
-      email: string;
-      name: string;
-      role: "user" | "admin";
-      createdAt: string;
-    };
+type UserResponse = {
+  id: string;
+  email: string;
+  name: string;
+  role: "user" | "admin";
+  createdAt: string;
+};
+
+type ApiResponse =
+  | { success: true; user?: UserResponse }
+  | { success: false; error: string };
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse<ApiResponse>
 ) {
-  // Authenticate admin
   const session = await getSession({ req });
   if (!session || session.user.role !== "admin") {
-    return res.status(403).json({ success: false, message: "Forbidden" });
+    return res.status(403).json({ success: false, error: "Forbidden" });
   }
 
   try {
-    // GET all users
     if (req.method === "GET") {
       const users = await prisma.user.findMany({
         select: {
@@ -44,7 +37,7 @@ export default async function handler(
         },
       });
 
-      const formattedUsers = users.map(u => ({
+      const formattedUsers: UserResponse[] = users.map(u => ({
         id: u.id,
         email: u.email,
         name: `${u.firstName}${u.lastName ? " " + u.lastName : ""}`,
@@ -52,43 +45,36 @@ export default async function handler(
         createdAt: u.createdAt.toISOString(),
       }));
 
-      return res.status(200).json(formattedUsers);
+      return res.status(200).json({ success: true, user: undefined, ...formattedUsers });
     }
 
-    // PATCH: update role
     if (req.method === "PATCH") {
       const { id, role } = req.body as { id: string; role: "user" | "admin" };
       if (!id || !role) {
-        return res.status(400).json({ success: false, message: "Missing id or role" });
+        return res.status(400).json({ success: false, error: "Missing id or role" });
       }
 
       const updated = await prisma.user.update({
         where: { id },
         data: { role },
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          createdAt: true,
-        },
+        select: { id: true, email: true, firstName: true, lastName: true, role: true, createdAt: true },
       });
 
-      return res.status(200).json({
+      const formatted: UserResponse = {
         id: updated.id,
         email: updated.email,
         name: `${updated.firstName}${updated.lastName ? " " + updated.lastName : ""}`,
         role: updated.role as "user" | "admin",
         createdAt: updated.createdAt.toISOString(),
-      });
+      };
+
+      return res.status(200).json({ success: true, user: formatted });
     }
 
-    // DELETE: remove user
     if (req.method === "DELETE") {
       const { id } = req.body as { id: string };
       if (!id) {
-        return res.status(400).json({ success: false, message: "Missing id" });
+        return res.status(400).json({ success: false, error: "Missing id" });
       }
 
       await prisma.user.delete({ where: { id } });
@@ -96,9 +82,9 @@ export default async function handler(
     }
 
     res.setHeader("Allow", ["GET", "PATCH", "DELETE"]);
-    return res.status(405).json({ success: false, message: "Method not allowed" });
+    return res.status(405).json({ success: false, error: "Method not allowed" });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res.status(500).json({ success: false, error: (err as Error).message });
   }
 }
