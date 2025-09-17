@@ -91,7 +91,7 @@ export default function UserManagementPage() {
   if (loading) return <p>Loading users...</p>;
 
   return (
-     <>
+ <>
       <Head>
         <title>User Management | Admin</title>
         <meta name="description" content="Manage users, roles, and access." />
@@ -125,11 +125,12 @@ export default function UserManagementPage() {
             <div
               key={u.id}
               style={{
-                background: "#fff",
+                background: u.role === "blocked" ? "#f2f2f2" : "#fff",
                 borderRadius: "12px",
                 padding: "20px",
                 boxShadow: "0 4px 8px rgba(0,0,0,0.08)",
                 border: "1px solid #d4af37", // golden
+                opacity: u.role === "blocked" ? 0.6 : 1,
               }}
             >
               <h2 style={{ margin: "0 0 10px 0", fontSize: "1.2rem", color: "#3b3b58" }}>
@@ -148,10 +149,10 @@ export default function UserManagementPage() {
                     fontWeight: "bold",
                     color:
                       u.role === "admin"
-                        ? "#3b3b58" // blue for admins
+                        ? "#3b3b58" // blue
                         : u.role === "blocked"
-                        ? "#d9534f" // red for blocked
-                        : "#7a5c3d", // brown for users
+                        ? "#d9534f" // red
+                        : "#7a5c3d", // brown
                   }}
                 >
                   {u.role.charAt(0).toUpperCase() + u.role.slice(1)}
@@ -168,26 +169,72 @@ export default function UserManagementPage() {
                 }}
               >
                 {u.role === "user" && (
-                  <button
-                    onClick={() => changeRole(u.id, "admin")}
-                    style={{
-                      background: "#3b3b58",
-                      color: "#fff",
-                      padding: "6px 12px",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    ⬆️ Promote
-                  </button>
+                  <>
+                    <button
+                      onClick={() => changeRole(u.id, "admin")}
+                      style={{
+                        background: "#3b3b58",
+                        color: "#fff",
+                        padding: "6px 12px",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ⬆️ Promote
+                    </button>
+                    <button
+                      onClick={() => changeRole(u.id, "blocked")}
+                      style={{
+                        background: "#3b3b58",
+                        color: "#fff",
+                        padding: "6px 12px",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      🚫 Block
+                    </button>
+                  </>
                 )}
 
                 {u.role === "admin" && (
+                  <>
+                    <button
+                      onClick={() => changeRole(u.id, "user")}
+                      style={{
+                        background: "#7a5c3d",
+                        color: "#fff",
+                        padding: "6px 12px",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ⬇️ Demote
+                    </button>
+                    <button
+                      onClick={() => changeRole(u.id, "blocked")}
+                      style={{
+                        background: "#3b3b58",
+                        color: "#fff",
+                        padding: "6px 12px",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      🚫 Block
+                    </button>
+                  </>
+                )}
+
+                {u.role === "blocked" && (
                   <button
                     onClick={() => changeRole(u.id, "user")}
                     style={{
-                      background: "#7a5c3d",
+                      background: "#5cb85c",
                       color: "#fff",
                       padding: "6px 12px",
                       border: "none",
@@ -195,23 +242,7 @@ export default function UserManagementPage() {
                       cursor: "pointer",
                     }}
                   >
-                    ⬇️ Demote
-                  </button>
-                )}
-
-                {u.role !== "blocked" && (
-                  <button
-                    onClick={() => changeRole(u.id, "blocked")}
-                    style={{
-                      background: "#3b3b58",
-                      color: "#fff",
-                      padding: "6px 12px",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    🚫 Block
+                    🔓 Unblock
                   </button>
                 )}
 
