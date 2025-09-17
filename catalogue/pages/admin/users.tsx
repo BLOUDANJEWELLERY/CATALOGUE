@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { getSession } from "next-auth/react";
 
+// Server-side admin check
 export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
@@ -18,6 +19,7 @@ export const getServerSideProps: GetServerSideProps = async (
   return { props: {} };
 };
 
+// Define user type
 type User = {
   id: string;
   email: string;
@@ -28,14 +30,21 @@ type User = {
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
+  // Fetch users on mount
   useEffect(() => {
     fetch("/api/admin/users")
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to fetch users");
+        return res.json();
+      })
       .then((data: User[]) => setUsers(data))
-      .catch(err => console.error("Failed to load users:", err));
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
   }, []);
 
+  // Change user role
   const changeRole = async (id: string, role: "user" | "admin") => {
     try {
       const res = await fetch("/api/admin/users", {
@@ -43,7 +52,8 @@ export default function UserManagementPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, role }),
       });
-      if (!res.ok) throw new Error("Failed to update role");
+
+      if (!res.ok) throw new Error("Role change failed");
 
       const updatedUser: User = await res.json();
       setUsers(prev => prev.map(u => (u.id === id ? updatedUser : u)));
@@ -53,8 +63,9 @@ export default function UserManagementPage() {
     }
   };
 
+  // Delete user
   const deleteUser = async (id: string) => {
-    if (!confirm("Are you sure?")) return;
+    if (!confirm("Are you sure you want to delete this user?")) return;
 
     try {
       const res = await fetch("/api/admin/users", {
@@ -64,16 +75,16 @@ export default function UserManagementPage() {
       });
 
       const result = await res.json();
-      if (result.success) {
-        setUsers(prev => prev.filter(u => u.id !== id));
-      } else {
-        throw new Error("Delete failed");
-      }
+      if (!res.ok || !result.success) throw new Error("Delete failed");
+
+      setUsers(prev => prev.filter(u => u.id !== id));
     } catch (err) {
       console.error(err);
       alert("Delete failed");
     }
   };
+
+  if (loading) return <p>Loading users...</p>;
 
   return (
     <div style={{ padding: "20px" }}>
@@ -89,14 +100,23 @@ export default function UserManagementPage() {
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
-            <tr key={u.id}>
+          {users.length === 0 && (
+            <tr>
+              <td colSpan={5} style={{ textAlign: "center", padding: "20px" }}>
+                No users found.
+              </td>
+            </tr>
+          )}
+          {users.map(u => (
+            <tr key={u.id} style={{ borderBottom: "1px solid #ddd" }}>
               <td>{u.email}</td>
               <td>{u.name || "—"}</td>
               <td>
                 <select
                   value={u.role}
-                  onChange={(e) => changeRole(u.id, e.target.value as "user" | "admin")}
+                  onChange={e =>
+                    changeRole(u.id, e.target.value as "user" | "admin")
+                  }
                 >
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
@@ -104,7 +124,12 @@ export default function UserManagementPage() {
               </td>
               <td>{new Date(u.createdAt).toLocaleDateString()}</td>
               <td>
-                <button onClick={() => deleteUser(u.id)}>❌ Delete</button>
+                <button
+                  onClick={() => deleteUser(u.id)}
+                  style={{ color: "red", cursor: "pointer" }}
+                >
+                  ❌ Delete
+                </button>
               </td>
             </tr>
           ))}
