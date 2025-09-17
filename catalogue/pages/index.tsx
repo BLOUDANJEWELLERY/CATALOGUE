@@ -778,7 +778,7 @@ return (
       {newItemSizes.includes("Adult") && (
         <input
           type="number"
-          inputMode="numeric"
+          {/*inputMode="numeric"*/}
           placeholder="Weight Adult (g)"
           value={newItemWeightAdult}
           onChange={(e) => setNewItemWeightAdult(e.target.value)}
@@ -788,7 +788,7 @@ return (
       {newItemSizes.includes("Kids") && (
         <input
           type="number"
-          inputMode="numeric"
+          {/*inputMode="numeric"*/}
           placeholder="Weight Kids (g)"
           value={newItemWeightKids}
           onChange={(e) => setNewItemWeightKids(e.target.value)}
@@ -898,7 +898,7 @@ return (
       {editSizes.includes("Adult") && (
         <input
           type="number"
-          inputMode="numeric"
+          {/*inputMode="numeric"*/}
           placeholder="Weight Adult (g)"
           value={editWeightAdult}
           onChange={(e) => setEditWeightAdult(e.target.value)}
@@ -908,7 +908,7 @@ return (
       {editSizes.includes("Kids") && (
         <input
           type="number"
-          inputMode="numeric"
+          {/*inputMode="numeric"*/}
           placeholder="Weight Kids (g)"
           value={editWeightKids}
           onChange={(e) => setEditWeightKids(e.target.value)}
