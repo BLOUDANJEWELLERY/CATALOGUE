@@ -18,7 +18,7 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials) return null;
 
-        // ✅ Normalize email before DB lookup
+        // ✅ Normalize email
         const normalizedEmail = credentials.email.trim().toLowerCase();
 
         const user = await prisma.user.findUnique({
@@ -29,11 +29,11 @@ export const authOptions: AuthOptions = {
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) return null;
 
-        // ✅ Return role too
+        // ✅ return strongly typed User
         return {
           id: user.id,
           email: user.email,
-          role: user.role, // assumes your User model has `role`
+          role: user.role,
         };
       },
     }),
@@ -42,14 +42,14 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role; // cast since `user` can be different shapes
+        token.role = user.role; // ✅ now typed
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.id = token.id;
+        session.user.role = token.role;
       }
       return session;
     },
