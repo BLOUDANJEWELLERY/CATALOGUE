@@ -3,23 +3,21 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 import { getSession } from "next-auth/react";
 
-type UserResponse = {
-  success: true;
-  users: {
-    id: string;
-    email: string;
-    name: string;
-    role: "user" | "admin";
-    createdAt: string;
-  }[];
-} | {
-  success: false;
-  error: string;
+type UserType = {
+  id: string;
+  email: string;
+  name: string;
+  role: "user" | "admin";
+  createdAt: string;
 };
+
+type GetUsersResponse = { success: true; users: UserType[] } | { success: false; error: string };
+type PatchUserResponse = { success: true; user: UserType } | { success: false; error: string };
+type DeleteUserResponse = { success: true } | { success: false; error: string };
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<UserResponse>
+  res: NextApiResponse<GetUsersResponse | PatchUserResponse | DeleteUserResponse>
 ) {
   const session = await getSession({ req });
 
@@ -28,20 +26,12 @@ export default async function handler(
   }
 
   try {
+    // GET users
     if (req.method === "GET") {
       const users = await prisma.user.findMany({
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          // Prisma has firstName + lastName
-          firstName: true,
-          lastName: true,
-        },
+        select: { id: true, email: true, role: true, createdAt: true, firstName: true, lastName: true },
       });
 
-      // Combine firstName + lastName
       const mappedUsers = users.map(u => ({
         id: u.id,
         email: u.email,
@@ -50,34 +40,27 @@ export default async function handler(
         name: `${u.firstName} ${u.lastName || ""}`.trim(),
       }));
 
-      return res.status(200).json({ success: true, users: mappedUsers });
+      return res.status(200).json({ success: true, users });
     }
 
-    // PATCH for role change
+    // PATCH role
     if (req.method === "PATCH") {
       const { id, role } = req.body as { id: string; role: "user" | "admin" };
       const updatedUser = await prisma.user.update({
         where: { id },
         data: { role },
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          firstName: true,
-          lastName: true,
-        },
+        select: { id: true, email: true, role: true, createdAt: true, firstName: true, lastName: true },
       });
-      return res.status(200).json({
-        success: true,
-        user: {
-          id: updatedUser.id,
-          email: updatedUser.email,
-          role: updatedUser.role as "user" | "admin",
-          createdAt: updatedUser.createdAt.toISOString(),
-          name: `${updatedUser.firstName} ${updatedUser.lastName || ""}`.trim(),
-        },
-      });
+
+      const mappedUser: UserType = {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        role: updatedUser.role as "user" | "admin",
+        createdAt: updatedUser.createdAt.toISOString(),
+        name: `${updatedUser.firstName} ${updatedUser.lastName || ""}`.trim(),
+      };
+
+      return res.status(200).json({ success: true, user: mappedUser });
     }
 
     // DELETE user
