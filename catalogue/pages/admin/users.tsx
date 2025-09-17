@@ -53,6 +53,7 @@ export default function UserManagementPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, role }),
+        credentials: "include",
       });
       const data = await res.json();
       if (!data.success) return alert("Role change failed");
@@ -73,6 +74,7 @@ export default function UserManagementPage() {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
+        credentials: "include",
       });
       const data = await res.json();
       if (!data.success) return alert("Delete failed");
