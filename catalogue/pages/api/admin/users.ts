@@ -43,7 +43,7 @@ if (req.method === "GET") {
     id: u.id,
     email: u.email,
     name: u.lastName ? `${u.firstName} ${u.lastName}` : u.firstName,
-    role: u.role as "user" | "admin",
+    role: u.role,
     createdAt: u.createdAt.toISOString(),
   }));
 
@@ -52,7 +52,7 @@ if (req.method === "GET") {
 
     // PATCH role
     if (req.method === "PATCH") {
-      const { id, role } = req.body as { id: string; role: "user" | "admin" };
+      const { id, role } = req.body as { id: string; role: string };
       const updatedUser = await prisma.user.update({
         where: { id },
         data: { role },
@@ -62,7 +62,7 @@ if (req.method === "GET") {
       const mappedUser: UserType = {
         id: updatedUser.id,
         email: updatedUser.email,
-        role: updatedUser.role as "user" | "admin",
+        role: updatedUser.role,
         createdAt: updatedUser.createdAt.toISOString(),
         name: `${updatedUser.firstName} ${updatedUser.lastName || ""}`.trim(),
       };

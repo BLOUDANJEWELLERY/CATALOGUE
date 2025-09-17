@@ -49,7 +49,7 @@ export default function UserManagementPage() {
 
 
   // Change user role
-  const changeRole = async (id: string, role: "user" | "admin") => {
+  const changeRole = async (id: string, role: string) => {
     try {
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
