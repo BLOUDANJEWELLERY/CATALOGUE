@@ -410,64 +410,75 @@ const handleDownloadPDFWithProgress = async (
   }
 
     // Convert PDF to Blob
-  const pdfArrayBuffer = doc.output("arraybuffer");
-  const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
+ const pdfArrayBuffer = doc.output("arraybuffer");
+const pdfBlob = new Blob([pdfArrayBuffer], { type: "application/pdf" });
 
-  // Define an interface for File System Access API
-  interface WindowWithFSAccess extends Window {
-    showSaveFilePicker?: (options?: {
-      suggestedName?: string;
-      types?: Array<{
-        description: string;
-        accept: Record<string, string[]>;
-      }>;
-    }) => Promise<{
-      createWritable: () => Promise<WritableStreamDefaultWriter>;
+// Extend Window interface for FS Access API
+interface WindowWithFSAccess extends Window {
+  showSaveFilePicker?: (options?: {
+    suggestedName?: string;
+    types?: Array<{
+      description: string;
+      accept: Record<string, string[]>;
     }>;
-  }
+  }) => Promise<{
+    createWritable: () => Promise<WritableStreamDefaultWriter>;
+  }>;
+}
 
-  const win = window as WindowWithFSAccess;
+const win = window as WindowWithFSAccess;
 
-  if (typeof win.showSaveFilePicker === "function") {
-    try {
-      const handle = await win.showSaveFilePicker({
-        suggestedName: "BLOUDAN_BANGLES_CATALOGUE.pdf",
-        types: [
-          {
-            description: "PDF Files",
-            accept: { "application/pdf": [".pdf"] },
-          },
-        ],
-      });
-      const writable = await handle.createWritable();
-      await writable.write(pdfBlob);
-      await writable.close();
-      alert("PDF has been saved to your device!");
-      return;
-    } catch (err) {
-      console.error("Save cancelled or failed", err);
-      alert("PDF save cancelled or failed.");
-      return;
-    }
-  }
-
-  // Edge / IE fallback
-  if ("msSaveOrOpenBlob" in navigator) {
-    (navigator as unknown as { msSaveOrOpenBlob: (blob: Blob, name: string) => void }).msSaveOrOpenBlob(
-      pdfBlob,
-      "BLOUDAN_BANGLES_CATALOGUE.pdf"
-    );
+// Modern browsers (desktop)
+if (typeof win.showSaveFilePicker === "function") {
+  try {
+    const handle = await win.showSaveFilePicker({
+      suggestedName: "BLOUDAN_BANGLES_CATALOGUE.pdf",
+      types: [
+        {
+          description: "PDF Files",
+          accept: { "application/pdf": [".pdf"] },
+        },
+      ],
+    });
+    const writable = await handle.createWritable();
+    await writable.write(pdfBlob);
+    await writable.close();
+    alert("PDF has been saved to your device!");
+    return;
+  } catch (err) {
+    console.error("Save cancelled or failed", err);
+    alert("PDF save cancelled or failed.");
     return;
   }
+}
 
-  // Fallback: link click (desktop, iOS, Android)
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(pdfBlob);
-  link.download = "BLOUDAN_BANGLES_CATALOGUE.pdf";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+// Legacy Edge / IE
+if ("msSaveOrOpenBlob" in navigator) {
+  (navigator as unknown as { msSaveOrOpenBlob: (blob: Blob, name: string) => void }).msSaveOrOpenBlob(
+    pdfBlob,
+    "BLOUDAN_BANGLES_CATALOGUE.pdf"
+  );
+  return;
+}
+
+// Mobile + fallback (Android, iOS, Safari, etc.)
+const blobUrl = URL.createObjectURL(pdfBlob);
+const link = document.createElement("a");
+link.href = blobUrl;
+link.download = "BLOUDAN_BANGLES_CATALOGUE.pdf";
+document.body.appendChild(link);
+
+// Some Android browsers ignore `download`, so open in new tab if blocked
+link.click();
+document.body.removeChild(link);
+
+// Ensure cleanup
+setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+
+// Force open in a new tab if the direct download was ignored (Android fix)
+if (/Android/i.test(navigator.userAgent)) {
+  window.open(blobUrl, "_blank");
+}
 };
 
 // Helper
