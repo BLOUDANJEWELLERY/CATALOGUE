@@ -20,6 +20,12 @@ export default async function handler(
   res: NextApiResponse<GetUsersResponse | PatchUserResponse | DeleteUserResponse>
 ) {
   const session = await getSession({ req });
+console.log("Cookies:", req.cookies);
+  if (!session || session.user.role !== "admin") {
+    return res.status(403).json({ success: false, error: "Unauthorized" });
+  }
+  console.log("Cookies:", req.cookies);
+
 
   try {
     // GET users

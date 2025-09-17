@@ -33,18 +33,19 @@ export default function UserManagementPage() {
   const [loading, setLoading] = useState<boolean>(true);
 
   // Fetch users on mount
-  useEffect(() => {
-    fetch("/api/admin/users")
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to fetch users");
-        return res.json();
-      })
-      .then((data: { success: boolean; users: User[] }) => {
-        if (data.success) setUsers(data.users);
-      })
-      .catch(err => console.error("Error fetching users:", err))
-      .finally(() => setLoading(false));
-  }, []);
+ useEffect(() => {
+  fetch("/api/admin/users", { credentials: "include" })
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to fetch users");
+      return res.json();
+    })
+    .then((data: { success: boolean; users: User[] }) => {
+      if (data.success) setUsers(data.users);
+    })
+    .catch(err => console.error("Error fetching users:", err))
+    .finally(() => setLoading(false));
+}, []);
+
 
   // Change user role
   const changeRole = async (id: string, role: "user" | "admin") => {
