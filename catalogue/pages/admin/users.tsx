@@ -35,29 +35,30 @@ export default function UserManagementPage() {
       .then((data: User[]) => setUsers(data));
   }, []);
 
-  const changeRole = async (id: string, role: "user" | "admin") => {
-    await fetch("/api/admin/users", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, role }),
-    });
+const changeRole = async (id: string, role: "user" | "admin") => {
+  const res = await fetch("/api/admin/users", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, role }),
+  });
+  const updatedUser: User = await res.json();
 
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, role } : u))
-    );
-  };
+  setUsers(prev => prev.map(u => (u.id === id ? updatedUser : u)));
+};
 
-  const deleteUser = async (id: string) => {
-    if (!confirm("Are you sure?")) return;
+const deleteUser = async (id: string) => {
+  if (!confirm("Are you sure?")) return;
 
-    await fetch("/api/admin/users", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
-
-    setUsers((prev) => prev.filter((u) => u.id !== id));
-  };
+  const res = await fetch("/api/admin/users", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  });
+  const result = await res.json();
+  if (result.success) {
+    setUsers(prev => prev.filter(u => u.id !== id));
+  }
+};
 
   return (
     <div style={{ padding: "20px" }}>
