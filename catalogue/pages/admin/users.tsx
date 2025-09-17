@@ -44,45 +44,19 @@ export default function UserManagementPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Change user role
-  const changeRole = async (id: string, role: "user" | "admin") => {
-    try {
-      const res = await fetch("/api/admin/users", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, role }),
-      });
+const changeRole = async (id: string, role: "user" | "admin") => {
+  const res = await fetch("/api/admin/users", { method: "PATCH", body: JSON.stringify({ id, role }), headers: { "Content-Type": "application/json" } });
+  const data = await res.json();
+  if (!data.success) return alert("Role change failed");
+  setUsers(prev => prev.map(u => u.id === id ? data.user! : u));
+};
 
-      if (!res.ok) throw new Error("Role change failed");
-
-      const updatedUser: User = await res.json();
-      setUsers(prev => prev.map(u => (u.id === id ? updatedUser : u)));
-    } catch (err) {
-      console.error(err);
-      alert("Role change failed");
-    }
-  };
-
-  // Delete user
-  const deleteUser = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
-
-    try {
-      const res = await fetch("/api/admin/users", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error("Delete failed");
-
-      setUsers(prev => prev.filter(u => u.id !== id));
-    } catch (err) {
-      console.error(err);
-      alert("Delete failed");
-    }
-  };
+const deleteUser = async (id: string) => {
+  const res = await fetch("/api/admin/users", { method: "DELETE", body: JSON.stringify({ id }), headers: { "Content-Type": "application/json" } });
+  const data = await res.json();
+  if (!data.success) return alert("Delete failed");
+  setUsers(prev => prev.filter(u => u.id !== id));
+};
 
   if (loading) return <p>Loading users...</p>;
 
