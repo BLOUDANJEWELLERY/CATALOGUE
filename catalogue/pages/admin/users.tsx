@@ -1,11 +1,10 @@
 // pages/admin/users.tsx
 "use client";
-
 import { useEffect, useState } from "react";
 import type { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { getSession } from "next-auth/react";
 
-// ✅ Server-side admin check
+// Server-side admin check
 export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
@@ -20,7 +19,7 @@ export const getServerSideProps: GetServerSideProps = async (
   return { props: {} };
 };
 
-// ✅ User type matches Prisma schema
+// User type matching API
 type User = {
   id: string;
   email: string;
@@ -31,31 +30,24 @@ type User = {
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Fetch users on mount
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch("/api/admin/users");
+    fetch("/api/admin/users")
+      .then(res => {
         if (!res.ok) throw new Error("Failed to fetch users");
-        const data = await res.json();
-        // Expecting data.users array
-        setUsers(data.users || []);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        alert("Failed to load users");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
+        return res.json();
+      })
+      .then((data: { success: boolean; users: User[] }) => {
+        if (data.success) setUsers(data.users);
+      })
+      .catch(err => console.error("Error fetching users:", err))
+      .finally(() => setLoading(false));
   }, []);
 
-  // ✅ Change user role
+  // Change user role
   const changeRole = async (id: string, role: "user" | "admin") => {
-    setUpdating(id);
     try {
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
@@ -63,20 +55,19 @@ export default function UserManagementPage() {
         body: JSON.stringify({ id, role }),
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Failed to update role");
-      setUsers(prev => prev.map(u => (u.id === id ? data.user! : u)));
+      if (!data.success) return alert("Role change failed");
+
+      setUsers(prev => prev.map(u => (u.id === id ? data.user : u)));
     } catch (err) {
-      console.error("Role change error:", err);
+      console.error(err);
       alert("Role change failed");
-    } finally {
-      setUpdating(null);
     }
   };
 
-  // ✅ Delete user
+  // Delete user
   const deleteUser = async (id: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
-    setUpdating(id);
+
     try {
       const res = await fetch("/api/admin/users", {
         method: "DELETE",
@@ -84,13 +75,12 @@ export default function UserManagementPage() {
         body: JSON.stringify({ id }),
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Delete failed");
+      if (!data.success) return alert("Delete failed");
+
       setUsers(prev => prev.filter(u => u.id !== id));
     } catch (err) {
-      console.error("Delete error:", err);
+      console.error(err);
       alert("Delete failed");
-    } finally {
-      setUpdating(null);
     }
   };
 
@@ -117,31 +107,24 @@ export default function UserManagementPage() {
               </td>
             </tr>
           )}
-          {users.map(user => (
-            <tr key={user.id} style={{ borderBottom: "1px solid #ddd" }}>
-              <td>{user.email}</td>
-              <td>{user.name || "—"}</td>
+          {users.map(u => (
+            <tr key={u.id} style={{ borderBottom: "1px solid #ddd" }}>
+              <td>{u.email}</td>
+              <td>{u.name || "—"}</td>
               <td>
                 <select
-                  value={user.role}
-                  disabled={updating === user.id}
-                  onChange={e =>
-                    changeRole(user.id, e.target.value as "user" | "admin")
-                  }
+                  value={u.role}
+                  onChange={e => changeRole(u.id, e.target.value as "user" | "admin")}
                 >
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
                 </select>
               </td>
-              <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+              <td>{new Date(u.createdAt).toLocaleDateString()}</td>
               <td>
                 <button
-                  onClick={() => deleteUser(user.id)}
-                  disabled={updating === user.id}
-                  style={{
-                    color: "red",
-                    cursor: updating === user.id ? "not-allowed" : "pointer",
-                  }}
+                  onClick={() => deleteUser(u.id)}
+                  style={{ color: "red", cursor: "pointer" }}
                 >
                   ❌ Delete
                 </button>
