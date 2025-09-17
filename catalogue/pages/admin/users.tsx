@@ -1,6 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
+// pages/admin/users.tsx
+import { getSession } from "next-auth/react";
 
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  if (!session || session.user.role !== "admin") {
+    return {
+      redirect: { destination: "/", permanent: false },
+    };
+  }
+
+  return { props: {} };
+}
 export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
 
