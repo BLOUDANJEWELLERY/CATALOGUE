@@ -1,16 +1,15 @@
+// pages/admin/users.tsx
 "use client";
 import { useEffect, useState } from "react";
-// pages/admin/users.tsx
+import type { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { getSession } from "next-auth/react";
-import type { GetServerSidePropsContext, GetServerSideProps } from "next";
 
-// ✅ Explicitly type context
 export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const session = await getSession({ req: context.req });
 
-  if (!session || (session.user as any).role !== "admin") {
+  if (!session || session.user.role !== "admin") {
     return {
       redirect: { destination: "/", permanent: false },
     };
