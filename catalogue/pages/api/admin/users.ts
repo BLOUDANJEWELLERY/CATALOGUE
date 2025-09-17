@@ -3,6 +3,14 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
 import { prisma } from "../../../lib/prisma";
 
+type UserResponse = {
+  id: string;
+  email: string;
+  name: string;
+  role: "user" | "admin";
+  createdAt: string;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession({ req });
 
@@ -23,10 +31,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      // Return a `name` field for frontend convenience
-      const usersWithName = users.map(u => ({
-        ...u,
+      const usersWithName: UserResponse[] = users.map(u => ({
+        id: u.id,
+        email: u.email,
         name: `${u.firstName}${u.lastName ? " " + u.lastName : ""}`,
+        role: u.role as "user" | "admin",
+        createdAt: u.createdAt.toISOString(),
       }));
 
       return res.status(200).json(usersWithName);
@@ -39,15 +49,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const updated = await prisma.user.update({
         where: { id },
         data: { role },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          createdAt: true,
+        },
       });
 
-      // Return updated user
       return res.status(200).json({
         id: updated.id,
         email: updated.email,
         name: `${updated.firstName}${updated.lastName ? " " + updated.lastName : ""}`,
-        role: updated.role,
-        createdAt: updated.createdAt,
+        role: updated.role as "user" | "admin",
+        createdAt: updated.createdAt.toISOString(),
       });
     }
 
