@@ -36,10 +36,13 @@ export default function Header() {
         justifyContent: "space-between",
         alignItems: "center",
         position: "relative",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
       }}
     >
       {/* Left: Greeting */}
-      <div style={{ fontWeight: "bold", fontSize: "18px" }}>Hi, {userName}</div>
+      <div style={{ fontWeight: "600", fontSize: "18px", letterSpacing: "0.5px" }}>
+        Hi, {userName}
+      </div>
 
       {/* Right: Hamburger */}
       <button
@@ -48,9 +51,12 @@ export default function Header() {
           background: "transparent",
           border: "none",
           cursor: "pointer",
-          fontSize: "24px",
+          fontSize: "28px",
           color: "#fff",
+          transition: "transform 0.2s ease, color 0.2s ease",
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "#ffd700")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "#fff")}
       >
         ☰
       </button>
@@ -63,11 +69,12 @@ export default function Header() {
             top: "100%",
             left: 0,
             width: "100%",
-            background: "#1a2b4c",
+            background: "linear-gradient(180deg, #1a2b4c, #243b5c)",
             padding: "15px 0",
             textAlign: "center",
-            boxShadow: "0px 4px 8px rgba(0,0,0,0.2)",
+            boxShadow: "0px 6px 12px rgba(0,0,0,0.25)",
             zIndex: 999,
+            animation: "slideDown 0.3s ease forwards",
           }}
         >
           {role === "admin" && (
@@ -85,6 +92,20 @@ export default function Header() {
           </button>
         </div>
       )}
+
+      {/* Dropdown Animation */}
+      <style jsx>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </header>
   );
 }
@@ -93,10 +114,22 @@ export default function Header() {
 const menuButtonStyle: React.CSSProperties = {
   display: "block",
   width: "100%",
-  padding: "12px 0",
+  padding: "14px 0",
   background: "transparent",
   border: "none",
   color: "#fff",
   fontSize: "16px",
+  fontWeight: 500,
+  letterSpacing: "0.5px",
   cursor: "pointer",
+  transition: "all 0.2s ease",
+  textTransform: "uppercase",
 };
+
+// Add hover effects dynamically
+Object.assign(menuButtonStyle, {
+  ":hover": {
+    background: "rgba(255, 255, 255, 0.1)",
+    color: "#ffd700",
+  },
+});
