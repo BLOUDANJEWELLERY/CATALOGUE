@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
                 disabled={loading}
                 whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(199,163,50,0.6)" }}
                 whileTap={{ scale: 0.95 }}
-                className="w-full px-6 py-3 bg-[#c7a332] text-[#fffdfb] font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-6 py-3 bg-[#0b1a3d] text-[#c7a332] font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Sending..." : "Send Reset Link"}
               </motion.button>
