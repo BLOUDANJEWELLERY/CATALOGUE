@@ -583,10 +583,10 @@ return (
     }
   }}
   disabled={isGenerating}
-  className={`px-4 py-2 rounded-lg font-semibold transition ${
-    isGenerating
-      ? "bg-[#8c6b1d] text-[#0b1a3d] cursor-not-allowed"
-      : "bg-[#c7a332] text-[#0b1a3d] hover:bg-[#b5942b]"
+  className={`px-4 py-2 rounded-lg font-semibold transition ${   
+isGenerating
+      ? "bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white cursor-not-allowed"
+      : "bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white hover:brightness-110"
   }`}
 >
   {isGenerating ? "Processing..." : "Download PDF"}
