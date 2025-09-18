@@ -108,7 +108,7 @@ export default function ProfilePage() {
 <>
 <Header />
     <div className="max-w-md mx-auto bg-[#fdfaf5] shadow-lg rounded-lg p-6">
-      <h1 className="text-2xl mt-10 font-bold mb-6 text-center">My Profile</h1>
+      <h1 className="text-2xl mt-6 font-bold mb-10 text-center">My Profile</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* First Name */}
         <div>
