@@ -111,13 +111,13 @@ export default function Header() {
           >
             {role === "admin" && (
               <>
-                <Link href="/">
-                  <button style={{ ...menuButtonStyle, border: "1px solid #c7a332" }}>
+                <Link href="/catalogue">
+                  <button style={menuButtonStyle} className="menu-btn">
                     📖 Catalogue
                   </button>
                 </Link>
                 <Link href="/admin/users">
-                  <button style={{ ...menuButtonStyle, border: "1px solid #c7a332" }}>
+                  <button style={menuButtonStyle} className="menu-btn">
                     👥 User Management
                   </button>
                 </Link>
@@ -127,11 +127,12 @@ export default function Header() {
               onClick={handleLogout}
               style={{
                 ...menuButtonStyle,
-                background: "linear-gradient(90deg, #d9534f, #c9302c)",
+                background: "linear-gradient(90deg, #ff4d4d, #b30000)",
                 color: "#fff",
                 fontWeight: "600",
                 border: "none",
               }}
+              className="menu-btn"
             >
               🚪 Logout
             </button>
@@ -142,19 +143,19 @@ export default function Header() {
   );
 }
 
-// Reusable menu button style
+// Base style
 const menuButtonStyle: React.CSSProperties = {
   display: "block",
   width: "85%",
   margin: "10px auto",
   padding: "12px 0",
   background: "#fff",
-  border: "1px solid #ddd",
+  border: "1px solid #c7a332",
   borderRadius: "8px",
   color: "#0b1a3d",
   fontSize: "16px",
   cursor: "pointer",
   boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
-  transition: "all 0.2s ease",
+  transition: "all 0.25s ease",
   fontWeight: "500",
 };
