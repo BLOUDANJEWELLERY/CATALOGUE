@@ -19,7 +19,11 @@ export default function Header() {
     });
   }, []);
 
-  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const handleToggleMenu = (e: React.MouseEvent) => {
+    e.stopPropagation(); // prevent outside click from immediately closing
+    setMenuOpen((prev) => !prev);
+  };
+
   const handleLogout = () => signOut({ callbackUrl: "/" });
 
   // Close dropdown when clicking outside
@@ -29,9 +33,9 @@ export default function Header() {
         setMenuOpen(false);
       }
     };
-    if (menuOpen) document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [menuOpen]);
+  }, []);
 
   return (
     <header className="relative bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white flex justify-between items-center px-5 py-4 shadow-md z-50">
@@ -39,7 +43,7 @@ export default function Header() {
 
       {/* Hamburger */}
       <button
-        onClick={toggleMenu}
+        onClick={handleToggleMenu}
         className="relative w-8 h-8 flex flex-col justify-between items-center focus:outline-none z-50"
       >
         <span
