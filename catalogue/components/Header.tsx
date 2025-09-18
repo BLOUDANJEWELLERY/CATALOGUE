@@ -19,9 +19,7 @@ export default function Header() {
   }, []);
 
   const handleToggleMenu = () => setMenuOpen((prev) => !prev);
-
   const handleLogout = () => signOut({ callbackUrl: "/" });
-
   const closeMenu = () => setMenuOpen(false);
 
   return (
@@ -54,14 +52,14 @@ export default function Header() {
       {/* Overlay */}
       {menuOpen && (
         <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
           onClick={closeMenu}
         />
       )}
 
       {/* Dropdown */}
       {menuOpen && (
-        <div className="absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl py-4 text-center shadow-lg z-50">
+        <div className="absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl py-4 text-center shadow-lg z-40">
           {role === "admin" && (
             <>
               <Link href="/catalogue">
