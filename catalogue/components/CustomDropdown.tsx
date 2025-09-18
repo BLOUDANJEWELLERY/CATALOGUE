@@ -29,7 +29,7 @@ export default function CustomDropdown({ value, onChange }: CustomDropdownProps)
       {/* Selected value */}
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="w-full px-4 py-2 border-2 border-[#c7a332] rounded-lg bg-white text-[#0b1a3d] font-semibold flex justify-between items-center hover:bg-[#fdf8f3] transition-all duration-200 shadow-sm"
+        className="w-full px-4 py-2 border-2 border-[#c7a332] rounded-lg bg-white text-[#0b1a3d] font-semibold flex justify-between items-center hover:bg-[#f0f0f0] transition-all duration-200 shadow-sm"
       >
         <span className="truncate">
           {value === "Adult" ? "Adult Only" : value === "Kids" ? "Kids Only" : "Both"}
@@ -49,20 +49,25 @@ export default function CustomDropdown({ value, onChange }: CustomDropdownProps)
           open ? "opacity-100 max-h-60" : "opacity-0 max-h-0 pointer-events-none"
         }`}
       >
-        {options.map((opt) => (
-          <li
-            key={opt}
-            onClick={() => {
-              onChange(opt);
-              setOpen(false);
-            }}
-            className={`px-4 py-2 cursor-pointer text-[#0b1a3d] transition-all duration-200 rounded-lg ${
-              value === opt ? "bg-[#c7a332] text-white font-semibold" : "hover:bg-[#c7a332] hover:text-white"
-            }`}
-          >
-            {opt === "Adult" ? "Adult Only" : opt === "Kids" ? "Kids Only" : "Both"}
-          </li>
-        ))}
+        {options.map((opt) => {
+          const isSelected = value === opt;
+          return (
+            <li
+              key={opt}
+              onClick={() => {
+                onChange(opt);
+                setOpen(false);
+              }}
+              className={`px-4 py-2 cursor-pointer text-[#0b1a3d] transition-all duration-200 rounded-lg ${
+                isSelected
+                  ? "bg-[#0b1a3d] text-white font-semibold"
+                  : "hover:bg-[#c7a332] hover:text-white"
+              }`}
+            >
+              {opt === "Adult" ? "Adult Only" : opt === "Kids" ? "Kids Only" : "Both"}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
