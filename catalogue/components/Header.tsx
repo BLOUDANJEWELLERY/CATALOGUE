@@ -60,14 +60,14 @@ export default function Header() {
         onClick={closeMenu}
       />
 
-{/* Dropdown with under-header animation */}
+{/* Dropdown with proper under-header animation */}
 <div
   className={`absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl text-center shadow-lg transition-all duration-500 ease-in-out overflow-hidden ${
     menuOpen
-      ? "max-h-96 opacity-100 translate-y-0 py-4 z-30"
-      : "max-h-0 opacity-0 -translate-y-2 py-0 z-[-1]"
+      ? "max-h-96 opacity-100 py-4"
+      : "max-h-0 opacity-0 py-0"
   }`}
-  style={{ transitionProperty: "max-height, opacity, transform, padding" }}
+  style={{ transitionProperty: "max-height, opacity, padding" }}
 >
   {role === "admin" && (
     <>
