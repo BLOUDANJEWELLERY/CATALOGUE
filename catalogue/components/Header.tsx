@@ -1,17 +1,22 @@
 // components/Header.tsx
 "use client";
-import { useState } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { getSession, signOut } from "next-auth/react";
 import Link from "next/link";
 
 export default function Header() {
-  const { data: session } = useSession(); // reactive session
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
 
-  const userName = session?.user
-    ? `${session.user.firstName || ""} ${session.user.lastName || ""}`.trim()
-    : null;
-  const role = session?.user?.role || "user";
+  useEffect(() => {
+    getSession().then((session) => {
+      if (session?.user) {
+        setUserName(`${session.user.firstName} ${session.user.lastName}`.trim());
+        setRole(session.user.role || "user");
+      }
+    });
+  }, []);
 
   const handleToggleMenu = () => setMenuOpen((prev) => !prev);
   const handleLogout = () => signOut({ callbackUrl: "/" });
@@ -27,16 +32,19 @@ export default function Header() {
         onClick={handleToggleMenu}
         className="relative w-7 h-7 flex flex-col justify-center items-center focus:outline-none z-60"
       >
+        {/* Top bar */}
         <span
           className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
             menuOpen ? "rotate-45" : "-translate-y-2"
           }`}
         />
+        {/* Middle bar */}
         <span
           className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
             menuOpen ? "opacity-0" : ""
           }`}
         />
+        {/* Bottom bar */}
         <span
           className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
             menuOpen ? "-rotate-45" : "translate-y-2"
@@ -52,44 +60,47 @@ export default function Header() {
         onClick={closeMenu}
       />
 
-      {/* Dropdown */}
-      <div
-        className={`absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl text-center shadow-lg transition-all duration-500 ease-in-out overflow-hidden z-40 ${
-          menuOpen ? "max-h-96 opacity-100 py-4" : "max-h-0 opacity-0 py-0"
-        }`}
-        style={{ transitionProperty: "max-height, opacity, padding" }}
-      >
-        {/* Profile */}
-        <Link href="/profile">
-          <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
-            👤 Profile
-          </button>
-        </Link>
+{/* Dropdown with proper under-header animation */}
+<div
+  className={`absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl text-center shadow-lg transition-all duration-500 ease-in-out overflow-hidden z-40 ${
+    menuOpen
+      ? "max-h-96 opacity-100 py-4"
+      : "max-h-0 opacity-0 py-0"
+  }`}
+  style={{ transitionProperty: "max-height, opacity, padding" }}
+>
+  {/* Profile – visible to everyone */}
+  <Link href="/profile">
+    <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
+      👤 Profile
+    </button>
+  </Link>
 
-        {/* Admin-only options */}
-        {role === "admin" && (
-          <>
-            <Link href="/">
-              <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
-                📖 Catalogue
-              </button>
-            </Link>
-            <Link href="/admin/users">
-              <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
-                👥 User Management
-              </button>
-            </Link>
-          </>
-        )}
-
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
-          className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-medium hover:brightness-110 transition"
-        >
-          🚪 Logout
+  {/* Admin-only options */}
+  {role === "admin" && (
+    <>
+      <Link href="/">
+        <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
+          📖 Catalogue
         </button>
-      </div>
+      </Link>
+      <Link href="/admin/users">
+        <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
+          👥 User Management
+        </button>
+      </Link>
+    </>
+  )}
+
+  {/* Logout – gradient red */}
+  <button
+    onClick={handleLogout}
+    className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-medium hover:brightness-110 transition"
+  >
+    🚪 Logout
+  </button>
+
+</div>
     </header>
   );
 }
