@@ -30,11 +30,11 @@ export default function Header() {
       {/* Hamburger */}
 <button
   onClick={handleToggleMenu}
-  className="relative w-6 h-6 flex flex-col justify-between items-center focus:outline-none z-50"
+  className="relative w-6 h-6 flex flex-col justify-center items-center gap-0.5 focus:outline-none z-50"
 >
   <span
     className={`block h-0.5 w-full bg-white rounded transition-transform duration-300 ${
-      menuOpen ? "rotate-45 translate-y-2" : ""
+      menuOpen ? "rotate-45 translate-y-0" : ""
     }`}
   />
   <span
@@ -44,7 +44,7 @@ export default function Header() {
   />
   <span
     className={`block h-0.5 w-full bg-white rounded transition-transform duration-300 ${
-      menuOpen ? "-rotate-45 -translate-y-2" : ""
+      menuOpen ? "-rotate-45 translate-y-0" : ""
     }`}
   />
 </button>
