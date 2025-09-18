@@ -779,6 +779,7 @@ return (
         <input
           type="number"
           placeholder="Weight Adult (g)"
+          inputMode="numeric"
           value={newItemWeightAdult}
           onChange={(e) => setNewItemWeightAdult(e.target.value)}
           className="border-2 border-[#c7a332] rounded-lg p-2 w-full bg-white text-[#0b1a3d]"
@@ -788,6 +789,7 @@ return (
         <input
           type="number"
           placeholder="Weight Kids (g)"
+          inputMode="numeric"
           value={newItemWeightKids}
           onChange={(e) => setNewItemWeightKids(e.target.value)}
           className="border-2 border-[#c7a332] rounded-lg p-2 w-full bg-white text-[#0b1a3d]"
@@ -897,6 +899,7 @@ return (
         <input
           type="number"
           placeholder="Weight Adult (g)"
+          inputMode="numeric"
           value={editWeightAdult}
           onChange={(e) => setEditWeightAdult(e.target.value)}
           className="border-2 border-[#c7a332] rounded-lg p-2 w-full bg-white text-[#0b1a3d]"
@@ -906,6 +909,7 @@ return (
         <input
           type="number"
           placeholder="Weight Kids (g)"
+          inputMode="numeric"
           value={editWeightKids}
           onChange={(e) => setEditWeightKids(e.target.value)}
           className="border-2 border-[#c7a332] rounded-lg p-2 w-full bg-white text-[#0b1a3d]"
