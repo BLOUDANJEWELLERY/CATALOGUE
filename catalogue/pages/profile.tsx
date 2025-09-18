@@ -1,6 +1,9 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+// pages/profile.tsx
+import { GetServerSideProps } from "next";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./api/auth/[...nextauth]";
+import { prisma } from "../lib/prisma";
+import { useState } from "react";
 import Header from "../components/Header";
 
 interface UserProfile {
@@ -11,31 +14,16 @@ interface UserProfile {
   lastName?: string;
 }
 
-export default function ProfilePage() {
-  const { data: session, update } = useSession(); // 👈 useSession with update()
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+interface ProfilePageProps {
+  user: UserProfile;
+}
+
+export default function ProfilePage({ user: initialUser }: ProfilePageProps) {
+  const [user, setUser] = useState<UserProfile>(initialUser);
+  const [firstName, setFirstName] = useState(user.firstName ?? "");
+  const [lastName, setLastName] = useState(user.lastName ?? "");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (session?.user) {
-        try {
-          const res = await fetch("/api/user/profile");
-          if (!res.ok) throw new Error("Failed to fetch profile");
-          const data: UserProfile = await res.json();
-          setUser(data);
-          setFirstName(data.firstName ?? "");
-          setLastName(data.lastName ?? "");
-        } catch (err) {
-          console.error("Error fetching profile:", err);
-        }
-      }
-    };
-    fetchProfile();
-  }, [session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,62 +38,24 @@ export default function ProfilePage() {
       });
 
       if (res.ok) {
+        const updatedUser: UserProfile = await res.json();
+        setUser(updatedUser);
+        setFirstName(updatedUser.firstName ?? "");
+        setLastName(updatedUser.lastName ?? "");
         setMessage("✅ Profile updated successfully!");
 
-        // 🔄 Refresh session so Header shows new name
-        await update();
+        // Force NextAuth session refresh
+        await fetch("/api/auth/session?update", { method: "POST" });
       } else {
         setMessage("❌ Failed to update profile.");
       }
     } catch (err) {
-      console.error("Error updating profile:", err);
+      console.error(err);
       setMessage("❌ An error occurred while saving.");
     } finally {
       setLoading(false);
     }
   };
-
-  if (!user) {
-    return (
-      <>
-        <Header />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh",
-            background: "#fdfaf5",
-            flexDirection: "column",
-            color: "#3b3b58",
-            fontSize: "1.5rem",
-            fontWeight: "bold",
-          }}
-        >
-          <p>Loading profile...</p>
-          <div
-            style={{
-              marginTop: "20px",
-              width: "60px",
-              height: "60px",
-              border: "6px solid #d4af37",
-              borderTop: "6px solid #3b3b58",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-            }}
-          />
-          <style>
-            {`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}
-          </style>
-        </div>
-      </>
-    );
-  }
 
   return (
     <>
@@ -171,3 +121,35 @@ export default function ProfilePage() {
     </>
   );
 }
+
+// Fetch profile server-side and redirect if not logged in
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const session = await getServerSession(ctx.req, ctx.res, authOptions);
+
+  if (!session?.user?.email) {
+    return {
+      redirect: { destination: "/login", permanent: false },
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true, email: true, role: true, firstName: true, lastName: true },
+  });
+
+  if (!user) {
+    return {
+      redirect: { destination: "/login", permanent: false },
+    };
+  }
+
+  return {
+    props: {
+      user: {
+        ...user,
+        firstName: user.firstName ?? undefined,
+        lastName: user.lastName ?? undefined,
+      },
+    },
+  };
+};
