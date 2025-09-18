@@ -60,35 +60,36 @@ export default function Header() {
         onClick={closeMenu}
       />
 
-      {/* Dropdown with animation */}
-      <div
-        className={`absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl text-center shadow-lg z-40 transition-all duration-500 ease-in-out overflow-hidden ${
-          menuOpen
-            ? "max-h-96 opacity-100 translate-y-0 py-4 z-40"
-            : "max-h-0 opacity-0 -translate-y-5 py-0 z-40"
-        }`}
-      >
-        {role === "admin" && (
-          <>
-            <Link href="/catalogue">
-              <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
-                📖 Catalogue
-              </button>
-            </Link>
-            <Link href="/admin/users">
-              <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
-                👥 User Management
-              </button>
-            </Link>
-          </>
-        )}
-        <button
-          onClick={handleLogout}
-          className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-medium hover:brightness-110 transition"
-        >
-          🚪 Logout
+{/* Dropdown with under-header animation */}
+<div
+  className={`absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl text-center shadow-lg transition-all duration-500 ease-in-out overflow-hidden ${
+    menuOpen
+      ? "max-h-96 opacity-100 translate-y-0 py-4 z-30"
+      : "max-h-0 opacity-0 -translate-y-2 py-0 z-[-1]"
+  }`}
+  style={{ transitionProperty: "max-height, opacity, transform, padding" }}
+>
+  {role === "admin" && (
+    <>
+      <Link href="/catalogue">
+        <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
+          📖 Catalogue
         </button>
-      </div>
+      </Link>
+      <Link href="/admin/users">
+        <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
+          👥 User Management
+        </button>
+      </Link>
+    </>
+  )}
+  <button
+    onClick={handleLogout}
+    className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-medium hover:brightness-110 transition"
+  >
+    🚪 Logout
+  </button>
+</div>
     </header>
   );
 }
