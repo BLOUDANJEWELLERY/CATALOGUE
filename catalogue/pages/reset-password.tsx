@@ -162,7 +162,7 @@ export default function ResetPasswordPage() {
             <button
               onClick={handleReset}
               disabled={loading}
-              className="w-full px-4 py-2 bg-[#c7a332] text-[#fffdfb] font-semibold rounded-lg hover:bg-[#b8972a] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-[#0b1a3d] text-[#c7a332] font-semibold rounded-lg hover:bg-[#b8972a] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Resetting..." : "Reset Password"}
             </button>
