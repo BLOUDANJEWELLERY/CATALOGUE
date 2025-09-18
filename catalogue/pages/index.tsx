@@ -577,7 +577,7 @@ return (
     }
   }}
   disabled={isGenerating}
-  className={`relative w-42 px-4 py-2 rounded-lg font-semibold transition ${   
+  className={`relative w-52 px-4 py-2 rounded-lg font-semibold transition ${   
 isGenerating
       ? "bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white cursor-not-allowed"
       : "bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white hover:brightness-110"
