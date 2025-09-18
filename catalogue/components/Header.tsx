@@ -79,7 +79,7 @@ export default function Header() {
   {/* Admin-only options */}
   {role === "admin" && (
     <>
-      <Link href="/catalogue">
+      <Link href="/">
         <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
           📖 Catalogue
         </button>
