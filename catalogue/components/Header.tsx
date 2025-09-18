@@ -1,6 +1,6 @@
 // components/Header.tsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getSession, signOut } from "next-auth/react";
 import Link from "next/link";
 
@@ -8,6 +8,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getSession().then((session) => {
@@ -21,6 +22,23 @@ export default function Header() {
   const toggleMenu = () => setMenuOpen((prev) => !prev);
   const handleLogout = () => signOut({ callbackUrl: "/" });
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen]);
+
   return (
     <header
       style={{
@@ -32,7 +50,7 @@ export default function Header() {
         alignItems: "center",
         position: "relative",
         boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-        zIndex: 1000,
+        zIndex: 1000, // header stays above dropdown
       }}
     >
       {/* Left: Greeting */}
@@ -57,44 +75,64 @@ export default function Header() {
         ☰
       </button>
 
-      {/* Top-down menu */}
-      <div
-        style={{
-          position: "absolute",
-          top: menuOpen ? "100%" : "-400px",
-          left: 0,
-          width: "100%",
-          background: "#1a1a1a",
-          padding: "20px 0",
-          textAlign: "center",
-          boxShadow: "0px 6px 12px rgba(0,0,0,0.4)",
-          borderBottomLeftRadius: "12px",
-          borderBottomRightRadius: "12px",
-          transition: "top 0.3s ease-in-out",
-        }}
-      >
-        {role === "admin" && (
-          <>
-            <Link href="/catalogue">
-              <button style={{ ...menuButtonStyle }}>📖 Catalogue</button>
-            </Link>
-            <Link href="/admin/users">
-              <button style={{ ...menuButtonStyle }}>👥 User Management</button>
-            </Link>
-          </>
-        )}
-        <button
-          onClick={handleLogout}
-          style={{
-            ...menuButtonStyle,
-            background: "linear-gradient(90deg, #d9534f, #c9302c)",
-            color: "#fff",
-            fontWeight: "600",
-          }}
-        >
-          🚪 Logout
-        </button>
-      </div>
+      {/* Dropdown + overlay */}
+      {menuOpen && (
+        <>
+          {/* Overlay */}
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              background: "rgba(0,0,0,0.3)",
+              zIndex: 900, // overlay below header but above page
+            }}
+          />
+
+          {/* Dropdown */}
+          <div
+            ref={menuRef}
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              width: "100%",
+              background: "#2e2e2e", // lighter than before
+              padding: "20px 0",
+              textAlign: "center",
+              boxShadow: "0px 6px 12px rgba(0,0,0,0.25)",
+              borderBottomLeftRadius: "12px",
+              borderBottomRightRadius: "12px",
+              animation: "slideDown 0.3s ease forwards",
+              zIndex: 950, // dropdown below header but above overlay
+            }}
+          >
+            {role === "admin" && (
+              <>
+                <Link href="/catalogue">
+                  <button style={{ ...menuButtonStyle }}>📖 Catalogue</button>
+                </Link>
+                <Link href="/admin/users">
+                  <button style={{ ...menuButtonStyle }}>👥 User Management</button>
+                </Link>
+              </>
+            )}
+            <button
+              onClick={handleLogout}
+              style={{
+                ...menuButtonStyle,
+                background: "linear-gradient(90deg, #d9534f, #c9302c)",
+                color: "#fff",
+                fontWeight: "600",
+              }}
+            >
+              🚪 Logout
+            </button>
+          </div>
+        </>
+      )}
     </header>
   );
 }
@@ -105,7 +143,7 @@ const menuButtonStyle: React.CSSProperties = {
   width: "85%",
   margin: "10px auto",
   padding: "12px 0",
-  background: "linear-gradient(90deg, #444, #666)",
+  background: "linear-gradient(90deg, #555, #777)",
   border: "none",
   borderRadius: "8px",
   color: "#f5f5f5",
