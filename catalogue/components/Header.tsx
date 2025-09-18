@@ -64,8 +64,8 @@ export default function Header() {
       <div
         className={`absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl text-center shadow-lg z-40 transition-all duration-500 ease-in-out overflow-hidden ${
           menuOpen
-            ? "max-h-96 opacity-100 translate-y-0 py-4"
-            : "max-h-0 opacity-0 -translate-y-5 py-0"
+            ? "max-h-96 opacity-100 translate-y-0 py-4 z-40"
+            : "max-h-0 opacity-0 -translate-y-5 py-0 z-40"
         }`}
       >
         {role === "admin" && (
