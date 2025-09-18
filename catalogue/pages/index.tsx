@@ -8,7 +8,6 @@ import type { Area } from "react-easy-crop";
 import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
-import { signOut } from "next-auth/react";
 import { useState, useRef } from "react";
 import { client } from "../lib/sanity.client";
 import { urlFor } from "../lib/sanity.image";
@@ -489,10 +488,6 @@ function hexToRgb(hex: string): [number, number, number] {
   return match.map((x) => parseInt(x, 16)) as [number, number, number];
 }
 
- const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" }); // redirects to homepage
-  };
-
 const closeEditModal = () => {
   setEditingId(null);
   setEditImage(null);
@@ -565,23 +560,6 @@ return (
   <h1 className="text-4xl font-bold text-[#0b1a3d] text-center mb-6">
     Bloudan Catalogue
   </h1>
-
-<div className="flex justify-center mb-4">
-  <button
-    onClick={async () => {
-      setIsProcessing(true);
-      try {
-        await handleSignOut();
-      } finally {
-        setIsProcessing(false);
-      }
-    }}
-    className="px-4 py-2 bg-[#c7a332] text-[#0b1a3d] font-bold rounded-lg hover:bg-[#b5942b] transition"
-  >
-    Sign Out
-  </button>
-</div>
-
 <div className="flex justify-center gap-3 mb-8 flex-wrap">
   <select
     value={pdfFilter}
