@@ -98,6 +98,8 @@ useEffect(() => {
 
    if (loading) {
     return (
+<>
+<Header />
       <div
         style={{
           display: "flex",
@@ -132,6 +134,7 @@ useEffect(() => {
           `}
         </style>
       </div>
+</>
     );
   }
 
