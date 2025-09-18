@@ -1,5 +1,6 @@
 // pages/index.tsx:
 "use client";
+import CustomDropdown from "../components/CustomDropdown"; // adjust path
 import Header from "../components/Header";
 import Image from "next/image";
 import { getCroppedImg } from "../utils/cropImage"; // adjust the path
@@ -59,6 +60,7 @@ export const getServerSideProps: GetServerSideProps = async (context: GetServerS
 };
 
 export default function Catalogue({ items }: CatalogueProps) {
+const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Adult");
 
 // Modal visibility
 const [showAddModal, setShowAddModal] = useState(false);
@@ -561,7 +563,13 @@ return (
     Bloudan Catalogue
   </h1>
 <div className="flex justify-center gap-3 mb-8 flex-wrap">
-  <select
+  
+<CustomDropdown value={pdfFilter} onChange={setPdfFilter} />
+
+      <p className="mt-4 text-[#0b1a3d]">
+        Selected Filter: {pdfFilter === "Adult" ? "Adult Only" : pdfFilter === "Kids" ? "Kids Only" : "Both"}
+      </p>
+{/*<select
     value={pdfFilter}
     onChange={(e) => setPdfFilter(e.target.value as "Adult" | "Kids" | "Both")}
     className="px-4 py-2 border-2 border-[#c7a332] rounded-lg bg-white text-[#0b1a3d] font-semibold cursor-pointer"
@@ -569,7 +577,7 @@ return (
     <option value="Adult">Adult Only</option>
     <option value="Kids">Kids Only</option>
     <option value="Both">Both</option>
-  </select>
+  </select>*/}
 
 {/* Download Button */}
 <button
