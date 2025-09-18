@@ -31,7 +31,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
       if (!user) return res.status(404).json({ error: "User not found" });
 
-      return res.status(200).json(user);
+      // ✅ convert null to undefined
+      const safeUser: ApiResponse = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        firstName: user.firstName ?? undefined,
+        lastName: user.lastName ?? undefined,
+      };
+
+      return res.status(200).json(safeUser);
     }
 
     if (req.method === "PUT") {
@@ -47,7 +56,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         select: { id: true, email: true, role: true, firstName: true, lastName: true },
       });
 
-      return res.status(200).json(updatedUser);
+      const safeUpdatedUser: ApiResponse = {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        firstName: updatedUser.firstName ?? undefined,
+        lastName: updatedUser.lastName ?? undefined,
+      };
+
+      return res.status(200).json(safeUpdatedUser);
     }
 
     res.setHeader("Allow", ["GET", "PUT"]);
