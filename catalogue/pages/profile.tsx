@@ -3,23 +3,38 @@
 import { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 
+interface UserProfile {
+  id: string;
+  email: string;
+  role: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    getSession().then(async (session) => {
+    const fetchProfile = async () => {
+      const session = await getSession();
       if (session?.user) {
-        const res = await fetch("/api/user/profile");
-        const data = await res.json();
-        setUser(data);
-        setFirstName(data.firstName || "");
-        setLastName(data.lastName || "");
+        try {
+          const res = await fetch("/api/user/profile");
+          if (!res.ok) throw new Error("Failed to fetch profile");
+          const data: UserProfile = await res.json();
+          setUser(data);
+          setFirstName(data.firstName ?? "");
+          setLastName(data.lastName ?? "");
+        } catch (err) {
+          console.error("Error fetching profile:", err);
+        }
       }
-    });
+    };
+    fetchProfile();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,21 +42,29 @@ export default function ProfilePage() {
     setLoading(true);
     setMessage("");
 
-    const res = await fetch("/api/user/profile", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ firstName, lastName }),
-    });
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, lastName }),
+      });
 
-    if (res.ok) {
-      setMessage("✅ Profile updated successfully!");
-    } else {
-      setMessage("❌ Failed to update profile.");
+      if (res.ok) {
+        setMessage("✅ Profile updated successfully!");
+      } else {
+        setMessage("❌ Failed to update profile.");
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setMessage("❌ An error occurred while saving.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  if (!user) return <div className="p-6 text-center">Loading...</div>;
+  if (!user) {
+    return <div className="p-6 text-center">Loading...</div>;
+  }
 
   return (
     <div className="max-w-md mx-auto mt-10 bg-white shadow-lg rounded-lg p-6">
@@ -69,7 +92,7 @@ export default function ProfilePage() {
           />
         </div>
 
-        {/* Email (disabled) */}
+        {/* Email (read-only) */}
         <div>
           <label className="block text-sm font-medium mb-1">Email</label>
           <input
@@ -80,7 +103,7 @@ export default function ProfilePage() {
           />
         </div>
 
-        {/* Role (disabled) */}
+        {/* Role (read-only) */}
         <div>
           <label className="block text-sm font-medium mb-1">Role</label>
           <input
