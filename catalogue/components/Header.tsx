@@ -111,7 +111,7 @@ export default function Header() {
           >
             {role === "admin" && (
               <>
-                <Link href="/catalogue">
+                <Link href="/">
                   <button style={{ ...menuButtonStyle, border: "1px solid #c7a332" }}>
                     📖 Catalogue
                   </button>
