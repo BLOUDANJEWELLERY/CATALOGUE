@@ -1,5 +1,6 @@
 // pages/admin/users.tsx
 "use client";
+import Header from "../../components/Header";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import type { GetServerSideProps, GetServerSidePropsContext } from "next";
@@ -136,6 +137,7 @@ useEffect(() => {
 
   return (
  <>
+<Header />
       <Head>
         <title>User Management | Admin</title>
         <meta name="description" content="Manage users, roles, and access." />
