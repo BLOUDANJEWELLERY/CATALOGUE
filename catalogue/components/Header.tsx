@@ -30,11 +30,8 @@ export default function Header() {
       }
     };
 
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
+    if (menuOpen) document.addEventListener("mousedown", handleClickOutside);
+    else document.removeEventListener("mousedown", handleClickOutside);
 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
@@ -54,7 +51,7 @@ export default function Header() {
       }}
     >
       {/* Left: Greeting */}
-      <div style={{ fontWeight: "600", fontSize: "18px", letterSpacing: "0.5px" }}>
+      <div style={{ fontWeight: 600, fontSize: 18 }}>
         Hi, {userName || "Loading..."}
       </div>
 
@@ -65,7 +62,7 @@ export default function Header() {
           background: "transparent",
           border: "none",
           cursor: "pointer",
-          fontSize: "26px",
+          fontSize: 26,
           color: "#fff",
           transition: "transform 0.2s ease",
         }}
@@ -77,73 +74,57 @@ export default function Header() {
 
       {/* Dropdown + overlay */}
       {menuOpen && (
-        <>
-          {/* Overlay */}
-          <div
+        <div
+          ref={menuRef}
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            width: "100%",
+            background: "rgba(253,248,243,0.95)", // light cream with transparency
+            backdropFilter: "blur(8px)", // blur effect
+            padding: "20px 0",
+            textAlign: "center",
+            boxShadow: "0 6px 12px rgba(0,0,0,0.25)",
+            borderBottomLeftRadius: "12px",
+            borderBottomRightRadius: "12px",
+            animation: "slideDown 0.3s ease forwards",
+            zIndex: 950,
+          }}
+        >
+          {role === "admin" && (
+            <>
+              <Link href="/catalogue">
+                <button style={menuButtonStyle} className="menu-btn">
+                  📖 Catalogue
+                </button>
+              </Link>
+              <Link href="/admin/users">
+                <button style={menuButtonStyle} className="menu-btn">
+                  👥 User Management
+                </button>
+              </Link>
+            </>
+          )}
+          <button
+            onClick={handleLogout}
             style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              background: "rgba(0,0,0,0.3)",
-              zIndex: 900,
+              ...menuButtonStyle,
+              background: "linear-gradient(90deg, #ff4d4d, #b30000)",
+              color: "#fff",
+              fontWeight: 600,
+              border: "none",
             }}
-          />
-
-          {/* Dropdown */}
-          <div
-            ref={menuRef}
-            style={{
-              position: "absolute",
-              top: "100%",
-              left: 0,
-              width: "100%",
-              background: "#fdf8f3",
-              padding: "20px 0",
-              textAlign: "center",
-              boxShadow: "0px 6px 12px rgba(0,0,0,0.25)",
-              borderBottomLeftRadius: "12px",
-              borderBottomRightRadius: "12px",
-              animation: "slideDown 0.3s ease forwards",
-              zIndex: 950,
-            }}
+            className="menu-btn"
           >
-            {role === "admin" && (
-              <>
-                <Link href="/catalogue">
-                  <button style={menuButtonStyle} className="menu-btn">
-                    📖 Catalogue
-                  </button>
-                </Link>
-                <Link href="/admin/users">
-                  <button style={menuButtonStyle} className="menu-btn">
-                    👥 User Management
-                  </button>
-                </Link>
-              </>
-            )}
-            <button
-              onClick={handleLogout}
-              style={{
-                ...menuButtonStyle,
-                background: "linear-gradient(90deg, #ff4d4d, #b30000)",
-                color: "#fff",
-                fontWeight: "600",
-                border: "none",
-              }}
-              className="menu-btn"
-            >
-              🚪 Logout
-            </button>
-          </div>
-        </>
+            🚪 Logout
+          </button>
+        </div>
       )}
     </header>
   );
 }
 
-// Base style
 const menuButtonStyle: React.CSSProperties = {
   display: "block",
   width: "85%",
@@ -153,9 +134,15 @@ const menuButtonStyle: React.CSSProperties = {
   border: "1px solid #c7a332",
   borderRadius: "8px",
   color: "#0b1a3d",
-  fontSize: "16px",
+  fontSize: 16,
   cursor: "pointer",
   boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
   transition: "all 0.25s ease",
-  fontWeight: "500",
+  fontWeight: 500,
 };
+.menu-btn:hover {
+  background: #0b1a3d !important;
+  color: #fdf8f3 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
