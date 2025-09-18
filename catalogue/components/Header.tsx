@@ -38,38 +38,42 @@ export default function Header() {
       {/* Left: Greeting */}
       <div style={greetingStyle}>Hi, {userName || "Loading..."}</div>
 
-      {/* Right: Hamburger */}
-      <button
-        onClick={toggleMenu}
-        style={hamburgerStyle}
-      >
-        ☰
+      {/* Hamburger / Cross */}
+      <button onClick={toggleMenu} style={hamburgerWrapperStyle}>
+        <div style={{ ...hamburgerLine, transform: menuOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
+        <div style={{ ...hamburgerLine, opacity: menuOpen ? 0 : 1 }} />
+        <div style={{ ...hamburgerLine, transform: menuOpen ? "rotate(-45deg) translate(6px, -6px)" : "none" }} />
       </button>
 
-      {/* Dropdown menu */}
-      {menuOpen && (
-        <div ref={menuRef} style={dropdownWrapperStyle}>
-          {role === "admin" && (
-            <>
-              <Link href="/catalogue">
-                <button style={menuButtonStyle} data-type="admin">📖 Catalogue</button>
-              </Link>
-              <Link href="/admin/users">
-                <button style={menuButtonStyle} data-type="admin">👥 User Management</button>
-              </Link>
-            </>
-          )}
-          <button
-            onClick={handleLogout}
-            style={{ ...menuButtonStyle, background: "linear-gradient(90deg, #ff4d4d, #b30000)", color: "#fff" }}
-            data-type="logout"
-          >
-            🚪 Logout
-          </button>
-        </div>
-      )}
+      {/* Dropdown */}
+      <div
+        ref={menuRef}
+        style={{
+          ...dropdownWrapperStyle,
+          transform: menuOpen ? "translateY(0)" : "translateY(-20px)",
+          opacity: menuOpen ? 1 : 0,
+          pointerEvents: menuOpen ? "all" : "none",
+        }}
+      >
+        {role === "admin" && (
+          <>
+            <Link href="/catalogue">
+              <button style={menuButtonStyle} data-type="admin">📖 Catalogue</button>
+            </Link>
+            <Link href="/admin/users">
+              <button style={menuButtonStyle} data-type="admin">👥 User Management</button>
+            </Link>
+          </>
+        )}
+        <button
+          onClick={handleLogout}
+          style={{ ...menuButtonStyle, background: "linear-gradient(90deg, #ff4d4d, #b30000)", color: "#fff" }}
+          data-type="logout"
+        >
+          🚪 Logout
+        </button>
+      </div>
 
-      {/* Inline styles for hover and animation */}
       <style jsx>{`
         button[data-type="admin"]:hover {
           background: #0b1a3d !important;
@@ -80,10 +84,6 @@ export default function Header() {
         button[data-type="logout"]:hover {
           filter: brightness(1.1);
           transform: translateY(-2px);
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </header>
@@ -108,13 +108,24 @@ const greetingStyle: React.CSSProperties = {
   fontSize: 18,
 };
 
-const hamburgerStyle: React.CSSProperties = {
+const hamburgerWrapperStyle: React.CSSProperties = {
+  width: 30,
+  height: 24,
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-between",
   background: "transparent",
   border: "none",
   cursor: "pointer",
-  fontSize: 26,
-  color: "#fff",
-  transition: "transform 0.2s ease",
+  padding: 0,
+};
+
+const hamburgerLine: React.CSSProperties = {
+  width: "100%",
+  height: 3,
+  background: "#fff",
+  borderRadius: 2,
+  transition: "all 0.3s ease",
 };
 
 const dropdownWrapperStyle: React.CSSProperties = {
@@ -129,8 +140,8 @@ const dropdownWrapperStyle: React.CSSProperties = {
   boxShadow: "0 6px 12px rgba(0,0,0,0.25)",
   borderBottomLeftRadius: "12px",
   borderBottomRightRadius: "12px",
-  animation: "slideDown 0.3s ease forwards",
   zIndex: 950,
+  transition: "all 0.3s ease",
 };
 
 const menuButtonStyle: React.CSSProperties = {
