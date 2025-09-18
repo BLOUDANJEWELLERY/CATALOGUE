@@ -30,21 +30,24 @@ export default function Header() {
       {/* Hamburger */}
 <button
   onClick={handleToggleMenu}
-  className="relative w-6 h-6 flex flex-col justify-center items-center gap-0.5 focus:outline-none z-50"
+  className="relative w-7 h-7 flex flex-col justify-center items-center focus:outline-none z-50"
 >
+  {/* Top bar */}
   <span
-    className={`block h-0.5 w-full bg-white rounded transition-transform duration-300 ${
-      menuOpen ? "rotate-45 translate-y-0" : ""
+    className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
+      menuOpen ? "rotate-45" : "-translate-y-2"
     }`}
   />
+  {/* Middle bar */}
   <span
-    className={`block h-0.5 w-full bg-white rounded transition-opacity duration-300 ${
-      menuOpen ? "opacity-0" : "opacity-100"
+    className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
+      menuOpen ? "opacity-0" : ""
     }`}
   />
+  {/* Bottom bar */}
   <span
-    className={`block h-0.5 w-full bg-white rounded transition-transform duration-300 ${
-      menuOpen ? "-rotate-45 translate-y-0" : ""
+    className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
+      menuOpen ? "-rotate-45" : "translate-y-2"
     }`}
   />
 </button>
