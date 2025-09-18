@@ -110,7 +110,7 @@ export default function ProfilePage({ user: initialUser }: ProfilePageProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 rounded-lg bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white font-medium hover:brightness-110 transition"
+            className="w-full py-2 rounded-lg bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white font-semibold hover:brightness-110 transition"
           >
             {loading ? "Saving..." : "Save Changes"}
           </button>
