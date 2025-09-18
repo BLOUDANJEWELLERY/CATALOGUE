@@ -41,21 +41,24 @@ export default function Header() {
       {/* Hamburger */}
       <button
         onClick={toggleMenu}
-        className="flex flex-col justify-between w-7 h-6 focus:outline-none z-50"
+        className="relative w-8 h-8 flex flex-col justify-between items-center focus:outline-none z-50"
       >
+        {/* Top bar */}
         <span
-          className={`block h-0.5 w-full bg-white rounded transition-transform duration-300 ease-in-out ${
-            menuOpen ? "rotate-45 translate-y-2.5" : ""
+          className={`block h-1 w-full bg-white rounded transition-transform duration-300 ease-in-out ${
+            menuOpen ? "rotate-45 translate-y-3" : ""
           }`}
         />
+        {/* Middle bar */}
         <span
-          className={`block h-0.5 w-full bg-white rounded transition-opacity duration-300 ease-in-out ${
+          className={`block h-1 w-full bg-white rounded transition-opacity duration-300 ease-in-out ${
             menuOpen ? "opacity-0" : "opacity-100"
           }`}
         />
+        {/* Bottom bar */}
         <span
-          className={`block h-0.5 w-full bg-white rounded transition-transform duration-300 ease-in-out ${
-            menuOpen ? "-rotate-45 -translate-y-2.5" : ""
+          className={`block h-1 w-full bg-white rounded transition-transform duration-300 ease-in-out ${
+            menuOpen ? "-rotate-45 -translate-y-3" : ""
           }`}
         />
       </button>
@@ -63,7 +66,7 @@ export default function Header() {
       {/* Dropdown */}
       <div
         ref={menuRef}
-        className={`absolute top-full left-0 w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl py-4 text-center shadow-lg transition-transform duration-300 ease-in-out ${
+        className={`absolute left-0 w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl py-4 text-center shadow-lg transition-transform duration-300 ease-in-out z-40 ${
           menuOpen ? "translate-y-0 opacity-100" : "-translate-y-10 opacity-0 pointer-events-none"
         }`}
       >
