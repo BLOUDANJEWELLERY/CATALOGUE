@@ -25,7 +25,7 @@ export default function Header() {
   return (
     <header className="relative bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white flex justify-between items-center px-5 py-4 shadow-md z-50">
       {/* Greeting */}
-      <div className="font-bold text-lg">Hi, {userName || "Loading..."}</div>
+      <div className="font-bold text-lg z-50">Hi, {userName || "Loading..."}</div>
 
       {/* Hamburger */}
       <button
