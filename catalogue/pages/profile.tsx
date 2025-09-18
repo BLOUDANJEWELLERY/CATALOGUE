@@ -103,16 +103,16 @@ export default function ProfilePage() {
           />
         </div>
 
-        {/* Role (read-only) */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Role</label>
-          <input
-            type="text"
-            value={user.role}
-            disabled
-            className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
-          />
-        </div>
+    {/* Role (read-only) */}
+<div>
+  <label className="block text-sm font-medium mb-1">Role</label>
+  <input
+    type="text"
+    value={user.role.toUpperCase()}
+    disabled
+    className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed uppercase"
+  />
+</div>
 
         <button
           type="submit"
