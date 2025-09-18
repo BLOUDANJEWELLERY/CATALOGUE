@@ -28,63 +28,67 @@ export default function Header() {
       <div className="font-bold text-lg z-50">Hi, {userName || "Loading..."}</div>
 
       {/* Hamburger */}
-<button
-  onClick={handleToggleMenu}
-  className="relative w-7 h-7 flex flex-col justify-center items-center focus:outline-none z-50"
->
-  {/* Top bar */}
-  <span
-    className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
-      menuOpen ? "rotate-45" : "-translate-y-2"
-    }`}
-  />
-  {/* Middle bar */}
-  <span
-    className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
-      menuOpen ? "opacity-0" : ""
-    }`}
-  />
-  {/* Bottom bar */}
-  <span
-    className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
-      menuOpen ? "-rotate-45" : "translate-y-2"
-    }`}
-  />
-</button>
+      <button
+        onClick={handleToggleMenu}
+        className="relative w-7 h-7 flex flex-col justify-center items-center focus:outline-none z-50"
+      >
+        {/* Top bar */}
+        <span
+          className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
+            menuOpen ? "rotate-45" : "-translate-y-2"
+          }`}
+        />
+        {/* Middle bar */}
+        <span
+          className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
+            menuOpen ? "opacity-0" : ""
+          }`}
+        />
+        {/* Bottom bar */}
+        <span
+          className={`absolute h-0.5 w-6 bg-white rounded transition-all duration-300 ease-in-out ${
+            menuOpen ? "-rotate-45" : "translate-y-2"
+          }`}
+        />
+      </button>
 
       {/* Overlay */}
-      {menuOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
-          onClick={closeMenu}
-        />
-      )}
+      <div
+        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-30 transition-opacity duration-300 ${
+          menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={closeMenu}
+      />
 
-      {/* Dropdown */}
-      {menuOpen && (
-        <div className="absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl py-4 text-center shadow-lg z-40">
-          {role === "admin" && (
-            <>
-              <Link href="/catalogue">
-                <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
-                  📖 Catalogue
-                </button>
-              </Link>
-              <Link href="/admin/users">
-                <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
-                  👥 User Management
-                </button>
-              </Link>
-            </>
-          )}
-          <button
-            onClick={handleLogout}
-            className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-medium hover:brightness-110 transition"
-          >
-            🚪 Logout
-          </button>
-        </div>
-      )}
+      {/* Dropdown with animation */}
+      <div
+        className={`absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl text-center shadow-lg z-40 transition-all duration-500 ease-in-out overflow-hidden ${
+          menuOpen
+            ? "max-h-96 opacity-100 translate-y-0 py-4"
+            : "max-h-0 opacity-0 -translate-y-5 py-0"
+        }`}
+      >
+        {role === "admin" && (
+          <>
+            <Link href="/catalogue">
+              <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
+                📖 Catalogue
+              </button>
+            </Link>
+            <Link href="/admin/users">
+              <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
+                👥 User Management
+              </button>
+            </Link>
+          </>
+        )}
+        <button
+          onClick={handleLogout}
+          className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-medium hover:brightness-110 transition"
+        >
+          🚪 Logout
+        </button>
+      </div>
     </header>
   );
 }
