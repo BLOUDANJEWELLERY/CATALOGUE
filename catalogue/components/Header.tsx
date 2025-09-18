@@ -42,7 +42,7 @@ export default function Header() {
   return (
     <header
       style={{
-        background: "linear-gradient(90deg, #2d2d2d, #c9a34e)",
+        background: "linear-gradient(90deg, #0b1a3d, #c7a332)",
         color: "#fff",
         padding: "15px 20px",
         display: "flex",
@@ -50,7 +50,7 @@ export default function Header() {
         alignItems: "center",
         position: "relative",
         boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-        zIndex: 1000, // header stays above dropdown
+        zIndex: 1000,
       }}
     >
       {/* Left: Greeting */}
@@ -87,7 +87,7 @@ export default function Header() {
               width: "100vw",
               height: "100vh",
               background: "rgba(0,0,0,0.3)",
-              zIndex: 900, // overlay below header but above page
+              zIndex: 900,
             }}
           />
 
@@ -99,23 +99,27 @@ export default function Header() {
               top: "100%",
               left: 0,
               width: "100%",
-              background: "#2e2e2e", // lighter than before
+              background: "#fdf8f3",
               padding: "20px 0",
               textAlign: "center",
               boxShadow: "0px 6px 12px rgba(0,0,0,0.25)",
               borderBottomLeftRadius: "12px",
               borderBottomRightRadius: "12px",
               animation: "slideDown 0.3s ease forwards",
-              zIndex: 950, // dropdown below header but above overlay
+              zIndex: 950,
             }}
           >
             {role === "admin" && (
               <>
                 <Link href="/catalogue">
-                  <button style={{ ...menuButtonStyle }}>📖 Catalogue</button>
+                  <button style={{ ...menuButtonStyle, border: "1px solid #c7a332" }}>
+                    📖 Catalogue
+                  </button>
                 </Link>
                 <Link href="/admin/users">
-                  <button style={{ ...menuButtonStyle }}>👥 User Management</button>
+                  <button style={{ ...menuButtonStyle, border: "1px solid #c7a332" }}>
+                    👥 User Management
+                  </button>
                 </Link>
               </>
             )}
@@ -126,6 +130,7 @@ export default function Header() {
                 background: "linear-gradient(90deg, #d9534f, #c9302c)",
                 color: "#fff",
                 fontWeight: "600",
+                border: "none",
               }}
             >
               🚪 Logout
@@ -143,13 +148,13 @@ const menuButtonStyle: React.CSSProperties = {
   width: "85%",
   margin: "10px auto",
   padding: "12px 0",
-  background: "linear-gradient(90deg, #555, #777)",
-  border: "none",
+  background: "#fff",
+  border: "1px solid #ddd",
   borderRadius: "8px",
-  color: "#f5f5f5",
+  color: "#0b1a3d",
   fontSize: "16px",
   cursor: "pointer",
-  boxShadow: "0 3px 6px rgba(0,0,0,0.3)",
+  boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
   transition: "all 0.2s ease",
   fontWeight: "500",
 };
