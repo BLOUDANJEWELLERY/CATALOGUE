@@ -60,7 +60,6 @@ export const getServerSideProps: GetServerSideProps = async (context: GetServerS
 };
 
 export default function Catalogue({ items }: CatalogueProps) {
-const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Adult");
 
 // Modal visibility
 const [showAddModal, setShowAddModal] = useState(false);
