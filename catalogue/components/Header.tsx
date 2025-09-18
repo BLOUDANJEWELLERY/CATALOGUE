@@ -69,6 +69,14 @@ export default function Header() {
   }`}
   style={{ transitionProperty: "max-height, opacity, padding" }}
 >
+  {/* Profile – visible to everyone */}
+  <Link href="/profile">
+    <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#c7a332] text-[#0b1a3d] font-medium hover:bg-[#d4b545] transition">
+      👤 Profile
+    </button>
+  </Link>
+
+  {/* Admin-only options */}
   {role === "admin" && (
     <>
       <Link href="/catalogue">
@@ -83,12 +91,15 @@ export default function Header() {
       </Link>
     </>
   )}
+
+  {/* Logout – gradient red */}
   <button
     onClick={handleLogout}
     className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-medium hover:brightness-110 transition"
   >
     🚪 Logout
   </button>
+
 </div>
     </header>
   );
