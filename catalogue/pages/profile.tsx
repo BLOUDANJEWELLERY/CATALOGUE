@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import { prisma } from "../lib/prisma";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import Header from "../components/Header";
 
 interface UserProfile {
@@ -19,6 +20,7 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({ user: initialUser }: ProfilePageProps) {
+  const { update: updateSession } = useSession(); // reactive session updater
   const [user, setUser] = useState<UserProfile>(initialUser);
   const [firstName, setFirstName] = useState(user.firstName ?? "");
   const [lastName, setLastName] = useState(user.lastName ?? "");
@@ -39,13 +41,16 @@ export default function ProfilePage({ user: initialUser }: ProfilePageProps) {
 
       if (res.ok) {
         const updatedUser: UserProfile = await res.json();
+
+        // Update local state
         setUser(updatedUser);
         setFirstName(updatedUser.firstName ?? "");
         setLastName(updatedUser.lastName ?? "");
-        setMessage("✅ Profile updated successfully!");
 
-        // Force NextAuth session refresh
-        await fetch("/api/auth/session?update", { method: "POST" });
+        // 🔄 Refresh NextAuth session to update Header
+        await updateSession();
+
+        setMessage("✅ Profile updated successfully!");
       } else {
         setMessage("❌ Failed to update profile.");
       }
@@ -85,7 +90,7 @@ export default function ProfilePage({ user: initialUser }: ProfilePageProps) {
             />
           </div>
 
-          {/* Email (read-only) */}
+          {/* Email */}
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
@@ -96,7 +101,7 @@ export default function ProfilePage({ user: initialUser }: ProfilePageProps) {
             />
           </div>
 
-          {/* Role (read-only) */}
+          {/* Role */}
           <div>
             <label className="block text-sm font-medium mb-1">Role</label>
             <input
@@ -122,7 +127,7 @@ export default function ProfilePage({ user: initialUser }: ProfilePageProps) {
   );
 }
 
-// Fetch profile server-side and redirect if not logged in
+// Fetch user server-side and enforce login
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const session = await getServerSession(ctx.req, ctx.res, authOptions);
 
@@ -146,7 +151,9 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return {
     props: {
       user: {
-        ...user,
+        id: user.id,
+        email: user.email,
+        role: user.role,
         firstName: user.firstName ?? undefined,
         lastName: user.lastName ?? undefined,
       },
