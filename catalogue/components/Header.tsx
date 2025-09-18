@@ -1,6 +1,6 @@
 // components/Header.tsx
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { getSession, signOut } from "next-auth/react";
 import Link from "next/link";
 
@@ -8,7 +8,6 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getSession().then((session) => {
@@ -19,26 +18,15 @@ export default function Header() {
     });
   }, []);
 
-  const handleToggleMenu = (e: React.MouseEvent) => {
-    e.stopPropagation(); // prevent outside click from immediately closing
-    setMenuOpen((prev) => !prev);
-  };
+  const handleToggleMenu = () => setMenuOpen((prev) => !prev);
 
   const handleLogout = () => signOut({ callbackUrl: "/" });
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <header className="relative bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white flex justify-between items-center px-5 py-4 shadow-md z-50">
+      {/* Greeting */}
       <div className="font-bold text-lg">Hi, {userName || "Loading..."}</div>
 
       {/* Hamburger */}
@@ -63,12 +51,17 @@ export default function Header() {
         />
       </button>
 
-      {/* Dropdown */}
+      {/* Overlay */}
       {menuOpen && (
         <div
-          ref={menuRef}
-          className="absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl py-4 text-center shadow-lg z-40"
-        >
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+          onClick={closeMenu}
+        />
+      )}
+
+      {/* Dropdown */}
+      {menuOpen && (
+        <div className="absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl py-4 text-center shadow-lg z-50">
           {role === "admin" && (
             <>
               <Link href="/catalogue">
