@@ -1,19 +1,21 @@
 // components/Header.tsx
 "use client";
+
 import { useState, useEffect } from "react";
 import { getSession, signOut } from "next-auth/react";
 import Link from "next/link";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("Loading...");
+  const [role, setRole] = useState<"user" | "admin" | "blocked">("user");
 
   useEffect(() => {
     getSession().then((session) => {
       if (session?.user) {
-        setUserName(`${session.user.firstName} ${session.user.lastName}`.trim());
-        setRole(session.user.role || "user");
+        const fullName = `${session.user.firstName || ""} ${session.user.lastName || ""}`.trim();
+        setUserName(fullName || session.user.email || "Unknown");
+        setRole((session.user.role as "user" | "admin" | "blocked") || "user");
       }
     });
   }, []);
@@ -37,9 +39,7 @@ export default function Header() {
       }}
     >
       {/* Left: Greeting */}
-      <div style={{ fontWeight: "bold", fontSize: "18px" }}>
-        Hi, {userName || "Loading..."}
-      </div>
+      <div style={{ fontWeight: "bold", fontSize: "18px" }}>Hi, {userName}</div>
 
       {/* Right: Hamburger */}
       <button
