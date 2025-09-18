@@ -1,47 +1,43 @@
 // components/Header.tsx
 "use client";
-
 import { useState, useEffect } from "react";
 import { getSession, signOut } from "next-auth/react";
 import Link from "next/link";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [userName, setUserName] = useState<string>("Loading...");
-  const [role, setRole] = useState<"user" | "admin" | "blocked">("user");
+  const [userName, setUserName] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     getSession().then((session) => {
       if (session?.user) {
-        const fullName = `${session.user.firstName || ""} ${session.user.lastName || ""}`.trim();
-        setUserName(fullName || session.user.email || "Unknown");
-        setRole((session.user.role as "user" | "admin" | "blocked") || "user");
+        setUserName(`${session.user.firstName} ${session.user.lastName}`.trim());
+        setRole(session.user.role || "user");
       }
     });
   }, []);
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
-
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/" });
-  };
+  const handleLogout = () => signOut({ callbackUrl: "/" });
 
   return (
     <header
       style={{
-        background: "linear-gradient(90deg, #3b2f2f, #c9a34e)",
+        background: "linear-gradient(90deg, #2d2d2d, #c9a34e)",
         color: "#fff",
         padding: "15px 20px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         position: "relative",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+        zIndex: 1000,
       }}
     >
       {/* Left: Greeting */}
       <div style={{ fontWeight: "600", fontSize: "18px", letterSpacing: "0.5px" }}>
-        Hi, {userName}
+        Hi, {userName || "Loading..."}
       </div>
 
       {/* Right: Hamburger */}
@@ -51,61 +47,54 @@ export default function Header() {
           background: "transparent",
           border: "none",
           cursor: "pointer",
-          fontSize: "28px",
+          fontSize: "26px",
           color: "#fff",
-          transition: "transform 0.2s ease, color 0.2s ease",
+          transition: "transform 0.2s ease",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = "#ffd700")}
-        onMouseLeave={(e) => (e.currentTarget.style.color = "#fff")}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1.0)")}
       >
         ☰
       </button>
 
       {/* Top-down menu */}
-      {menuOpen && (
-        <div
+      <div
+        style={{
+          position: "absolute",
+          top: menuOpen ? "100%" : "-400px",
+          left: 0,
+          width: "100%",
+          background: "#1a1a1a",
+          padding: "20px 0",
+          textAlign: "center",
+          boxShadow: "0px 6px 12px rgba(0,0,0,0.4)",
+          borderBottomLeftRadius: "12px",
+          borderBottomRightRadius: "12px",
+          transition: "top 0.3s ease-in-out",
+        }}
+      >
+        {role === "admin" && (
+          <>
+            <Link href="/catalogue">
+              <button style={{ ...menuButtonStyle }}>📖 Catalogue</button>
+            </Link>
+            <Link href="/admin/users">
+              <button style={{ ...menuButtonStyle }}>👥 User Management</button>
+            </Link>
+          </>
+        )}
+        <button
+          onClick={handleLogout}
           style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            width: "100%",
-            background: "linear-gradient(180deg, #1a2b4c, #243b5c)",
-            padding: "15px 0",
-            textAlign: "center",
-            boxShadow: "0px 6px 12px rgba(0,0,0,0.25)",
-            zIndex: 999,
-            animation: "slideDown 0.3s ease forwards",
+            ...menuButtonStyle,
+            background: "linear-gradient(90deg, #d9534f, #c9302c)",
+            color: "#fff",
+            fontWeight: "600",
           }}
         >
-          {role === "admin" && (
-            <>
-              <Link href="/catalogue">
-                <button style={menuButtonStyle}>📖 Catalogue</button>
-              </Link>
-              <Link href="/admin/users">
-                <button style={menuButtonStyle}>👥 User Management</button>
-              </Link>
-            </>
-          )}
-          <button onClick={handleLogout} style={menuButtonStyle}>
-            🚪 Logout
-          </button>
-        </div>
-      )}
-
-      {/* Dropdown Animation */}
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
+          🚪 Logout
+        </button>
+      </div>
     </header>
   );
 }
@@ -113,23 +102,16 @@ export default function Header() {
 // Reusable menu button style
 const menuButtonStyle: React.CSSProperties = {
   display: "block",
-  width: "100%",
-  padding: "14px 0",
-  background: "transparent",
+  width: "85%",
+  margin: "10px auto",
+  padding: "12px 0",
+  background: "linear-gradient(90deg, #444, #666)",
   border: "none",
-  color: "#fff",
+  borderRadius: "8px",
+  color: "#f5f5f5",
   fontSize: "16px",
-  fontWeight: 500,
-  letterSpacing: "0.5px",
   cursor: "pointer",
+  boxShadow: "0 3px 6px rgba(0,0,0,0.3)",
   transition: "all 0.2s ease",
-  textTransform: "uppercase",
+  fontWeight: "500",
 };
-
-// Add hover effects dynamically
-Object.assign(menuButtonStyle, {
-  ":hover": {
-    background: "rgba(255, 255, 255, 0.1)",
-    color: "#ffd700",
-  },
-});
