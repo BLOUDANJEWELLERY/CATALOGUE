@@ -28,26 +28,26 @@ export default function Header() {
       <div className="font-bold text-lg z-50">Hi, {userName || "Loading..."}</div>
 
       {/* Hamburger */}
-      <button
-        onClick={handleToggleMenu}
-        className="relative w-8 h-8 flex flex-col justify-between items-center focus:outline-none z-50"
-      >
-        <span
-          className={`block h-1 w-full bg-white rounded transition-transform duration-300 ${
-            menuOpen ? "rotate-45 translate-y-3" : ""
-          }`}
-        />
-        <span
-          className={`block h-1 w-full bg-white rounded transition-opacity duration-300 ${
-            menuOpen ? "opacity-0" : "opacity-100"
-          }`}
-        />
-        <span
-          className={`block h-1 w-full bg-white rounded transition-transform duration-300 ${
-            menuOpen ? "-rotate-45 -translate-y-3" : ""
-          }`}
-        />
-      </button>
+<button
+  onClick={handleToggleMenu}
+  className="relative w-6 h-6 flex flex-col justify-between items-center focus:outline-none z-50"
+>
+  <span
+    className={`block h-0.5 w-full bg-white rounded transition-transform duration-300 ${
+      menuOpen ? "rotate-45 translate-y-2" : ""
+    }`}
+  />
+  <span
+    className={`block h-0.5 w-full bg-white rounded transition-opacity duration-300 ${
+      menuOpen ? "opacity-0" : "opacity-100"
+    }`}
+  />
+  <span
+    className={`block h-0.5 w-full bg-white rounded transition-transform duration-300 ${
+      menuOpen ? "-rotate-45 -translate-y-2" : ""
+    }`}
+  />
+</button>
 
       {/* Overlay */}
       {menuOpen && (
