@@ -92,7 +92,7 @@ const [zoom, setZoom] = useState<number>(1);
 const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
 // Component-level state
-const [isProcessing, setIsProcessing] = useState(false); // tracks sign out or PDF download
+const [isProcessing] = useState(false); // tracks sign out or PDF download
 const [isGenerating, setIsGenerating] = useState(false); // tracks sign out or PDF download
 const [progress, setProgress] = useState(0);
 
