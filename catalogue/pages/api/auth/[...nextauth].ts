@@ -1,5 +1,3 @@
-This is my api make this work with this as well:
-
 // pages/api/auth/[...nextauth].ts
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
