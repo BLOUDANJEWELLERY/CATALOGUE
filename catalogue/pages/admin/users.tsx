@@ -198,7 +198,7 @@ useEffect(() => {
                     fontWeight: "bold",
                     color:
                       u.role === "admin"
-                        ? "#3b3b58" // blue
+                        ? "0b1a3d" // blue
                         : u.role === "blocked"
                         ? "#d9534f" // red
                         : "#7a5c3d", // brown
@@ -223,7 +223,7 @@ useEffect(() => {
                     <button
                       onClick={() => changeRole(u.id, "admin")}
                       style={{
-                        background: "#3b3b58",
+                        background: "#0b1a3d",
                         color: "#fff",
                         padding: "6px 12px",
                         border: "none",
@@ -236,7 +236,7 @@ useEffect(() => {
                     <button
                       onClick={() => changeRole(u.id, "blocked")}
                       style={{
-                        background: "#3b3b58",
+                        background: "#0b1a3d",
                         color: "#fff",
                         padding: "6px 12px",
                         border: "none",
@@ -267,7 +267,7 @@ useEffect(() => {
                     <button
                       onClick={() => changeRole(u.id, "blocked")}
                       style={{
-                        background: "#3b3b58",
+                        background: "#0b1a3d",
                         color: "#fff",
                         padding: "6px 12px",
                         border: "none",
