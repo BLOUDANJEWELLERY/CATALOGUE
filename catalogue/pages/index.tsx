@@ -1,5 +1,6 @@
 // pages/index.tsx:
 "use client";
+import Header from "../components/Header";
 import Image from "next/image";
 import { getCroppedImg } from "../utils/cropImage"; // adjust the path
 import Cropper from "react-easy-crop";
@@ -530,6 +531,7 @@ useEffect(() => {
 
 return (
     <>
+ <Header />
       <Head>
         {/* Page title */}
         <title>BLOUDAN JEWELLERY | Luxury Bangles Collection</title>
