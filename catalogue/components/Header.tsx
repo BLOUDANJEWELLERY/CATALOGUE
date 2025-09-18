@@ -12,7 +12,7 @@ export default function Header() {
   useEffect(() => {
     getSession().then((session) => {
       if (session?.user) {
-        setUserName(session.user.name || "User");
+        setUserName(`${session.user.firstName} ${session.user.lastName}`.trim());
         setRole(session.user.role || "user");
       }
     });
