@@ -22,7 +22,7 @@ export default function Header() {
   const toggleMenu = () => setMenuOpen((prev) => !prev);
   const handleLogout = () => signOut({ callbackUrl: "/" });
 
-  // Close menu when clicking outside
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -34,128 +34,60 @@ export default function Header() {
   }, [menuOpen]);
 
   return (
-    <header style={headerStyle}>
-      {/* Left: Greeting */}
-      <div style={greetingStyle}>Hi, {userName || "Loading..."}</div>
+    <header className="relative bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white flex justify-between items-center px-5 py-4 shadow-md z-50">
+      {/* Greeting */}
+      <div className="font-bold text-lg">Hi, {userName || "Loading..."}</div>
 
-      {/* Hamburger / Cross */}
-      <button onClick={toggleMenu} style={hamburgerWrapperStyle}>
-        <div style={{ ...hamburgerLine, transform: menuOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
-        <div style={{ ...hamburgerLine, opacity: menuOpen ? 0 : 1 }} />
-        <div style={{ ...hamburgerLine, transform: menuOpen ? "rotate(-45deg) translate(6px, -6px)" : "none" }} />
+      {/* Hamburger */}
+      <button
+        onClick={toggleMenu}
+        className="flex flex-col justify-between w-7 h-6 focus:outline-none z-50"
+      >
+        <span
+          className={`block h-0.5 w-full bg-white rounded transition-transform duration-300 ease-in-out ${
+            menuOpen ? "rotate-45 translate-y-2.5" : ""
+          }`}
+        />
+        <span
+          className={`block h-0.5 w-full bg-white rounded transition-opacity duration-300 ease-in-out ${
+            menuOpen ? "opacity-0" : "opacity-100"
+          }`}
+        />
+        <span
+          className={`block h-0.5 w-full bg-white rounded transition-transform duration-300 ease-in-out ${
+            menuOpen ? "-rotate-45 -translate-y-2.5" : ""
+          }`}
+        />
       </button>
 
       {/* Dropdown */}
       <div
         ref={menuRef}
-        style={{
-          ...dropdownWrapperStyle,
-          transform: menuOpen ? "translateY(0)" : "translateY(-20px)",
-          opacity: menuOpen ? 1 : 0,
-          pointerEvents: menuOpen ? "all" : "none",
-        }}
+        className={`absolute top-full left-0 w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl py-4 text-center shadow-lg transition-transform duration-300 ease-in-out ${
+          menuOpen ? "translate-y-0 opacity-100" : "-translate-y-10 opacity-0 pointer-events-none"
+        }`}
       >
         {role === "admin" && (
           <>
             <Link href="/catalogue">
-              <button style={menuButtonStyle} data-type="admin">📖 Catalogue</button>
+              <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
+                📖 Catalogue
+              </button>
             </Link>
             <Link href="/admin/users">
-              <button style={menuButtonStyle} data-type="admin">👥 User Management</button>
+              <button className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-[#0b1a3d] text-[#fdf8f3] font-medium hover:bg-[#1a2b4c] transition">
+                👥 User Management
+              </button>
             </Link>
           </>
         )}
         <button
           onClick={handleLogout}
-          style={{ ...menuButtonStyle, background: "linear-gradient(90deg, #ff4d4d, #b30000)", color: "#fff" }}
-          data-type="logout"
+          className="block w-4/5 mx-auto my-2 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-700 text-white font-medium hover:brightness-110 transition"
         >
           🚪 Logout
         </button>
       </div>
-
-      <style jsx>{`
-        button[data-type="admin"]:hover {
-          background: #0b1a3d !important;
-          color: #fdf8f3 !important;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        button[data-type="logout"]:hover {
-          filter: brightness(1.1);
-          transform: translateY(-2px);
-        }
-      `}</style>
     </header>
   );
 }
-
-// Inline styles
-const headerStyle: React.CSSProperties = {
-  background: "linear-gradient(90deg, #0b1a3d, #c7a332)",
-  color: "#fff",
-  padding: "15px 20px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  position: "relative",
-  boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-  zIndex: 1000,
-};
-
-const greetingStyle: React.CSSProperties = {
-  fontWeight: 600,
-  fontSize: 18,
-};
-
-const hamburgerWrapperStyle: React.CSSProperties = {
-  width: 30,
-  height: 24,
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "space-between",
-  background: "transparent",
-  border: "none",
-  cursor: "pointer",
-  padding: 0,
-};
-
-const hamburgerLine: React.CSSProperties = {
-  width: "100%",
-  height: 3,
-  background: "#fff",
-  borderRadius: 2,
-  transition: "all 0.3s ease",
-};
-
-const dropdownWrapperStyle: React.CSSProperties = {
-  position: "absolute",
-  top: "100%",
-  left: 0,
-  width: "100%",
-  background: "rgba(253,248,243,0.95)",
-  backdropFilter: "blur(8px)",
-  padding: "20px 0",
-  textAlign: "center",
-  boxShadow: "0 6px 12px rgba(0,0,0,0.25)",
-  borderBottomLeftRadius: "12px",
-  borderBottomRightRadius: "12px",
-  zIndex: 950,
-  transition: "all 0.3s ease",
-};
-
-const menuButtonStyle: React.CSSProperties = {
-  display: "block",
-  width: "85%",
-  margin: "10px auto",
-  padding: "12px 0",
-  background: "#fff",
-  border: "1px solid #c7a332",
-  borderRadius: "8px",
-  color: "#0b1a3d",
-  fontSize: 16,
-  cursor: "pointer",
-  boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
-  transition: "all 0.25s ease",
-  fontWeight: 500,
-};
