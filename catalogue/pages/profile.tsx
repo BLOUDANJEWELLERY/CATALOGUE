@@ -1,5 +1,3 @@
-When changes are saved i want the session to update and fetch latest first and last names as the name needs to be placed on my header:
-
 // pages/profile.tsx
 "use client";
 import { useEffect, useState } from "react";
