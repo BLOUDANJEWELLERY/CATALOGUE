@@ -23,14 +23,14 @@ export default function Header() {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <header className="relative bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white flex justify-between items-center px-5 py-4 shadow-md z-50">
+    <header className="relative bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white flex justify-between items-center px-5 py-4 shadow-md z-60">
       {/* Greeting */}
-      <div className="font-bold text-lg z-50">Hi, {userName || "Loading..."}</div>
+      <div className="font-bold text-lg z-60">Hi, {userName || "Loading..."}</div>
 
       {/* Hamburger */}
       <button
         onClick={handleToggleMenu}
-        className="relative w-7 h-7 flex flex-col justify-center items-center focus:outline-none z-50"
+        className="relative w-7 h-7 flex flex-col justify-center items-center focus:outline-none z-60"
       >
         {/* Top bar */}
         <span
@@ -62,7 +62,7 @@ export default function Header() {
 
 {/* Dropdown with proper under-header animation */}
 <div
-  className={`absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl text-center shadow-lg transition-all duration-500 ease-in-out overflow-hidden ${
+  className={`absolute left-0 top-full w-full bg-[#fdf8f3]/95 backdrop-blur-md rounded-b-xl text-center shadow-lg transition-all duration-500 ease-in-out overflow-hidden z-40 ${
     menuOpen
       ? "max-h-96 opacity-100 py-4"
       : "max-h-0 opacity-0 py-0"
