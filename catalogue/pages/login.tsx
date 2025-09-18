@@ -109,7 +109,7 @@ export default function LoginPage() {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full mt-6 px-4 py-2 bg-[#0b1a3d] text-[#c7a332] font-semibold rounded-lg hover:bg-[#0a162d] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-6 px-4 py-2 bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white font-semibold rounded-lg hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Logging In..." : "Login"}
           </button>
