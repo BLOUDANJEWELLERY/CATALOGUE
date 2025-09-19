@@ -590,10 +590,12 @@ isGenerating
 {/* Full-page overlay */}
 {isGenerating && (
   <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/60 z-[9999] flex flex-col items-center justify-center gap-6">
-    {/* Spinner with glow */}
+    {/* Spinner with dual layers */}
     <div className="relative">
+      {/* Fast gold spinner */}
       <div className="w-20 h-20 border-4 border-[#c7a332]/40 border-t-[#c7a332] rounded-full animate-spin"></div>
-      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#0b1a3d] animate-spin-slow"></div>
+      {/* Slow navy spinner */}
+      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#0b1a3d] animate-slowspin"></div>
     </div>
 
     {/* Status text */}
