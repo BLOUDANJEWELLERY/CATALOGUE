@@ -589,16 +589,30 @@ isGenerating
 
 {/* Full-page overlay */}
 {isGenerating && (
-  <div className="fixed inset-0 backdrop-blur-sm bg-[#fdf8f3]/40 z-[9999] flex flex-col items-center justify-center gap-4">
-    <div className="w-16 h-16 border-4 border-[#c7a332] border-t-[#0b1a3d] rounded-full animate-spin"></div>
-    <p className="text-[#0b1a3d] font-semibold text-lg">Generating PDF...</p>
-    <div className="w-64 h-4 bg-[#fffdfb] border border-[#c7a332] rounded-full overflow-hidden">
+  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/60 z-[9999] flex flex-col items-center justify-center gap-6">
+    {/* Spinner with glow */}
+    <div className="relative">
+      <div className="w-20 h-20 border-4 border-[#c7a332]/40 border-t-[#c7a332] rounded-full animate-spin"></div>
+      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#0b1a3d] animate-spin-slow"></div>
+    </div>
+
+    {/* Status text */}
+    <p className="text-[#0b1a3d] font-bold text-xl tracking-wide animate-pulse">
+      Generating PDF...
+    </p>
+
+    {/* Progress bar */}
+    <div className="w-72 h-5 bg-white/70 border border-[#c7a332] rounded-full overflow-hidden shadow-inner">
       <div
-        className="h-full bg-[#c7a332] transition-all duration-300"
+        className="h-full bg-gradient-to-r from-[#c7a332] to-[#0b1a3d] transition-all duration-500"
         style={{ width: `${progress}%` }}
       ></div>
     </div>
-    <p className="text-[#0b1a3d] font-medium">{progress.toFixed(0)}%</p>
+
+    {/* Progress number */}
+    <p className="text-[#0b1a3d] font-semibold tracking-wider">
+      {progress.toFixed(0)}%
+    </p>
   </div>
 )}
 
