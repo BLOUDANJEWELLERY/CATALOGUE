@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -51,11 +52,8 @@ export default function ProfilePage() {
         body: JSON.stringify({ firstName, lastName }),
       });
 
-      if (res.ok) {
-        setMessage("✅ Profile updated successfully!");
-      } else {
-        setMessage("❌ Failed to update profile.");
-      }
+      if (res.ok) setMessage("✅ Profile updated successfully!");
+      else setMessage("❌ Failed to update profile.");
     } catch (err) {
       console.error("Error updating profile:", err);
       setMessage("❌ An error occurred while saving.");
@@ -65,13 +63,9 @@ export default function ProfilePage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete your account? This action is irreversible!")) return;
-
     setDeleting(true);
     try {
-      const res = await fetch("/api/user/delete", {
-        method: "DELETE",
-      });
+      const res = await fetch("/api/user/profile", { method: "DELETE" });
       if (res.ok) {
         alert("Account deleted successfully!");
         await signOut({ callbackUrl: "/" });
@@ -83,6 +77,7 @@ export default function ProfilePage() {
       setMessage("❌ An error occurred while deleting your account.");
     } finally {
       setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -103,6 +98,7 @@ export default function ProfilePage() {
       <Header />
       <div className="max-w-md mx-auto bg-[#fdfaf5] shadow-lg rounded-lg p-6">
         <h1 className="text-2xl mt-6 font-bold mb-10 text-center">My Profile</h1>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* First Name */}
           <div>
@@ -159,7 +155,7 @@ export default function ProfilePage() {
 
         {/* Delete Account */}
         <button
-          onClick={handleDelete}
+          onClick={() => setShowDeleteModal(true)}
           disabled={deleting}
           className="w-full mt-4 py-2 rounded-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold hover:brightness-110 transition"
         >
@@ -168,6 +164,33 @@ export default function ProfilePage() {
 
         {message && <p className="mt-4 text-center">{message}</p>}
       </div>
+
+      {/* Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999]">
+          <div className="bg-[#fdfaf5] rounded-lg shadow-lg p-6 max-w-sm w-full text-center space-y-4">
+            <p className="text-[#0b1a3d] font-bold text-lg">
+              Are you sure you want to delete your account?
+            </p>
+            <p className="text-red-600 font-medium">This action is irreversible!</p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:brightness-110 transition"
+              >
+                {deleting ? "Deleting..." : "Yes, Delete"}
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 rounded-lg bg-gray-300 text-gray-700 font-semibold hover:brightness-95 transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
