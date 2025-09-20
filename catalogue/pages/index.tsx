@@ -589,11 +589,11 @@ isGenerating
 
 {/* Full-page overlay */}
 {isGenerating && (
-  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/70 z-[9999] flex flex-col items-center justify-center gap-8">
+  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/80 z-[9999] flex flex-col items-center justify-center gap-8">
     {/* Spinner with dual layers */}
     <div className="relative">
-      {/* Golden glow */}
-      <div className="absolute -inset-4 rounded-full bg-[#c7a332]/20 blur-2xl animate-pulse"></div>
+      {/* Golden glow behind */}
+      <div className="absolute -inset-6 rounded-full bg-[#c7a332]/20 blur-2xl animate-pulse"></div>
 
       {/* Fast gold spinner */}
       <div className="w-20 h-20 border-4 border-[#c7a332]/40 border-t-[#c7a332] rounded-full fast-spin"></div>
@@ -601,14 +601,14 @@ isGenerating
       {/* Slow navy spinner */}
       <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#0b1a3d] slow-spin"></div>
 
-      {/* Sparkles orbiting */}
+      {/* Orbiting sparkles */}
       <div className="absolute inset-0 sparkle-orbit"></div>
     </div>
 
     {/* Status text */}
     <p className="text-[#0b1a3d] font-bold text-xl tracking-wide animate-pulse text-center">
       Generating PDF... <br />
-      <span className="text-white font-semibold drop-shadow-md">
+      <span className="text-[#0b1a3d] font-semibold drop-shadow-md">
         Do not close this page
       </span>
     </p>
@@ -628,7 +628,7 @@ isGenerating
   </div>
 )}
 
-{/* Styles */}
+{/* Styles scoped to overlay only */}
 <style jsx>{`
   .fast-spin {
     animation: spin 1.5s linear infinite;
@@ -652,13 +652,15 @@ isGenerating
     position: absolute;
     width: 8px;
     height: 8px;
-    background: #c7a332;
     border-radius: 50%;
-    box-shadow: 0 0 8px #c7a332, 0 0 15px #c7a332;
     top: 50%;
     left: 50%;
     transform-origin: -40px center;
     animation: orbit 3s linear infinite;
+  }
+  .sparkle-orbit::before {
+    background: #c7a332;
+    box-shadow: 0 0 8px #c7a332, 0 0 15px #c7a332;
   }
   .sparkle-orbit::after {
     background: #0b1a3d;
@@ -671,11 +673,7 @@ isGenerating
     to { transform: rotate(360deg) translateX(40px) rotate(-360deg); }
   }
 
-  /* Shimmer effect */
-  .shimmer {
-    position: relative;
-    overflow: hidden;
-  }
+  /* Shimmer effect inside progress bar only */
   .shimmer::before {
     content: "";
     position: absolute;
