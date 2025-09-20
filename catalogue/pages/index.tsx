@@ -589,13 +589,13 @@ isGenerating
 
 {/* Full-page overlay */}
 {isGenerating && (
-  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/70 z-[9999] flex flex-col items-center justify-center gap-8 page-shimmer">
+  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/70 z-[9999] flex flex-col items-center justify-center gap-8 overlay-shimmer">
     {/* Spinner with dual layers */}
     <div className="relative">
       {/* Fast gold spinner */}
       <div className="w-20 h-20 border-4 border-[#c7a332]/40 border-t-[#c7a332] rounded-full fast-spin"></div>
 
-      {/* Slow navy spinner (gear effect) */}
+      {/* Slow navy spinner */}
       <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#0b1a3d] slow-spin"></div>
     </div>
 
@@ -608,9 +608,9 @@ isGenerating
     </p>
 
     {/* Progress bar */}
-    <div className="relative w-72 h-5 bg-white/70 border border-[#c7a332] rounded-full overflow-hidden shadow-inner">
+    <div className="w-72 h-5 bg-white/70 border border-[#c7a332] rounded-full overflow-hidden shadow-inner">
       <div
-        className="h-full bg-gradient-to-r from-[#c7a332] to-[#0b1a3d] transition-all duration-500 shimmer-bar"
+        className="h-full bg-gradient-to-r from-[#c7a332] to-[#0b1a3d] transition-all duration-500"
         style={{ width: `${progress}%` }}
       ></div>
     </div>
@@ -623,7 +623,6 @@ isGenerating
 )}
 
 <style jsx>{`
-  /* Spinner animations */
   .fast-spin {
     animation: spin 1.5s linear infinite;
   }
@@ -639,45 +638,40 @@ isGenerating
     to { transform: rotate(0deg); }
   }
 
-  /* Full-page shimmer overlay */
-  .page-shimmer {
+  /* Overlay shimmer effect */
+  .overlay-shimmer {
     position: relative;
     overflow: hidden;
   }
-  .page-shimmer::before {
+  .overlay-shimmer::before {
     content: "";
     position: absolute;
-    top: 0; left: -150%;
-    width: 250%; height: 100%;
+    top: 0; left: -150%; width: 150%; height: 100%;
     background: linear-gradient(
       120deg,
       transparent,
       rgba(255, 255, 255, 0.5),
       transparent
     );
-    animation: pageShimmer 5s infinite;
-    pointer-events: none;
+    animation: overlayShimmer 4s infinite;
   }
-  @keyframes pageShimmer {
-    100% { left: 150%; }
+  @keyframes overlayShimmer {
+    100% { left: 100%; }
   }
 
-  /* Progress bar shimmer (unchanged, just smooth) */
-  .shimmer-bar::before {
+  /* Subtle twinkle effect */
+  .overlay-shimmer::after {
     content: "";
     position: absolute;
-    top: 0; left: -100%; bottom: 0;
-    width: 100%;
-    background: linear-gradient(
-      120deg,
-      transparent,
-      rgba(255, 255, 255, 0.6),
-      transparent
-    );
-    animation: shimmer 2s infinite;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(circle, rgba(199,163,50,0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: twinkle 6s linear infinite;
+    opacity: 0.6;
   }
-  @keyframes shimmer {
-    100% { left: 100%; }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.6; transform: translate(0,0); }
+    50% { opacity: 0.9; transform: translate(-10px, -10px); }
   }
 `}</style>
 
