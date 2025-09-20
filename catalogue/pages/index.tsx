@@ -616,34 +616,34 @@ isGenerating
     <p className="text-[#0b1a3d] font-semibold tracking-wider">
       {progress.toFixed(0)}%
     </p>
-
-    {/* Inline CSS for synced gear-like spinners */}
-    <style jsx>{`
-      .fast-spin {
-        animation: spin 1.5s linear infinite;
-      }
-      .slow-spin {
-        animation: counter-spin 3s linear infinite;
-      }
-      @keyframes spin {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
-      @keyframes counter-spin {
-        from {
-          transform: rotate(360deg);
-        }
-        to {
-          transform: rotate(0deg);
-        }
-      }
-    `}</style>
   </div>
 )}
+
+{/* Keep styles OUTSIDE of the conditional block */}
+<style jsx>{`
+  .fast-spin {
+    animation: spin 1.5s linear infinite;
+  }
+  .slow-spin {
+    animation: counter-spin 3s linear infinite;
+  }
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes counter-spin {
+    from {
+      transform: rotate(360deg);
+    }
+    to {
+      transform: rotate(0deg);
+    }
+  }
+`}</style>
 
 {/* Full-page overlay */}
 {isProcessing && (
