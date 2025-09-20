@@ -589,7 +589,7 @@ isGenerating
 
 {/* Full-page overlay */}
 {isGenerating && (
-  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/80 z-[9999] flex flex-col items-center justify-center gap-8">
+  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/80 z-[9999] flex flex-col items-center justify-center gap-8 overlay-shimmer">
     {/* Spinner with dual layers */}
     <div className="relative">
       {/* Golden glow behind */}
@@ -600,9 +600,6 @@ isGenerating
 
       {/* Slow navy spinner */}
       <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#0b1a3d] slow-spin"></div>
-
-      {/* Orbiting sparkles */}
-      <div className="absolute inset-0 sparkle-orbit"></div>
     </div>
 
     {/* Status text */}
@@ -628,7 +625,7 @@ isGenerating
   </div>
 )}
 
-{/* Styles scoped to overlay only */}
+{/* Styles */}
 <style jsx>{`
   .fast-spin {
     animation: spin 1.5s linear infinite;
@@ -645,35 +642,35 @@ isGenerating
     to { transform: rotate(0deg); }
   }
 
-  /* Orbiting sparkles */
-  .sparkle-orbit::before,
-  .sparkle-orbit::after {
+  /* Shimmer background across full overlay */
+  .overlay-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .overlay-shimmer::before {
     content: "";
     position: absolute;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform-origin: -40px center;
-    animation: orbit 3s linear infinite;
+    top: 0; left: -150%; right: 0; bottom: 0;
+    background: linear-gradient(
+      120deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    animation: overlay-shimmer 3s infinite;
+    z-index: 1;
   }
-  .sparkle-orbit::before {
-    background: #c7a332;
-    box-shadow: 0 0 8px #c7a332, 0 0 15px #c7a332;
-  }
-  .sparkle-orbit::after {
-    background: #0b1a3d;
-    box-shadow: 0 0 8px #0b1a3d, 0 0 15px #0b1a3d;
-    transform-origin: 40px center;
-    animation-duration: 4s;
-  }
-  @keyframes orbit {
-    from { transform: rotate(0deg) translateX(40px) rotate(0deg); }
-    to { transform: rotate(360deg) translateX(40px) rotate(-360deg); }
+  @keyframes overlay-shimmer {
+    100% { left: 150%; }
   }
 
-  /* Shimmer effect inside progress bar only */
+  /* Ensure overlay children stay above shimmer */
+  .overlay-shimmer > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Shimmer effect inside progress bar */
   .shimmer::before {
     content: "";
     position: absolute;
