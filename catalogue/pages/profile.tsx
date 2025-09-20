@@ -1,7 +1,7 @@
 // pages/profile.tsx
 "use client";
 import { useEffect, useState } from "react";
-import { getSession } from "next-auth/react";
+import { getSession, signOut } from "next-auth/react";
 import Header from "../components/Header";
 
 interface UserProfile {
@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -63,108 +64,110 @@ export default function ProfilePage() {
     }
   };
 
-   if (!user) {
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete your account? This action is irreversible!")) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/user/delete", {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        alert("Account deleted successfully!");
+        await signOut({ callbackUrl: "/" });
+      } else {
+        setMessage("❌ Failed to delete account.");
+      }
+    } catch (err) {
+      console.error("Error deleting account:", err);
+      setMessage("❌ An error occurred while deleting your account.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (!user) {
     return (
-<>
-<Header />
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          background: "#fdfaf5", // page background
-          flexDirection: "column",
-          color: "#3b3b58", // deep blue
-          fontSize: "1.5rem",
-          fontWeight: "bold",
-        }}
-      >
-        <p>Loading profile...</p>
-        <div
-          style={{
-            marginTop: "20px",
-            width: "60px",
-            height: "60px",
-            border: "6px solid #d4af37", // golden border
-            borderTop: "6px solid #3b3b58", // blue spinner segment
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-          }}
-        />
-        <style>
-          {`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}
-        </style>
-      </div>
-</>
+      <>
+        <Header />
+        <div className="flex flex-col items-center justify-center h-screen bg-[#fdfaf5] text-[#3b3b58] font-bold text-xl">
+          <p>Loading profile...</p>
+          <div className="mt-5 w-16 h-16 border-6 border-[#d4af37] border-t-[#3b3b58] rounded-full animate-spin" />
+        </div>
+      </>
     );
   }
+
   return (
-<>
-<Header />
-    <div className="max-w-md mx-auto bg-[#fdfaf5] shadow-lg rounded-lg p-6">
-      <h1 className="text-2xl mt-6 font-bold mb-10 text-center">My Profile</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* First Name */}
-        <div>
-          <label className="block text-sm font-medium mb-1">First Name</label>
-          <input
-            type="text"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
+    <>
+      <Header />
+      <div className="max-w-md mx-auto bg-[#fdfaf5] shadow-lg rounded-lg p-6">
+        <h1 className="text-2xl mt-6 font-bold mb-10 text-center">My Profile</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* First Name */}
+          <div>
+            <label className="block text-sm font-medium mb-1">First Name</label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+            />
+          </div>
 
-        {/* Last Name */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Last Name</label>
-          <input
-            type="text"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
+          {/* Last Name */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Last Name</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+            />
+          </div>
 
-        {/* Email (read-only) */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
-            value={user.email}
-            disabled
-            className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
-          />
-        </div>
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input
+              type="email"
+              value={user.email}
+              disabled
+              className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+            />
+          </div>
 
-    {/* Role (read-only) */}
-<div>
-  <label className="block text-sm font-medium mb-1">Role</label>
-  <input
-    type="text"
-    value={user.role.toUpperCase()}
-    disabled
-    className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed uppercase"
-  />
-</div>
+          {/* Role */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Role</label>
+            <input
+              type="text"
+              value={user.role.toUpperCase()}
+              disabled
+              className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed uppercase"
+            />
+          </div>
 
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2 rounded-lg bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white font-semibold hover:brightness-110 transition"
+          >
+            {loading ? "Saving..." : "Save Changes"}
+          </button>
+        </form>
+
+        {/* Delete Account */}
         <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2 rounded-lg bg-gradient-to-r from-[#0b1a3d] to-[#c7a332] text-white font-semibold hover:brightness-110 transition"
+          onClick={handleDelete}
+          disabled={deleting}
+          className="w-full mt-4 py-2 rounded-lg bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold hover:brightness-110 transition"
         >
-          {loading ? "Saving..." : "Save Changes"}
+          {deleting ? "Deleting..." : "Delete Account"}
         </button>
-      </form>
 
-      {message && <p className="mt-4 text-center">{message}</p>}
-    </div>
-</>
+        {message && <p className="mt-4 text-center">{message}</p>}
+      </div>
+    </>
   );
 }
