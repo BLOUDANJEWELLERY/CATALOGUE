@@ -589,7 +589,7 @@ isGenerating
 
 {/* Full-page overlay */}
 {isGenerating && (
-  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/80 z-[9999] flex flex-col items-center justify-center gap-8 overlay-shimmer">
+  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/80 z-[9999] flex flex-col items-center justify-center gap-8">
     {/* Spinner with dual layers */}
     <div className="relative">
       {/* Golden glow behind */}
@@ -625,7 +625,7 @@ isGenerating
   </div>
 )}
 
-{/* Styles */}
+{/* Styles scoped to overlay only */}
 <style jsx>{`
   .fast-spin {
     animation: spin 1.5s linear infinite;
@@ -642,35 +642,7 @@ isGenerating
     to { transform: rotate(0deg); }
   }
 
-  /* Shimmer background across full overlay */
-  .overlay-shimmer {
-    position: relative;
-    overflow: hidden;
-  }
-  .overlay-shimmer::before {
-    content: "";
-    position: absolute;
-    top: 0; left: -150%; right: 0; bottom: 0;
-    background: linear-gradient(
-      120deg,
-      transparent,
-      rgba(255, 255, 255, 0.4),
-      transparent
-    );
-    animation: overlay-shimmer 3s infinite;
-    z-index: 1;
-  }
-  @keyframes overlay-shimmer {
-    100% { left: 150%; }
-  }
-
-  /* Ensure overlay children stay above shimmer */
-  .overlay-shimmer > * {
-    position: relative;
-    z-index: 2;
-  }
-
-  /* Shimmer effect inside progress bar */
+  /* Shimmer effect inside progress bar only */
   .shimmer::before {
     content: "";
     position: absolute;
