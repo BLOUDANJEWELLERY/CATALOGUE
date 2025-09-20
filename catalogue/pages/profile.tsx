@@ -67,7 +67,6 @@ export default function ProfilePage() {
     try {
       const res = await fetch("/api/user/profile", { method: "DELETE" });
       if (res.ok) {
-        alert("Account deleted successfully!");
         await signOut({ callbackUrl: "/" });
       } else {
         setMessage("❌ Failed to delete account.");
