@@ -593,14 +593,15 @@ isGenerating
     {/* Spinner with dual layers */}
     <div className="relative">
       {/* Fast gold spinner */}
-      <div className="w-20 h-20 border-4 border-[#c7a332]/40 border-t-[#c7a332] rounded-full animate-spin"></div>
-      {/* Slow navy spinner */}
-      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#0b1a3d] animate-slowspin"></div>
+      <div className="w-20 h-20 border-4 border-[#c7a332]/40 border-t-[#c7a332] rounded-full fast-spin"></div>
+      {/* Slow navy spinner (counter-rotating for gear effect) */}
+      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#0b1a3d] slow-spin"></div>
     </div>
 
     {/* Status text */}
-    <p className="text-[#0b1a3d] font-bold text-xl tracking-wide animate-pulse">
-      Generating PDF...
+    <p className="text-[#0b1a3d] font-bold text-xl tracking-wide animate-pulse text-center">
+      Generating PDF... <br />
+      <span className="text-[#c7a332] font-semibold">Do not close this page</span>
     </p>
 
     {/* Progress bar */}
@@ -615,6 +616,32 @@ isGenerating
     <p className="text-[#0b1a3d] font-semibold tracking-wider">
       {progress.toFixed(0)}%
     </p>
+
+    {/* Inline CSS for synced gear-like spinners */}
+    <style jsx>{`
+      .fast-spin {
+        animation: spin 1.5s linear infinite;
+      }
+      .slow-spin {
+        animation: counter-spin 3s linear infinite;
+      }
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes counter-spin {
+        from {
+          transform: rotate(360deg);
+        }
+        to {
+          transform: rotate(0deg);
+        }
+      }
+    `}</style>
   </div>
 )}
 
