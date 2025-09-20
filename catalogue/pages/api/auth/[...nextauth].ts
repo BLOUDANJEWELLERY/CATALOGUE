@@ -25,10 +25,15 @@ export const authOptions: AuthOptions = {
         });
         if (!user) return null;
 
+        // ❌ Prevent login if role is blocked
+        if (user.role === "blocked") {
+          return null;
+        }
+
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) return null;
 
-        // ✅ return strongly typed object
+        // ✅ Return strongly typed object
         return {
           id: user.id,
           email: user.email,
