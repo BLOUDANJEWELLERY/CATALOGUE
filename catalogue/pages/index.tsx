@@ -589,28 +589,34 @@ isGenerating
 
 {/* Full-page overlay */}
 {isGenerating && (
-  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/70 z-[9999] flex flex-col items-center justify-center gap-8 overlay-shimmer">
+  <div className="fixed inset-0 backdrop-blur-md bg-[#fdf8f3]/70 z-[9999] flex flex-col items-center justify-center gap-8">
     {/* Spinner with dual layers */}
     <div className="relative">
+      {/* Golden glow */}
+      <div className="absolute -inset-4 rounded-full bg-[#c7a332]/20 blur-2xl animate-pulse"></div>
+
       {/* Fast gold spinner */}
       <div className="w-20 h-20 border-4 border-[#c7a332]/40 border-t-[#c7a332] rounded-full fast-spin"></div>
 
       {/* Slow navy spinner */}
       <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#0b1a3d] slow-spin"></div>
+
+      {/* Sparkles orbiting */}
+      <div className="absolute inset-0 sparkle-orbit"></div>
     </div>
 
     {/* Status text */}
     <p className="text-[#0b1a3d] font-bold text-xl tracking-wide animate-pulse text-center">
       Generating PDF... <br />
-      <span className="text-[#0b1a3d] font-semibold">
+      <span className="text-white font-semibold drop-shadow-md">
         Do not close this page
       </span>
     </p>
 
-    {/* Progress bar */}
-    <div className="w-72 h-5 bg-white/70 border border-[#c7a332] rounded-full overflow-hidden shadow-inner">
+    {/* Progress bar with shimmer */}
+    <div className="relative w-72 h-5 bg-white/70 border border-[#c7a332] rounded-full overflow-hidden shadow-inner">
       <div
-        className="h-full bg-gradient-to-r from-[#c7a332] to-[#0b1a3d] transition-all duration-500"
+        className="h-full bg-gradient-to-r from-[#c7a332] to-[#0b1a3d] transition-all duration-500 shimmer"
         style={{ width: `${progress}%` }}
       ></div>
     </div>
@@ -622,6 +628,7 @@ isGenerating
   </div>
 )}
 
+{/* Styles */}
 <style jsx>{`
   .fast-spin {
     animation: spin 1.5s linear infinite;
@@ -638,40 +645,52 @@ isGenerating
     to { transform: rotate(0deg); }
   }
 
-  /* Overlay shimmer effect */
-  .overlay-shimmer {
+  /* Orbiting sparkles */
+  .sparkle-orbit::before,
+  .sparkle-orbit::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #c7a332;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #c7a332, 0 0 15px #c7a332;
+    top: 50%;
+    left: 50%;
+    transform-origin: -40px center;
+    animation: orbit 3s linear infinite;
+  }
+  .sparkle-orbit::after {
+    background: #0b1a3d;
+    box-shadow: 0 0 8px #0b1a3d, 0 0 15px #0b1a3d;
+    transform-origin: 40px center;
+    animation-duration: 4s;
+  }
+  @keyframes orbit {
+    from { transform: rotate(0deg) translateX(40px) rotate(0deg); }
+    to { transform: rotate(360deg) translateX(40px) rotate(-360deg); }
+  }
+
+  /* Shimmer effect */
+  .shimmer {
     position: relative;
     overflow: hidden;
   }
-  .overlay-shimmer::before {
+  .shimmer::before {
     content: "";
     position: absolute;
-    top: 0; left: -150%; width: 150%; height: 100%;
+    top: 0; left: -100%; bottom: 0;
+    width: 100%;
     background: linear-gradient(
       120deg,
       transparent,
-      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0.6),
       transparent
     );
-    animation: overlayShimmer 4s infinite;
+    animation: shimmer 2s infinite;
   }
-  @keyframes overlayShimmer {
+  @keyframes shimmer {
     100% { left: 100%; }
-  }
-
-  /* Subtle twinkle effect */
-  .overlay-shimmer::after {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-image: radial-gradient(circle, rgba(199,163,50,0.2) 1px, transparent 1px);
-    background-size: 40px 40px;
-    animation: twinkle 6s linear infinite;
-    opacity: 0.6;
-  }
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.6; transform: translate(0,0); }
-    50% { opacity: 0.9; transform: translate(-10px, -10px); }
   }
 `}</style>
 
