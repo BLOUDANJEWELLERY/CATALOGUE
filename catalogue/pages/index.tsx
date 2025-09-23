@@ -21,7 +21,7 @@ interface CatalogueItem {
   _id: string;
   modelNumber: number;
   image: { _type: "image"; asset: { _ref: string; _type: "reference" } } | null;
-  sizes: ("Adult" | "Kids")[];
+  sizes: ("Normal" | "Kids")[];
   weightAdult?: number;
   weightKids?: number;
 }
@@ -71,7 +71,7 @@ const [isUploading, setIsUploading] = useState(false);
 // Add New Item States
 const [newItemImage, setNewItemImage] = useState<File | null>(null);
 const [newItemImagePreview, setNewItemImagePreview] = useState<string | null>(null);
-const [newItemSizes, setNewItemSizes] = useState<("Adult" | "Kids")[]>([]);
+const [newItemSizes, setNewItemSizes] = useState<("Normal" | "Kids")[]>([]);
 const [newItemWeightAdult, setNewItemWeightAdult] = useState<string>("");
 const [newItemWeightKids, setNewItemWeightKids] = useState<string>("");
 
@@ -79,7 +79,7 @@ const [newItemWeightKids, setNewItemWeightKids] = useState<string>("");
 const [editImage, setEditImage] = useState<File | null>(null);
 const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
 const [currentEditImageUrl, setCurrentEditImageUrl] = useState<string | null>(null);
-const [editSizes, setEditSizes] = useState<("Adult" | "Kids")[]>([]);
+const [editSizes, setEditSizes] = useState<("Normal" | "Kids")[]>([]);
 const [editWeightAdult, setEditWeightAdult] = useState<string>("");
 const [editWeightKids, setEditWeightKids] = useState<string>("");
 
@@ -96,9 +96,9 @@ const [isProcessing] = useState(false); // tracks sign out or PDF download
 const [isGenerating, setIsGenerating] = useState(false); // tracks sign out or PDF download
 const [progress, setProgress] = useState(0);
 
-const [pdfFilter, setPdfFilter] = useState<"Adult" | "Kids" | "Both">("Both");
+const [pdfFilter, setPdfFilter] = useState<"Normal" | "Kids" | "Both">("Both");
 // Handle checkbox selection
-const handleSizeChange = (size: "Adult" | "Kids") => {
+const handleSizeChange = (size: "Normal" | "Kids") => {
   setNewItemSizes((prev) =>
     prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
   );
@@ -115,7 +115,7 @@ setEditWeightAdult(item.weightAdult?.toString() || "");
   setEditWeightKids(item.weightKids?.toString() || "");
 };
 
-const handleEditSizeChange = (size: "Adult" | "Kids") => {
+const handleEditSizeChange = (size: "Normal" | "Kids") => {
   setEditSizes(prev =>
     prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
   );
@@ -125,7 +125,7 @@ const handleEditSizeChange = (size: "Adult" | "Kids") => {
 const handleSaveEdit = async (itemId: string) => {
   // Validations
   if (editSizes.length === 0) return alert("Select at least one size");
-  if (editSizes.includes("Adult") && !editWeightAdult) return alert("Enter Adult weight");
+  if (editSizes.includes("Adult") && !editWeightAdult) return alert("Enter Normal weight");
   if (editSizes.includes("Kids") && !editWeightKids) return alert("Enter Kids weight");
 
   setIsUploading(true);
@@ -188,7 +188,7 @@ const handleSaveNewItem = async () => {
   if (!newItemImage) return alert("Upload an image");
   if (newItemSizes.length === 0) return alert("Select at least one size");
   if (newItemSizes.includes("Adult") && !newItemWeightAdult)
-    return alert("Enter weight for Adult");
+    return alert("Enter Normal weight");
   if (newItemSizes.includes("Kids") && !newItemWeightKids)
     return alert("Enter weight for Kids");
 
@@ -240,13 +240,13 @@ const handleSaveNewItem = async () => {
 };
 
 const handleDownloadPDFWithProgress = async (
-  filter: "Adult" | "Kids" | "Both",
+  filter: "Normal" | "Kids" | "Both",
   setProgress: (p: number) => void
 ) => {
   const doc = new jsPDF("p", "mm", "a4");
 
   const filteredItems = items.filter((item) => {
-    if (filter === "Adult") return item.sizes?.includes("Adult");
+    if (filter === "Normal") return item.sizes?.includes("Adult");
     if (filter === "Kids") return item.sizes?.includes("Kids");
     if (filter === "Both")
       return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
@@ -356,12 +356,12 @@ const handleDownloadPDFWithProgress = async (
       weightContainer.style.gap = "8px";
       tempDiv.appendChild(weightContainer);
 
-      const showAdult = filter === "Adult" || filter === "Both";
+      const showAdult = filter === "Normal" || filter === "Both";
       const showKids = filter === "Kids" || filter === "Both";
 
       if (showAdult && item.sizes?.includes("Adult") && item.weightAdult) {
         const p = document.createElement("p");
-        p.innerText = `Adult - ${item.weightAdult}g`;
+        p.innerText = `${item.weightAdult}g`;
         p.style.fontSize = "12px";
         p.style.color = "#0b1a3d";
         p.style.margin = "0";
@@ -723,7 +723,7 @@ isGenerating
           <div className="flex flex-wrap justify-center gap-2 mt-2 px-2 pb-3">
             {item.sizes?.includes("Adult") && (
               <span className="text-[#0b1a3d] bg-[#c7a332] px-2 py-1 rounded-md font-semibold text-sm">
-                Adult {item.weightAdult ? `- ${item.weightAdult}g` : ""}
+                {item.weightAdult ? `${item.weightAdult}g` : ""}
               </span>
             )}
             {item.sizes?.includes("Kids") && (
@@ -794,7 +794,7 @@ isGenerating
             onChange={() => handleSizeChange("Adult")}
             className="w-4 h-4 accent-[#c7a332]"
           />
-          Adult
+          Normal
         </label>
         <label className="flex items-center gap-2 text-[#0b1a3d] font-semibold">
           <input
@@ -811,7 +811,7 @@ isGenerating
       {newItemSizes.includes("Adult") && (
         <input
           type="number"
-          placeholder="Weight Adult (g)"
+          placeholder="Normal Weight (g)"
           inputMode="numeric"
           value={newItemWeightAdult}
           onChange={(e) => setNewItemWeightAdult(e.target.value)}
@@ -914,7 +914,7 @@ isGenerating
             onChange={() => handleEditSizeChange("Adult")}
             className="w-4 h-4 accent-[#c7a332]"
           />
-          Adult
+          Normal
         </label>
         <label className="flex items-center gap-2 text-[#0b1a3d] font-semibold">
           <input
@@ -931,7 +931,7 @@ isGenerating
       {editSizes.includes("Adult") && (
         <input
           type="number"
-          placeholder="Weight Adult (g)"
+          placeholder="Normal Weight(g)"
           inputMode="numeric"
           value={editWeightAdult}
           onChange={(e) => setEditWeightAdult(e.target.value)}
