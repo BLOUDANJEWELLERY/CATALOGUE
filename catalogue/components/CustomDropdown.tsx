@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-type PdfFilter = "Normal" | "Kids" | "Both";
+type PdfFilter = "Adult" | "Kids" | "Both";
 
 interface CustomDropdownProps {
   value: PdfFilter;
@@ -11,7 +11,7 @@ export default function CustomDropdown({ value, onChange }: CustomDropdownProps)
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const options: PdfFilter[] = ["Normal", "Kids", "Both"];
+  const options: PdfFilter[] = ["Adult", "Kids", "Both"];
 
   // Close dropdown if clicked outside
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function CustomDropdown({ value, onChange }: CustomDropdownProps)
         className="w-full px-4 py-2 border-2 border-[#c7a332] rounded-lg bg-white text-[#0b1a3d] font-semibold flex justify-between items-center hover:bg-[#f0f0f0] transition-all duration-200 shadow-sm"
       >
         <span className="truncate">
-          {value === "Normal" ? "Normal Only" : value === "Kids" ? "Kids Only" : "Both"}
+          {value === "Adult" ? "Adult Only" : value === "Kids" ? "Kids Only" : "Both"}
         </span>
         <span
           className={`ml-2 transform transition-transform duration-300 ${
@@ -64,7 +64,7 @@ export default function CustomDropdown({ value, onChange }: CustomDropdownProps)
                   : "hover:bg-[#c7a332] hover:text-white"
               }`}
             >
-              {opt === "Normal" ? "Normal Only" : opt === "Kids" ? "Kids Only" : "Both"}
+              {opt === "Adult" ? "Adult Only" : opt === "Kids" ? "Kids Only" : "Both"}
             </li>
           );
         })}
