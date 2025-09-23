@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-type PdfFilter = "Adult" | "Kids" | "Both";
+type PdfFilter = "Normal" | "Kids" | "Both";
 
 interface CustomDropdownProps {
   value: PdfFilter;
@@ -64,7 +64,7 @@ export default function CustomDropdown({ value, onChange }: CustomDropdownProps)
                   : "hover:bg-[#c7a332] hover:text-white"
               }`}
             >
-              {opt === "Adult" ? "Adult Only" : opt === "Kids" ? "Kids Only" : "Both"}
+              {opt === "Normal" ? "Normal Only" : opt === "Kids" ? "Kids Only" : "Both"}
             </li>
           );
         })}
