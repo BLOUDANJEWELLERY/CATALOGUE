@@ -125,7 +125,7 @@ const handleEditSizeChange = (size: "Normal" | "Kids") => {
 const handleSaveEdit = async (itemId: string) => {
   // Validations
   if (editSizes.length === 0) return alert("Select at least one size");
-  if (editSizes.includes("Adult") && !editWeightAdult) return alert("Enter Normal weight");
+  if (editSizes.includes("Normal") && !editWeightAdult) return alert("Enter Normal weight");
   if (editSizes.includes("Kids") && !editWeightKids) return alert("Enter Kids weight");
 
   setIsUploading(true);
@@ -187,7 +187,7 @@ const handleSaveEdit = async (itemId: string) => {
 const handleSaveNewItem = async () => {
   if (!newItemImage) return alert("Upload an image");
   if (newItemSizes.length === 0) return alert("Select at least one size");
-  if (newItemSizes.includes("Adult") && !newItemWeightAdult)
+  if (newItemSizes.includes("Normal") && !newItemWeightAdult)
     return alert("Enter Normal weight");
   if (newItemSizes.includes("Kids") && !newItemWeightKids)
     return alert("Enter weight for Kids");
@@ -246,10 +246,10 @@ const handleDownloadPDFWithProgress = async (
   const doc = new jsPDF("p", "mm", "a4");
 
   const filteredItems = items.filter((item) => {
-    if (filter === "Normal") return item.sizes?.includes("Adult");
+    if (filter === "Normal") return item.sizes?.includes("Normal");
     if (filter === "Kids") return item.sizes?.includes("Kids");
     if (filter === "Both")
-      return item.sizes?.includes("Adult") || item.sizes?.includes("Kids");
+      return item.sizes?.includes("Normal") || item.sizes?.includes("Kids");
     return false;
   });
 
@@ -359,7 +359,7 @@ const handleDownloadPDFWithProgress = async (
       const showAdult = filter === "Normal" || filter === "Both";
       const showKids = filter === "Kids" || filter === "Both";
 
-      if (showAdult && item.sizes?.includes("Adult") && item.weightAdult) {
+      if (showAdult && item.sizes?.includes("Normal") && item.weightAdult) {
         const p = document.createElement("p");
         p.innerText = `${item.weightAdult}g`;
         p.style.fontSize = "12px";
@@ -721,7 +721,7 @@ isGenerating
 </p>
           {/* Sizes + Weights */}
           <div className="flex flex-wrap justify-center gap-2 mt-2 px-2 pb-3">
-            {item.sizes?.includes("Adult") && (
+            {item.sizes?.includes("Normal") && (
               <span className="text-[#0b1a3d] bg-[#c7a332] px-2 py-1 rounded-md font-semibold text-sm">
                 {item.weightAdult ? `${item.weightAdult}g` : ""}
               </span>
@@ -790,8 +790,8 @@ isGenerating
         <label className="flex items-center gap-2 text-[#0b1a3d] font-semibold">
           <input
             type="checkbox"
-            checked={newItemSizes.includes("Adult")}
-            onChange={() => handleSizeChange("Adult")}
+            checked={newItemSizes.includes("Normal")}
+            onChange={() => handleSizeChange("Normal")}
             className="w-4 h-4 accent-[#c7a332]"
           />
           Normal
@@ -808,7 +808,7 @@ isGenerating
       </div>
 
       {/* Weight Inputs */}
-      {newItemSizes.includes("Adult") && (
+      {newItemSizes.includes("Normal") && (
         <input
           type="number"
           placeholder="Normal Weight (g)"
@@ -910,8 +910,8 @@ isGenerating
         <label className="flex items-center gap-2 text-[#0b1a3d] font-semibold">
           <input
             type="checkbox"
-            checked={editSizes.includes("Adult")}
-            onChange={() => handleEditSizeChange("Adult")}
+            checked={editSizes.includes("Normal")}
+            onChange={() => handleEditSizeChange("Normal")}
             className="w-4 h-4 accent-[#c7a332]"
           />
           Normal
@@ -928,7 +928,7 @@ isGenerating
       </div>
 
       {/* Weight Inputs */}
-      {editSizes.includes("Adult") && (
+      {editSizes.includes("Normal") && (
         <input
           type="number"
           placeholder="Normal Weight(g)"
